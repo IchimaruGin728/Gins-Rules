@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// Rules holds parsed rules from a source file.
+
 type Rules struct {
 	DomainSuffix  []string
 	Domain        []string
@@ -19,7 +19,7 @@ type Rules struct {
 	IPCIDR        []string
 }
 
-// SingBoxRuleSet is the sing-box rule-set JSON source format (v2).
+
 type SingBoxRuleSet struct {
 	Version int              `json:"version"`
 	Rules   []SingBoxRule    `json:"rules"`
@@ -33,7 +33,7 @@ type SingBoxRule struct {
 	IPCIDR        []string `json:"ip_cidr,omitempty"`
 }
 
-// Stats tracks compilation statistics.
+
 type Stats struct {
 	Files int
 	Rules int
@@ -61,7 +61,7 @@ func main() {
 	fmt.Printf("\n  sing-box: %s\n", boolIcon(hasSingBox))
 	fmt.Printf("  mihomo:   %s\n\n", boolIcon(hasMihomo))
 
-	// Clean and create output dirs
+
 	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
@@ -95,27 +95,27 @@ func main() {
 				continue
 			}
 
-			// sing-box JSON + SRS
+
 			jsonPath := compileSingBoxJSON(name, rules, filepath.Join(singboxDir, category))
 			srsOK := false
 			if hasSingBox {
 				srsOK = compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category))
 			}
 
-			// Mihomo YAML + MRS
+
 			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), isIP)
 			mrsOK := false
 			if hasMihomo {
 				mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior)
 			}
 
-			// Text list (Surge/Loon/SR)
+
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
 
-			// QuantumultX native
+
 			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP)
 
-			// Egern native YAML
+
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category), isIP)
 
 			srsIcon := "·"
@@ -141,7 +141,7 @@ func main() {
 		}
 	}
 
-	// Generate manifests
+
 	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern"} {
 		for _, cat := range categories {
 			dir := filepath.Join(compiledDir, formatDir, cat)
@@ -166,20 +166,19 @@ func main() {
 	fmt.Println("============================================================")
 }
 
-// findRoot finds the project root by locating go.mod.
 func findRoot() string {
 	// Try executable directory first, then working directory
 	exe, _ := os.Executable()
 	dir := filepath.Dir(exe)
 
-	// Walk up to find go.mod
+
 	for d := dir; d != "/"; d = filepath.Dir(d) {
 		if _, err := os.Stat(filepath.Join(d, "go.mod")); err == nil {
 			return d
 		}
 	}
 
-	// Fallback: working directory
+
 	wd, _ := os.Getwd()
 	for d := wd; d != "/"; d = filepath.Dir(d) {
 		if _, err := os.Stat(filepath.Join(d, "go.mod")); err == nil {
@@ -219,7 +218,6 @@ func listTxtFiles(dir string) []string {
 	return files
 }
 
-// parseSource parses a source rule file.
 func parseSource(path string) Rules {
 	var r Rules
 	data, err := os.ReadFile(path)
@@ -247,7 +245,6 @@ func parseSource(path string) Rules {
 	return r
 }
 
-// compileSingBoxJSON generates a sing-box rule-set JSON source file.
 func compileSingBoxJSON(name string, rules Rules, outDir string) string {
 	rule := SingBoxRule{
 		DomainSuffix:  rules.DomainSuffix,
@@ -268,7 +265,6 @@ func compileSingBoxJSON(name string, rules Rules, outDir string) string {
 	return jsonPath
 }
 
-// compileSingBoxSRS compiles JSON to binary .srs using sing-box CLI.
 func compileSingBoxSRS(jsonPath, outDir string) bool {
 	name := strings.TrimSuffix(filepath.Base(jsonPath), ".json")
 	srsPath := filepath.Join(outDir, name+".srs")
@@ -281,7 +277,6 @@ func compileSingBoxSRS(jsonPath, outDir string) bool {
 	return true
 }
 
-// compileMihomoYAML generates a Mihomo-compatible YAML rule-provider file.
 func compileMihomoYAML(name string, rules Rules, outDir string, isIP bool) string {
 	var lines []string
 	lines = append(lines, fmt.Sprintf("# Gins-Rules: %s", name))
@@ -310,7 +305,6 @@ func compileMihomoYAML(name string, rules Rules, outDir string, isIP bool) strin
 	return yamlPath
 }
 
-// compileMihomoMRS compiles YAML to binary .mrs using mihomo CLI.
 func compileMihomoMRS(yamlPath, outDir, behavior string) bool {
 	name := strings.TrimSuffix(filepath.Base(yamlPath), ".yaml")
 	mrsPath := filepath.Join(outDir, name+".mrs")
@@ -323,7 +317,6 @@ func compileMihomoMRS(yamlPath, outDir, behavior string) bool {
 	return true
 }
 
-// compileTextList generates a text .list file for Loon/QX/Shadowrocket.
 func compileTextList(name string, rules Rules, outDir string, isIP bool) int {
 	var lines []string
 
@@ -360,7 +353,6 @@ func compileTextList(name string, rules Rules, outDir string, isIP bool) int {
 	return len(lines)
 }
 
-// compileQuanXList generates a QuantumultX native format .list file.
 func compileQuanXList(name string, rules Rules, outDir string, isIP bool) {
 	var lines []string
 
@@ -394,7 +386,6 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool) {
 	os.WriteFile(listPath, []byte(content), 0o644)
 }
 
-// compileEgernYAML generates an Egern native YAML rule set file.
 func compileEgernYAML(name string, rules Rules, outDir string, isIP bool) {
 	var lines []string
 

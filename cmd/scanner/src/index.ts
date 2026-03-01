@@ -13,7 +13,7 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-// AI Classification using Llama-4-Scout (MoE)
+
 async function classifyDomain(env: Bindings, domain: string): Promise<string> {
   const prompt = `Task: Classify technical domain into network routing category.
 Domain: ${domain}
@@ -35,14 +35,14 @@ Response format: Output EXACTLY one word from the categories above.`;
   }
 }
 
-// Main crawl logic
+
 async function crawlOfficialDocs(env: Bindings): Promise<Record<string, string[]>> {
   const browser = await puppeteer.launch(env.MYBROWSER);
   try {
     const page = await browser.newPage();
     page.setDefaultNavigationTimeout(30_000); // 30s timeout
 
-    // 1. Docker Allowlist
+
     await page.goto('https://docs.docker.com/desktop/setup/allow-list/', {
       waitUntil: 'domcontentloaded',
     });
@@ -63,7 +63,7 @@ async function crawlOfficialDocs(env: Bindings): Promise<Record<string, string[]
   }
 }
 
-// Trigger GitHub Actions repository dispatch
+
 async function triggerGitHub(env: Bindings): Promise<boolean> {
   const url = `https://api.github.com/repos/${env.GITHUB_USER}/${env.GITHUB_REPO}/dispatches`;
   const response = await fetch(url, {
@@ -99,10 +99,7 @@ app.get('/classify', async (c) => {
   return c.json({ domain, category });
 });
 
-/**
- * Dynamic Rule Aggregator
- * Usage: GET /sub/proxy.list?domain=your-pages-url.com
- */
+
 app.get('/sub/:file', async (c) => {
   const fileName = c.req.param('file');
   const dotIdx = fileName.lastIndexOf('.');
@@ -136,7 +133,6 @@ app.get('/sub/:file', async (c) => {
 
     let merged = results.join('\n');
 
-    // Simple deduplication for .list files
     if (ext === 'list') {
       const lines = merged
         .split('\n')
@@ -153,7 +149,7 @@ app.get('/sub/:file', async (c) => {
   }
 });
 
-// Scheduled trigger
+
 export default {
   async scheduled(_event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
     ctx.waitUntil(
