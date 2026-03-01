@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { like, or } from 'drizzle-orm';
+import { desc, like, or } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { getDb } from '../../db';
-import { domains, rules } from '../../db/schema';
+import { classifications, domains, rules } from '../../db/schema';
 
 type Env = {
   DB: D1Database;
@@ -12,6 +12,24 @@ type Env = {
 };
 
 const app = new Hono<{ Bindings: Env }>().basePath('/api');
+
+app.get('/ai/logs', async (c) => {
+  const db = getDb(c.env.DB);
+  const logs = await db
+    .select()
+    .from(classifications)
+    .orderBy(desc(classifications.timestamp))
+    .limit(20);
+  return c.json(logs);
+});
+
+app.post('/ai/trigger', async (c) => {
+  const resp = await fetch('https://scanner.ichimarugin728.dev/scan', {
+    headers: { 'X-Gins-Auth': c.env.GINS_INTERNAL_TOKEN },
+  });
+  const data = await resp.json();
+  return c.json(data);
+});
 
 app.get('/search', async (c) => {
   const query = c.req.query('q');

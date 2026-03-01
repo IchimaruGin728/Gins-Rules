@@ -15,3 +15,13 @@ export const domains = sqliteTable('domains', {
   ruleId: integer('rule_id').references(() => rules.id),
   category: text('category'), // AI classification result
 });
+
+export const classifications = sqliteTable('classifications', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  domain: text('domain').notNull(),
+  category: text('category').notNull(),
+  confidence: integer('confidence').notNull().default(90),
+  model: text('model').notNull().default('llama-4-scout-17b'),
+  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
+  status: text('status').notNull().default('completed'), // completed, pending, failed
+});

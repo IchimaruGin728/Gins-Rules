@@ -11,6 +11,7 @@ type Bindings = {
   GITHUB_USER: string;
   GITHUB_REPO: string;
   GINS_INTERNAL_TOKEN: string;
+  DB: D1Database;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -54,7 +55,18 @@ Response format: Output EXACTLY one word from the categories above.`;
       messages: [{ role: 'user', content: prompt }],
     });
 
-    return response?.response?.toLowerCase()?.trim() ?? 'proxy';
+    const category = response?.response?.toLowerCase()?.trim() ?? 'proxy';
+
+    // Log to D1 for AI Monitor
+    try {
+      await env.DB.prepare(
+        'INSERT INTO classifications (domain, category, confidence, model, timestamp) VALUES (?, ?, ?, ?, ?)'
+      ).bind(domain, category, 95, '@cf/meta/llama-4-scout-17b-16e-instruct', Date.now()).run();
+    } catch (d1Err) {
+      console.error('Failed to log classification to D1:', d1Err);
+    }
+
+    return category;
   } catch (err) {
     console.error('AI classification failed:', err);
     return 'proxy'; // Safe fallback

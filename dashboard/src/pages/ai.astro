@@ -4,7 +4,7 @@ import "../styles/global.css";
 ---
 
 <Layout title="AI Monitor">
-  <div class="space-y-12">
+  <ai-monitor class="block space-y-12">
     <div
       class="flex flex-col md:flex-row items-start md:items-end justify-between gap-6"
     >
@@ -27,13 +27,27 @@ import "../styles/global.css";
           Meta's Llama-4-Scout engine.
         </p>
       </div>
-      <div
-        class="flex items-center gap-4 bg-white/5 border border-white/5 p-2 px-6 rounded-full font-bold text-xs"
-      >
-        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-        <span class="tracking-widest uppercase opacity-70"
-          >Scout Cluster Active</span
+
+      <div class="flex gap-4">
+        <button
+          id="trigger-sync"
+          class="btn-brand !rounded-full py-2 px-6 flex items-center gap-2 group"
         >
+          <div
+            class="i-ph-arrows-clockwise-bold group-active:rotate-180 transition-transform"
+          >
+          </div>
+          Trigger New Sync
+        </button>
+
+        <div
+          class="flex items-center gap-4 bg-white/5 border border-white/5 p-2 px-6 rounded-full font-bold text-xs"
+        >
+          <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+          <span class="tracking-widest uppercase opacity-70"
+            >Scout Cluster Active</span
+          >
+        </div>
       </div>
     </div>
 
@@ -47,69 +61,27 @@ import "../styles/global.css";
               Ingestion Feed
             </h4>
             <div
+              id="last-updated"
               class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-600"
             >
               <div class="i-ph-clock-bold"></div> Updated just now
             </div>
           </div>
 
-          <div class="divide-y divide-white/5">
-            {
-              [
-                {
-                  domain: "api.anthropic.com",
-                  time: "2h ago",
-                  cat: "Proxy",
-                  conf: "98%",
-                },
-                {
-                  domain: "download.docker.com",
-                  time: "5h ago",
-                  cat: "Direct",
-                  conf: "99%",
-                },
-                {
-                  domain: "telemetry.microsoft.com",
-                  time: "8h ago",
-                  cat: "Reject",
-                  conf: "94%",
-                },
-              ].map((item) => (
-                <div class="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
-                  <div class="flex items-center gap-6">
-                    <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-brand-primary/10 transition-colors">
-                      <div class="i-ph-activity-bold text-2xl text-gray-600 group-hover:text-brand-primary" />
-                    </div>
-                    <div>
-                      <div class="font-bold font-mono tracking-tight text-white">
-                        {item.domain}
-                      </div>
-                      <div class="text-[10px] font-black uppercase tracking-widest text-gray-600 mt-1">
-                        Classification Triggered • {item.time}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-6">
-                    <div class="text-right hidden sm:block">
-                      <div class="text-[10px] font-black text-brand-primary uppercase tracking-widest">
-                        {item.cat}
-                      </div>
-                      <div class="text-[10px] text-gray-600 font-bold">
-                        {item.conf} CONFIDENCE
-                      </div>
-                    </div>
-                    <div class="flex gap-2">
-                      <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center cursor-pointer hover:bg-green-500/20 hover:border-green-500/50 transition-all">
-                        <div class="i-ph-check-bold text-green-500" />
-                      </div>
-                      <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center cursor-pointer hover:bg-red-500/20 hover:border-red-500/50 transition-all">
-                        <div class="i-ph-trash-bold text-red-500" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            }
+          <div
+            id="logs-container"
+            class="divide-y divide-white/5 min-h-[400px]"
+          >
+            <!-- Dynamic Logs -->
+            <div class="p-20 text-center opacity-30">
+              <div
+                class="i-ph-circle-notch-bold text-4xl animate-spin mx-auto mb-4"
+              >
+              </div>
+              <p class="font-black uppercase tracking-widest text-[10px]">
+                Loading AI Logs...
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -181,5 +153,99 @@ import "../styles/global.css";
         </div>
       </div>
     </div>
-  </div>
+  </ai-monitor>
 </Layout>
+
+<script>
+  class AiMonitor extends HTMLElement {
+    constructor() {
+      super();
+      this.init();
+    }
+
+    async init() {
+      const triggerBtn = this.querySelector("#trigger-sync");
+      const container = this.querySelector("#logs-container");
+      const lastUpdated = this.querySelector("#last-updated");
+
+      const refreshLogs = async () => {
+        try {
+          const resp = await fetch("/api/ai/logs");
+          const logs = (await resp.json()) as any[];
+
+          if (logs.length === 0) {
+            container!.innerHTML = `
+              <div class="p-20 text-center opacity-50">
+                <div class="i-ph-database-bold text-4xl mx-auto mb-4"></div>
+                <p class="font-black uppercase tracking-widest text-[10px]">No classifications recorded yet.</p>
+              </div>
+            `;
+            return;
+          }
+
+          container!.innerHTML = logs
+            .map(
+              (log: any) => `
+            <div class="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
+              <div class="flex items-center gap-6">
+                <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-brand-primary/10 transition-colors">
+                  <div class="i-ph-activity-bold text-2xl text-gray-600 group-hover:text-brand-primary" />
+                </div>
+                <div>
+                  <div class="font-bold font-mono tracking-tight text-white">${log.domain}</div>
+                  <div class="text-[10px] font-black uppercase tracking-widest text-gray-600 mt-1">
+                    Classification Triggered • ${new Date(log.timestamp).toLocaleTimeString()}
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-6">
+                <div class="text-right hidden sm:block">
+                  <div class="text-[10px] font-black text-brand-primary uppercase tracking-widest">${log.category.toUpperCase()}</div>
+                  <div class="text-[10px] text-gray-600 font-bold">${log.confidence}% CONFIDENCE</div>
+                </div>
+                <div class="flex gap-2 opacity-30 grayscale pointer-events-none">
+                  <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center">
+                    <div class="i-ph-check-bold text-green-500" />
+                  </div>
+                  <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center">
+                    <div class="i-ph-trash-bold text-red-500" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          `,
+            )
+            .join("");
+
+          lastUpdated!.innerHTML = `<div class="i-ph-clock-bold"></div> Updated ${new Date().toLocaleTimeString()}`;
+        } catch (err) {
+          console.error("Failed to fetch AI logs:", err);
+        }
+      };
+
+      triggerBtn?.addEventListener("click", async () => {
+        triggerBtn.setAttribute("disabled", "true");
+        const originalHtml = triggerBtn.innerHTML;
+        triggerBtn.innerHTML = `<div class="i-ph-circle-notch-bold animate-spin"></div> Syncing...`;
+
+        try {
+          await fetch("/api/ai/trigger", { method: "POST" });
+          await new Promise((r) => setTimeout(r, 2000)); // Brief wait for scan to start
+          await refreshLogs();
+        } catch (err) {
+          console.error("Trigger sync failed:", err);
+        } finally {
+          triggerBtn.removeAttribute("disabled");
+          triggerBtn.innerHTML = originalHtml;
+        }
+      });
+
+      // Initial load
+      refreshLogs();
+      // Auto refresh every 30s
+      setInterval(refreshLogs, 30000);
+    }
+  }
+
+  customElements.define("ai-monitor", AiMonitor);
+</script>
