@@ -33,3 +33,6 @@ pnpm-debug.log*
 # Go
 bin/
 main
+
+# Wrangler temp files
+.wrangler/
