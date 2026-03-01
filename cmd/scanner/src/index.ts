@@ -18,7 +18,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 // Enable CORS for the dashboard
 app.use('*', async (c, next) => {
   const corsMiddleware = cors({
-    origin: ['https://dash.ichimarugin728.com', 'http://localhost:4321'],
+    origin: ['https://dash.ichimarugin728.dev', 'http://localhost:4321'],
     allowHeaders: ['X-Gins-Auth', 'Content-Type'],
     allowMethods: ['GET', 'POST', 'OPTIONS'],
     maxAge: 86400,
@@ -133,7 +133,7 @@ app.get('/sub/:file', async (c) => {
 
   const type = fileName.slice(0, dotIdx);
   const ext = fileName.slice(dotIdx + 1);
-  const pagesDomain = c.req.query('domain') ?? 'rules.ichimarugin728.com';
+  const pagesDomain = c.req.query('domain') ?? 'rules.ichimarugin728.dev';
 
   if (!['proxy', 'direct', 'reject', 'ip'].includes(type)) {
     return c.text('Invalid rule category', 400);

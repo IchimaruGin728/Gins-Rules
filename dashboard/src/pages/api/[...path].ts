@@ -93,7 +93,7 @@ app.get('/status', async (c) => {
       body: JSON.stringify({ query: gqlQuery }),
     }).then((r: Response) => r.json()).catch(() => null),
 
-    fetch('https://scanner.ichimarugin728.com/classify?domain=cloudflare.com', {
+    fetch('https://scanner.ichimarugin728.dev/classify?domain=cloudflare.com', {
       headers: { 'X-Gins-Auth': c.env.GINS_INTERNAL_TOKEN },
       signal: AbortSignal.timeout(5000),
     }).then(async (r: Response) => ({

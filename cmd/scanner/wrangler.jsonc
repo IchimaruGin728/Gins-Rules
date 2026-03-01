@@ -6,7 +6,7 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"routes": [
 		{
-			"pattern": "scanner.ichimarugin728.com",
+			"pattern": "scanner.ichimarugin728.dev",
 			"custom_domain": true
 		}
 	],
