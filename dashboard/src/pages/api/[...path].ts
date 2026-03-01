@@ -33,21 +33,36 @@ app.post('/ai/trigger', async (c) => {
 
 app.get('/search', async (c) => {
   const query = c.req.query('q');
-  if (!query) return c.json({ results: [] });
+  if (!query) return c.json({ domains: [], rules: [] });
 
   const db = getDb(c.env.DB);
 
-  const domainResults = await db
-    .select()
-    .from(domains)
-    .where(like(domains.domain, `%${query}%`))
-    .limit(10);
+  // 1. Search local DB
+  const [domainResults, ruleResults] = await Promise.all([
+    db.select().from(domains).where(like(domains.domain, `%${query}%`)).limit(10),
+    db.select().from(rules).where(or(like(rules.name, `%${query}%`), like(rules.category, `%${query}%`))).limit(10)
+  ]);
 
-  const ruleResults = await db
-    .select()
-    .from(rules)
-    .where(or(like(rules.name, `%${query}%`), like(rules.category, `%${query}%`)))
-    .limit(10);
+  // 2. Elite Fallback: If it looks like a domain and no direct match found, trigger AI Scan
+  if (domainResults.length === 0 && 
+      query.includes('.') && 
+      !query.includes(' ') && 
+      query.length > 3) {
+    try {
+      const scannerResp = await fetch(`https://scanner.ichimarugin728.dev/classify?domain=${query}`, {
+        headers: { 'X-Gins-Auth': c.env.GINS_INTERNAL_TOKEN }
+      });
+      if (scannerResp.ok) {
+        const aiResult = (await scannerResp.json()) as { domain: string; category: string };
+        return c.json({ 
+          domains: [{ domain: aiResult.domain, category: aiResult.category, isAiGenerated: true }], 
+          rules: ruleResults 
+        });
+      }
+    } catch (e) {
+      console.error('AI Search fallback failed:', e);
+    }
+  }
 
   return c.json({ domains: domainResults, rules: ruleResults });
 });
