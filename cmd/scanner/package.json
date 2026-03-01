@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
+    "typescript": "^5.9.3",
     "wrangler": "latest"
   },
   "dependencies": {

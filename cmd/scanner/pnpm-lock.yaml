@@ -18,6 +18,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: latest
         version: 4.20260301.1
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       wrangler:
         specifier: latest
         version: 4.69.0(@cloudflare/workers-types@4.20260301.1)
@@ -752,6 +755,11 @@ packages:
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   unbzip2-stream@1.4.3:
     resolution: {integrity: sha512-mlExGW4w71ebDJviH16lQLtZS32VKqsSfk80GCfUlwT/4/hNRFsoscrF/c++9xinkMzECL1uL9DDwXqFWkruPg==}
@@ -1497,6 +1505,8 @@ snapshots:
   through@2.3.8: {}
 
   tslib@2.8.1: {}
+
+  typescript@5.9.3: {}
 
   unbzip2-stream@1.4.3:
     dependencies:
