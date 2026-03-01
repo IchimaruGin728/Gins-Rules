@@ -1,0 +1,6 @@
+slack-edge.com
+slack-files.com
+slack-imgs.com
+slack-msgs.com
+slack.com
+slack.engineering

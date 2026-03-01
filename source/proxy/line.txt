@@ -1,0 +1,15 @@
+line.me
+line-apps.com
+line-scdn.net
+linecorp.com
+line.biz
+lin.ee
+naver.jp
+line.naver.jp
+full:legy.line-apps.com
+full:obs.line-apps.com
+full:scdn.line-apps.com
+full:api.line.me
+full:access.line.me
+full:liff.line.me
+full:media.line.me

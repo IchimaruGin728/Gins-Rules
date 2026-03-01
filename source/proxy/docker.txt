@@ -1,0 +1,14 @@
+docker.com
+docker.io
+dhi.io
+dockerstatus.com
+full:auth.docker.io
+full:auth.docker.com
+full:login.docker.com
+full:hub.docker.com
+full:desktop.docker.com
+full:api.docker.com
+full:api.dso.docker.com
+full:registry-1.docker.io
+full:registry.scout.docker.com
+full:production.cloudflare.docker.com

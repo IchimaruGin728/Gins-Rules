@@ -1,0 +1,6 @@
+zoom.com
+zoom.us
+zoomcdn.com
+zoomgov.com
+zoominfo.com
+full:zoom.cdn.arkoselabs.com

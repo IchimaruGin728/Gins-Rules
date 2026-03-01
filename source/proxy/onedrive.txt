@@ -1,0 +1,11 @@
+1drv.com
+1drv.ms
+admin.onedrive.com
+docs.live.net
+g.live.com
+oneclient.sfx.ms
+onedrive.com
+onedrive.live.com
+skyapi.onedrive.live.com
+skydrive.wearelive.cn
+storage.live.com

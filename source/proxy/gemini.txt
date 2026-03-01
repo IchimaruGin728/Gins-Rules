@@ -1,0 +1,7 @@
+aistudio.google.com
+bard.google.com
+deepmind.com
+deepmind.google
+gemini.google.com
+generativelanguage.googleapis.com
+makersuite.google.com

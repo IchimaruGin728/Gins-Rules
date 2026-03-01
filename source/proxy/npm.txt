@@ -1,0 +1,12 @@
+cocoapods.org
+crates.io
+gradle.org
+jsdelivr.net
+mvnrepository.com
+npmjs.com
+npmjs.org
+packagist.org
+pypi.org
+pythonhosted.org
+rubygems.org
+unpkg.com

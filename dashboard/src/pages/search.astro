@@ -1,0 +1,151 @@
+---
+import Layout from '../components/Layout.tsx';
+import '../styles/global.css';
+---
+
+<Layout title="Domain Search">
+  <div class="space-y-12 max-w-4xl mx-auto">
+    <div class="space-y-4 text-center">
+      <h2 class="text-5xl font-black font-outfit tracking-tighter">
+        Domain <span class="text-gradient">Discovery</span>
+      </h2>
+      <p class="text-gray-500 font-medium max-w-xl mx-auto">
+        Search the global infrastructure to identify rule classifications for
+        any domain.
+      </p>
+    </div>
+
+    <search-component class="space-y-12">
+      <div
+        class="glass-panel !p-2 !rounded-full flex items-center bg-white/5 border-white/5 group hover:border-brand-primary/30 transition-all duration-500 max-w-3xl mx-auto"
+      >
+        <div
+          class="pl-6 pr-3 text-gray-500 group-focus-within:text-brand-primary transition-colors"
+        >
+          <div class="i-ph-magnifying-glass-bold text-xl"></div>
+        </div>
+        <input
+          id="search-input"
+          type="text"
+          placeholder="e.g. apple.com"
+          class="flex-1 bg-transparent border-none py-4 text-lg font-medium placeholder:text-gray-600 focus:outline-none text-white tracking-tight"
+        />
+        <button id="search-btn" class="btn-brand !rounded-full py-3 px-8 mx-1">
+          Search
+        </button>
+      </div>
+
+      <div id="results" class="pt-8 min-h-[400px]">
+        <div
+          class="flex flex-col items-center justify-center text-gray-600 gap-4 opacity-50"
+        >
+          <div class="i-ph-file-search-bold text-6xl"></div>
+          <p class="font-outfit font-bold uppercase tracking-[0.2em] text-xs">
+            Ready for input
+          </p>
+        </div>
+      </div>
+    </search-component>
+  </div>
+</Layout>
+
+<script>
+  class SearchComponent extends HTMLElement {
+    constructor() {
+      super();
+      const input = this.querySelector("#search-input") as HTMLInputElement;
+      const btn = this.querySelector("#search-btn");
+      const results = this.querySelector("#results");
+
+      const handleSearch = async () => {
+        const query = input.value.trim();
+        if (!query) return;
+
+        results!.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-20 gap-4">
+            <div class="w-12 h-12 rounded-full border-2 border-brand-primary/20 border-t-brand-primary animate-spin" />
+            <p class="font-outfit font-bold uppercase tracking-[0.2em] text-[10px] text-brand-primary animate-pulse">Scanning DB-1 Cloud...</p>
+          </div>
+        `;
+
+        try {
+          const resp = await fetch(
+            `/api/search?q=${encodeURIComponent(query)}`,
+          );
+          const data: any = await resp.json();
+
+          if (data.domains.length === 0 && data.rules.length === 0) {
+            results!.innerHTML = `
+              <div class="glass-panel text-center py-16 opacity-60">
+                <div class="i-ph-ghost-bold text-4xl mx-auto mb-4 text-gray-500" />
+                <p class="font-outfit font-bold uppercase tracking-widest text-xs italic">No matching records found.</p>
+              </div>
+            `;
+            return;
+          }
+
+          let html = '<div class="grid grid-cols-1 lg:grid-cols-2 gap-12">';
+
+          if (data.domains.length > 0) {
+            html += '<div class="space-y-6">';
+            html +=
+              '<h4 class="text-[10px] font-black uppercase text-gray-500 tracking-[0.3em] pl-2 border-l-2 border-brand-primary">Direct Matches</h4>';
+            html +=
+              '<div class="grid gap-4">' +
+              data.domains
+                .map(
+                  (d: any) => `
+              <div class="glass-panel !p-5 flex items-center justify-between group hover:scale-[1.02] duration-500 bg-white/[0.03]">
+                <span class="font-mono text-white group-hover:text-brand-primary transition-colors">${d.domain}</span>
+                <span class="text-[10px] bg-white/5 px-3 py-1 rounded-full text-gray-400 font-bold border border-white/5 uppercase tracking-widest">${d.category || "PENDING"}</span>
+              </div>
+            `,
+                )
+                .join("") +
+              "</div></div>";
+          }
+
+          if (data.rules.length > 0) {
+            html += '<div class="space-y-6">';
+            html +=
+              '<h4 class="text-[10px] font-black uppercase text-gray-500 tracking-[0.3em] pl-2 border-l-2 border-brand-primary">Module Groups</h4>';
+            html +=
+              '<div class="grid gap-4">' +
+              data.rules
+                .map(
+                  (r: any) => `
+              <div class="glass-panel !p-5 flex items-center justify-between hover:scale-[1.02] duration-500 bg-white/[0.03] border-white/10">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-brand-primary">
+                    <div class="i-ph-folder-simple-user-bold text-xl" />
+                  </div>
+                  <span class="font-bold font-outfit text-lg tracking-tight">${r.name}</span>
+                </div>
+                <div class="text-right">
+                  <div class="text-[10px] font-black text-brand-primary uppercase tracking-widest">${r.category}</div>
+                  <div class="text-[10px] text-gray-500 font-medium">${r.ruleCount} Entries</div>
+                </div>
+              </div>
+            `,
+                )
+                .join("") +
+              "</div></div>";
+          }
+
+          html += "</div>";
+          results!.innerHTML = html;
+        } catch (err) {
+          results!.innerHTML =
+            '<div class="glass-panel !bg-red-500/10 !border-red-500/30 text-center py-10 font-bold text-red-400">EDGE ENGINE OFFLINE</div>';
+        }
+      };
+
+      btn?.addEventListener("click", handleSearch);
+      input?.addEventListener(
+        "keypress",
+        (e) => e.key === "Enter" && handleSearch(),
+      );
+    }
+  }
+  customElements.define("search-component", SearchComponent);
+</script>

@@ -1,0 +1,15 @@
+amazon.com
+amazon.co.jp
+amazon.co.uk
+amazon.de
+amazon.fr
+amazon.in
+amazon.ca
+amazonaws.com
+aws.amazon.com
+aws.dev
+awsstatic.com
+cloudfront.net
+elasticbeanstalk.com
+s3.amazonaws.com
+full:signin.aws.amazon.com

@@ -1,0 +1,5 @@
+braintree-api.com
+braintreegateway.com
+paypal.com
+paypal.me
+paypalobjects.com

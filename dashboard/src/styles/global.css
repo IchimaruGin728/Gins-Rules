@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap');
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+  background-color: #050505;
+  color: white;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  font-optical-sizing: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Outfit", sans-serif;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+}
+
+::selection {
+	background-color: rgba(192, 132, 252, 0.3);
+}
+
+/* Safari-specific backdrop filter support */
+.glass-panel, .nav-pill {
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Background Gradients from Blog */
+.bg-glow {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: radial-gradient(circle at top right, rgba(88, 28, 135, 0.15), transparent 40%),
+              radial-gradient(circle at bottom left, rgba(192, 132, 252, 0.1), transparent 40%);
+  pointer-events: none;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Input reset for Safari compatibility */
+input[type="text"], button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Typography refinements */
+.font-outfit { font-family: ui-sans-serif, system-ui, -apple-system, "Outfit", sans-serif; }
+.tracking-tight-titles { letter-spacing: -0.05em; }

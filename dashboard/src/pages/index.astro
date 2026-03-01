@@ -1,0 +1,142 @@
+---
+import Layout from '../components/Layout.tsx';
+import '../styles/global.css';
+---
+
+<Layout title="Home">
+  <div class="space-y-24">
+    <!-- Hero Section -->
+    <section class="max-w-4xl mx-auto text-center space-y-8 py-12">
+      <div
+        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 animate-fade-in-up"
+      >
+        <div class="i-ph-lightning-fill text-brand-primary"></div> Automated Cloudflare
+        Infra
+      </div>
+
+      <h2
+        class="text-6xl md:text-8xl font-extrabold font-outfit tracking-tighter leading-[0.9] animate-fade-in-up"
+        style="animation-delay: 0.1s"
+      >
+        Rule <span
+          class="text-gradient underline decoration-white/10 underline-offset-8"
+          >Infrastructure</span
+        >
+        <br />
+        at the Edge.
+      </h2>
+
+      <p
+        class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto font-medium animate-fade-in-up"
+        style="animation-delay: 0.2s"
+      >
+        Official documentation crawlers, Llama-4 powered classification, and
+        high-performance global distribution.
+      </p>
+
+      <div
+        class="flex flex-wrap justify-center gap-6 pt-4 animate-fade-in-up"
+        style="animation-delay: 0.3s"
+      >
+        <a href="/search" class="btn-brand">
+          <div class="i-ph-magnifying-glass-bold inline-block mr-2"></div> Search
+          Domains
+        </a>
+        <a
+          href="https://github.com/IchimaruGin/Gins-Rules"
+          class="glass-panel !py-2 !px-8 flex items-center gap-2 hover:bg-white/10 hover:border-white/30 !rounded-full text-sm font-bold tracking-wide"
+        >
+          <div class="i-ph-github-logo-bold text-xl"></div> Explorer
+        </a>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <div class="glass-panel group hover:scale-[1.02] duration-500">
+        <div
+          class="p-4 bg-white/5 rounded-2xl mb-4 w-14 h-14 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary/10 transition-colors"
+        >
+          <div class="i-ph-files-bold text-3xl"></div>
+        </div>
+        <div class="text-4xl font-black font-outfit tracking-tighter">86</div>
+        <div
+          class="text-gray-500 text-sm font-bold uppercase tracking-widest mt-1"
+        >
+          Verified Services
+        </div>
+      </div>
+
+      <div class="glass-panel group hover:scale-[1.02] duration-500">
+        <div
+          class="p-4 bg-white/5 rounded-2xl mb-4 w-14 h-14 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary/10 transition-colors"
+        >
+          <div class="i-ph-shield-check-bold text-3xl"></div>
+        </div>
+        <div class="text-4xl font-black font-outfit tracking-tighter">
+          1,238
+        </div>
+        <div
+          class="text-gray-500 text-sm font-bold uppercase tracking-widest mt-1"
+        >
+          Active Rules
+        </div>
+      </div>
+
+      <div class="glass-panel group hover:scale-[1.02] duration-500">
+        <div
+          class="p-4 bg-white/5 rounded-2xl mb-4 w-14 h-14 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary/10 transition-colors"
+        >
+          <div class="i-ph-globe-bold text-3xl"></div>
+        </div>
+        <div class="text-4xl font-black font-outfit tracking-tighter">5</div>
+        <div
+          class="text-gray-500 text-sm font-bold uppercase tracking-widest mt-1"
+        >
+          Dist. Formats
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Subs -->
+    <section class="max-w-6xl mx-auto space-y-12">
+      <div class="flex items-end justify-between border-b border-white/5 pb-6">
+        <div class="space-y-2">
+          <h3 class="text-3xl font-black font-outfit tracking-tight">
+            Standard Subscriptions
+          </h3>
+          <p class="text-gray-500 font-medium">
+            Auto-merged rules distributed via Cloudflare CDN.
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <div class="w-2 h-2 rounded-full bg-brand-primary animate-pulse">
+          </div>
+          <div class="w-2 h-2 rounded-full bg-brand-primary/40"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {
+          ["Proxy", "Direct", "Reject", "IP"].map((cat) => (
+            <div class="glass-panel group overflow-hidden border-white/5 hover:border-brand-primary/30 transition-all cursor-pointer relative">
+              <div class="absolute -right-4 -top-4 text-white/5 font-black text-8xl transition-all group-hover:text-brand-primary/5 select-none">
+                {cat[0]}
+              </div>
+              <div class="relative z-10 space-y-4">
+                <span class="text-xl font-black font-outfit">{cat} Group</span>
+                <div class="bg-black/40 rounded-xl p-3 border border-white/5 font-mono text-[11px] text-brand-primary/80 overflow-hidden">
+                  /sub/{cat.toLowerCase()}.list
+                </div>
+                <div class="flex items-center text-[10px] font-black uppercase tracking-widest text-gray-500 gap-2">
+                  <div class="i-ph-copy-simple-bold text-sm" /> Click to Copy
+                  URL
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+</Layout>

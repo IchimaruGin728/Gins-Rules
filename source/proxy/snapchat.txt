@@ -1,0 +1,7 @@
+sc-cdn.net
+sc-jpl.com
+sc-prod.net
+sc-static.net
+snap.com
+snapchat.com
+snapkit.co

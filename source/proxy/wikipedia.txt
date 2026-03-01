@@ -1,0 +1,7 @@
+mediawiki.org
+wikibooks.org
+wikimedia.org
+wikipedia.org
+wikisource.org
+wikiwand.com
+wiktionary.org

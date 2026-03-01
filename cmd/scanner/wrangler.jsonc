@@ -1,0 +1,30 @@
+{
+	"$schema": "https://unpkg.com/wrangler/config-schema.json",
+	"name": "gins-rules-scanner",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-03-01",
+	"browser": {
+		"binding": "MYBROWSER"
+	},
+	"ai": {
+		"binding": "AI"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "RULES_KV",
+			"id": "<CF_KV_NAMESPACE_ID>" // Replace with your KV namespace ID
+		}
+	],
+	"vars": {
+		"GITHUB_USER": "ichimarugin728",
+		"GITHUB_REPO": "Gins-Rules"
+	},
+	"triggers": {
+		"crons": [
+			"0 3 * * *"
+		]
+	},
+	"observability": {
+		"enabled": true
+	}
+}

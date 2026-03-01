@@ -1,0 +1,7 @@
+anthropic.com
+claude.ai
+claude.site
+full:console.anthropic.com
+full:api.anthropic.com
+full:docs.anthropic.com
+full:status.anthropic.com

@@ -1,0 +1,12 @@
+apnews.com
+bbc.co.uk
+bbc.com
+bloomberg.com
+cnn.com
+economist.com
+ft.com
+nytimes.com
+reuters.com
+theguardian.com
+washingtonpost.com
+wsj.com

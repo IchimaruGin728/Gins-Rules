@@ -1,0 +1,5 @@
+copilot-proxy.githubusercontent.com
+copilot-telemetry.githubusercontent.com
+copilot.github.com
+default.exp-tas.com
+githubcopilot.com

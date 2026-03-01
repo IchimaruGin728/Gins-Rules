@@ -1,0 +1,15 @@
+75cdn.cn
+bootcdn.cn
+bspapp.com
+cdn.bootcdn.net
+cdn.bootcss.com
+cdn.npmmirror.com
+npmmirror.com
+qbox.me
+qiniu.com
+qiniucdn.com
+qiniudn.com
+registry.npmmirror.com
+staticfile.org
+ucloud.cn
+upyun.com

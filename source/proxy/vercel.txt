@@ -1,0 +1,4 @@
+netlify.app
+netlify.com
+vercel.app
+vercel.com

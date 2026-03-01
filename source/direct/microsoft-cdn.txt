@@ -1,0 +1,16 @@
+activation.sls.microsoft.com
+adl.windows.com
+crl.microsoft.com
+download.microsoft.com
+go.microsoft.com
+microsoft.akadns.net
+office15client.microsoft.com
+officecdn.microsoft.com
+officecdn.microsoft.com.edgesuite.net
+officeclient.microsoft.com
+otelrules.azureedge.net
+update.microsoft.com
+windows.com
+windows.net
+windowsupdate.com
+wns.windows.com

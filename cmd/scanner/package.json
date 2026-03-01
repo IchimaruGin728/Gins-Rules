@@ -1,0 +1,13 @@
+{
+  "name": "gins-rules-scanner",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "wrangler": "latest"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "latest",
+    "hono": "latest"
+  }
+}
