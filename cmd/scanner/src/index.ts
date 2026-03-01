@@ -1,5 +1,6 @@
 /// <reference types="@cloudflare/workers-types" />
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import puppeteer from '@cloudflare/puppeteer';
 
 type Bindings = {
@@ -9,9 +10,34 @@ type Bindings = {
   GITHUB_TOKEN: string;
   GITHUB_USER: string;
   GITHUB_REPO: string;
+  GINS_INTERNAL_TOKEN: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
+
+// Enable CORS for the dashboard
+app.use('*', async (c, next) => {
+  const corsMiddleware = cors({
+    origin: ['https://dash.ichimarugin728.com', 'http://localhost:4321'],
+    allowHeaders: ['X-Gins-Auth', 'Content-Type'],
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    maxAge: 86400,
+  });
+  return corsMiddleware(c, next);
+});
+
+// Internal Auth Middleware for /scan and /classify
+app.use('/scan', async (c, next) => {
+  const auth = c.req.header('X-Gins-Auth');
+  if (auth !== c.env.GINS_INTERNAL_TOKEN) return c.text('Unauthorized', 401);
+  await next();
+});
+
+app.use('/classify', async (c, next) => {
+  const auth = c.req.header('X-Gins-Auth');
+  if (auth !== c.env.GINS_INTERNAL_TOKEN) return c.text('Unauthorized', 401);
+  await next();
+});
 
 
 async function classifyDomain(env: Bindings, domain: string): Promise<string> {
@@ -107,7 +133,7 @@ app.get('/sub/:file', async (c) => {
 
   const type = fileName.slice(0, dotIdx);
   const ext = fileName.slice(dotIdx + 1);
-  const pagesDomain = c.req.query('domain') ?? 'rules.ichimarugin.com';
+  const pagesDomain = c.req.query('domain') ?? 'rules.ichimarugin728.com';
 
   if (!['proxy', 'direct', 'reject', 'ip'].includes(type)) {
     return c.text('Invalid rule category', 400);

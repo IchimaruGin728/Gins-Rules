@@ -8,6 +8,7 @@ type Env = {
   DB: D1Database;
   CF_API_TOKEN: string;
   CF_ACCOUNT_ID: string;
+  GINS_INTERNAL_TOKEN: string;
 };
 
 const app = new Hono<{ Bindings: Env }>().basePath('/api');
@@ -92,7 +93,8 @@ app.get('/status', async (c) => {
       body: JSON.stringify({ query: gqlQuery }),
     }).then((r: Response) => r.json()).catch(() => null),
 
-    fetch('https://gins-rules-scanner.ichimarugin728.workers.dev/classify?domain=cloudflare.com', {
+    fetch('https://scanner.ichimarugin728.com/classify?domain=cloudflare.com', {
+      headers: { 'X-Gins-Auth': c.env.GINS_INTERNAL_TOKEN },
       signal: AbortSignal.timeout(5000),
     }).then(async (r: Response) => ({
       ok: r.ok,

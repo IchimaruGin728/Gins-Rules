@@ -4,6 +4,12 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-03-01",
 	"compatibility_flags": ["nodejs_compat"],
+	"routes": [
+		{
+			"pattern": "scanner.ichimarugin728.com",
+			"custom_domain": true
+		}
+	],
 	"browser": {
 		"binding": "MYBROWSER"
 	},
