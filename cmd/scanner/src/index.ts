@@ -191,14 +191,25 @@ app.get('/sub/:file', async (c) => {
 export default {
   async scheduled(_event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
     ctx.waitUntil(
-      crawlOfficialDocs(env).then(async (results) => {
-        const oldData = await env.RULES_KV.get('last_scan_result');
-        const newData = JSON.stringify(results);
-        if (newData !== oldData) {
-          await env.RULES_KV.put('last_scan_result', newData);
-          await triggerGitHub(env);
-        }
-      }),
+      Promise.all([
+        crawlOfficialDocs(env).then(async (results) => {
+          const oldData = await env.RULES_KV.get('last_scan_result');
+          const newData = JSON.stringify(results);
+          if (newData !== oldData) {
+            await env.RULES_KV.put('last_scan_result', newData);
+            await triggerGitHub(env);
+          }
+        }),
+        // Clean up old AI logs: Keep only the most recent 1000
+        env.DB.prepare(`
+          DELETE FROM classifications 
+          WHERE id NOT IN (
+            SELECT id FROM classifications 
+            ORDER BY timestamp DESC 
+            LIMIT 1000
+          )
+        `).run().catch(e => console.error('Retention cleanup failed:', e))
+      ])
     );
   },
   fetch: app.fetch,
