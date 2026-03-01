@@ -79,29 +79,58 @@ Response format: Output EXACTLY one word from the categories above.`;
 
 
 async function crawlOfficialDocs(env: Bindings): Promise<Record<string, string[]>> {
-  const browser = await puppeteer.launch(env.MYBROWSER);
+  const targetUrl = 'https://docs.docker.com/desktop/setup/allow-list/';
+  const domains: Set<string> = new Set();
+
   try {
-    const page = await browser.newPage();
-    page.setDefaultNavigationTimeout(30_000); // 30s timeout
+    // Phase 1: High-Speed Fetch + HTMLRewriter (Streaming Parse)
+    const response = await fetch(targetUrl);
+    if (response.ok) {
+      await new HTMLRewriter()
+        .on('a[href]', {
+          element(el) {
+            const href = el.getAttribute('href');
+            if (href?.startsWith('https://')) {
+              const domain = new URL(href).hostname;
+              if (domain && domain.includes('.')) domains.add(domain);
+            }
+          },
+        })
+        .on('code', {
+          text(text) {
+            const content = text.text.trim();
+            if (content.match(/^[a-z0-9.-]+\.[a-z]{2,}$/i)) {
+              domains.add(content);
+            }
+          }
+        })
+        .transform(response)
+        .arrayBuffer();
+    }
 
+    // Phase 2: Puppeteer Fallback (Only if Phase 1 found nothing)
+    if (domains.size === 0) {
+      console.log('Hybrid Scraper: Static parse yielded 0 results, falling back to Puppeteer...');
+      const browser = await puppeteer.launch(env.MYBROWSER);
+      try {
+        const page = await browser.newPage();
+        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        const dynamicDomains = (await page.evaluate(`
+          Array.from(document.querySelectorAll('a'))
+            .map(a => a.innerText)
+            .filter(text => text.startsWith('https://'))
+            .map(url => url.replace('https://', ''))
+        `)) as string[];
+        dynamicDomains.forEach(d => domains.add(d));
+      } finally {
+        await browser.close();
+      }
+    }
 
-    await page.goto('https://docs.docker.com/desktop/setup/allow-list/', {
-      waitUntil: 'domcontentloaded',
-    });
-    const dockerDomains = (await page.evaluate(`
-      Array.from(document.querySelectorAll('a'))
-        .map(a => a.innerText)
-        .filter(text => text.startsWith('https://'))
-        .map(url => url.replace('https://', ''))
-        .filter((v, i, arr) => arr.indexOf(v) === i)
-    `)) as string[];
-
-    return { docker: dockerDomains };
+    return { docker: Array.from(domains) };
   } catch (err) {
-    console.error('Crawling failed:', err);
+    console.error('Hybrid crawling failed:', err);
     return { docker: [] };
-  } finally {
-    await browser.close();
   }
 }
 
