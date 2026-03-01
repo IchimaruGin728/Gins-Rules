@@ -16,6 +16,10 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+// Root and Health Check
+app.get('/', (c) => c.text('Gins Rules Scanner - Operational', 200));
+app.get('/health', (c) => c.json({ status: 'ok', timestamp: Date.now() }));
+
 // Enable CORS for the dashboard
 app.use('*', async (c, next) => {
   const corsMiddleware = cors({
