@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "gins-rules-db",
-      "database_id": "REPLACE_WITH_ACTUAL_ID",
+      "database_id": "250676c5-78f0-49e6-a9c8-cec4a012e14e",
       "migrations_dir": "./migrations"
     }
   ]
