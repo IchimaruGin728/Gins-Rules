@@ -78,60 +78,73 @@ Response format: Output EXACTLY one word from the categories above.`;
 }
 
 
-async function crawlOfficialDocs(env: Bindings): Promise<Record<string, string[]>> {
-  const targetUrl = 'https://docs.docker.com/desktop/setup/allow-list/';
+async function crawlTarget(env: Bindings, target: { name: string; url: string; type: string }): Promise<string[]> {
   const domains: Set<string> = new Set();
+  console.log(`Processing target [${target.name}] (${target.type}): ${target.url}`);
 
   try {
-    // Phase 1: High-Speed Fetch + HTMLRewriter (Streaming Parse)
-    const response = await fetch(targetUrl);
-    if (response.ok) {
-      await new HTMLRewriter()
-        .on('a[href]', {
-          element(el) {
-            const href = el.getAttribute('href');
-            if (href?.startsWith('https://')) {
-              const domain = new URL(href).hostname;
-              if (domain && domain.includes('.')) domains.add(domain);
+    if (target.type === 'json') {
+      // Logic for Official Vendor JSONs (AWS, Azure, etc.)
+      const resp = await fetch(target.url);
+      if (resp.ok) {
+        const data = await resp.json() as any;
+        const text = JSON.stringify(data);
+        // Robust regex for finding domains in unknown JSON structures
+        const matches = text.match(/[a-z0-9.-]+\.(?:com|net|org|io|gov|edu|ai|co|dev|me)\b/gi);
+        matches?.forEach(d => domains.add(d.toLowerCase()));
+      }
+    } else {
+      // Phase 1: High-Speed Fetch + HTMLRewriter
+      const response = await fetch(target.url);
+      if (response.ok) {
+        await new HTMLRewriter()
+          .on('a[href]', {
+            element(el) {
+              const href = el.getAttribute('href');
+              if (href?.startsWith('https://')) {
+                try {
+                  const domain = new URL(href).hostname;
+                  if (domain && domain.includes('.')) domains.add(domain.toLowerCase());
+                } catch {}
+              }
+            },
+          })
+          .on('code', {
+            text(text) {
+              const content = text.text.trim();
+              if (content.match(/^[a-z0-9.-]+\.[a-z]{2,}$/i)) {
+                domains.add(content.toLowerCase());
+              }
             }
-          },
-        })
-        .on('code', {
-          text(text) {
-            const content = text.text.trim();
-            if (content.match(/^[a-z0-9.-]+\.[a-z]{2,}$/i)) {
-              domains.add(content);
-            }
-          }
-        })
-        .transform(response)
-        .arrayBuffer();
-    }
+          })
+          .transform(response)
+          .arrayBuffer();
+      }
 
-    // Phase 2: Puppeteer Fallback (Only if Phase 1 found nothing)
-    if (domains.size === 0) {
-      console.log('Hybrid Scraper: Static parse yielded 0 results, falling back to Puppeteer...');
-      const browser = await puppeteer.launch(env.MYBROWSER);
-      try {
-        const page = await browser.newPage();
-        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        const dynamicDomains = (await page.evaluate(`
-          Array.from(document.querySelectorAll('a'))
-            .map(a => a.innerText)
-            .filter(text => text.startsWith('https://'))
-            .map(url => url.replace('https://', ''))
-        `)) as string[];
-        dynamicDomains.forEach(d => domains.add(d));
-      } finally {
-        await browser.close();
+      // Phase 2: Puppeteer Fallback (Only for HTML type)
+      if (domains.size === 0) {
+        console.log(`Fallback to Puppeteer for ${target.name}`);
+        const browser = await puppeteer.launch(env.MYBROWSER);
+        try {
+          const page = await browser.newPage();
+          await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+          const dynamicDomains = (await page.evaluate(`
+            Array.from(document.querySelectorAll('a'))
+              .map(a => a.innerText)
+              .filter(text => text.startsWith('https://'))
+              .map(url => url.replace('https://', ''))
+          `)) as string[];
+          dynamicDomains.forEach(d => domains.add(d.toLowerCase()));
+        } finally {
+          await browser.close();
+        }
       }
     }
-
-    return { docker: Array.from(domains) };
   } catch (err) {
-    console.error('Hybrid crawling failed:', err);
-    return { docker: [] };
+    console.error(`Target [${target.name}] failed:`, err);
   }
+
+  return Array.from(domains);
 }
 
 
@@ -150,17 +163,37 @@ async function triggerGitHub(env: Bindings): Promise<boolean> {
 }
 
 app.get('/scan', async (c) => {
-  const results = await crawlOfficialDocs(c.env);
+  // 1. Fetch enabled targets from D1
+  const targetsRaw = await c.env.DB.prepare('SELECT * FROM scrape_targets WHERE enabled = 1').all();
+  const targets = targetsRaw.results as unknown as any[];
+  
+  if (targets.length === 0) {
+    return c.json({ status: 'no_targets', message: 'No enabled scrape targets in D1' });
+  }
+
+  // 2. Process all targets
+  const allDomains: Record<string, string[]> = {};
+  for (const t of targets) {
+    const found = await crawlTarget(c.env, t);
+    if (found.length > 0) {
+      allDomains[t.name.toLowerCase().replace(/\s+/g, '_')] = found;
+      // Update last_run
+      await c.env.DB.prepare('UPDATE scrape_targets SET last_run = ? WHERE id = ?')
+        .bind(Date.now(), t.id).run();
+    }
+  }
+
+  // 3. Compare and Trigger
   const oldData = await c.env.RULES_KV.get('last_scan_result');
-  const newData = JSON.stringify(results);
+  const newData = JSON.stringify(allDomains);
 
   if (newData !== oldData) {
     await c.env.RULES_KV.put('last_scan_result', newData);
     const success = await triggerGitHub(c.env);
-    return c.json({ status: 'changed', triggered: success, data: results });
+    return c.json({ status: 'changed', triggered: success, targets_processed: targets.length });
   }
 
-  return c.json({ status: 'no_change' });
+  return c.json({ status: 'no_change', targets_processed: targets.length });
 });
 
 app.get('/classify', async (c) => {
@@ -225,14 +258,28 @@ export default {
   async scheduled(_event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
     ctx.waitUntil(
       Promise.all([
-        crawlOfficialDocs(env).then(async (results) => {
+        (async () => {
+          const targetsRaw = await env.DB.prepare('SELECT * FROM scrape_targets WHERE enabled = 1').all();
+          const targets = targetsRaw.results as unknown as any[];
+          if (targets.length === 0) return;
+
+          const allDomains: Record<string, string[]> = {};
+          for (const t of targets) {
+            const found = await crawlTarget(env, t);
+            if (found.length > 0) {
+              allDomains[t.name.toLowerCase().replace(/\s+/g, '_')] = found;
+              await env.DB.prepare('UPDATE scrape_targets SET last_run = ? WHERE id = ?')
+                .bind(Date.now(), t.id).run();
+            }
+          }
+
           const oldData = await env.RULES_KV.get('last_scan_result');
-          const newData = JSON.stringify(results);
+          const newData = JSON.stringify(allDomains);
           if (newData !== oldData) {
             await env.RULES_KV.put('last_scan_result', newData);
             await triggerGitHub(env);
           }
-        }),
+        })(),
         // Clean up old AI logs: Keep only the most recent 1000
         env.DB.prepare(`
           DELETE FROM classifications 

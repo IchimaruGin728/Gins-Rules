@@ -42,6 +42,12 @@ export default function Layout({ children, title, activePath }: Props) {
               <div class="i-ph-sparkle-bold" /> AI Monitor
             </a>
             <a
+              href="/targets"
+              class={`hover:text-white transition-colors duration-300 flex items-center gap-1.5 ${activePath === "/targets" ? "text-white font-bold" : ""}`}
+            >
+              <div class="i-ph-target-bold" /> Targets
+            </a>
+            <a
               href="/status"
               class={`hover:text-white transition-colors duration-300 flex items-center gap-1.5 ${activePath === "/status" ? "text-white font-bold" : ""}`}
             >

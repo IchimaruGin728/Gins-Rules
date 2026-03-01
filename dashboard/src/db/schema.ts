@@ -25,3 +25,13 @@ export const classifications = sqliteTable('classifications', {
   timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
   status: text('status').notNull().default('completed'), // completed, pending, failed
 });
+
+export const scrapeTargets = sqliteTable('scrape_targets', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  type: text('type').notNull().default('html'), // html, json
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  lastRun: integer('last_run', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});

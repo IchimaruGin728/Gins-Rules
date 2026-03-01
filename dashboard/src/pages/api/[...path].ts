@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { desc, like, or } from 'drizzle-orm';
+import { desc, like, or, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { getDb } from '../../db';
-import { classifications, domains, rules } from '../../db/schema';
+import { classifications, domains, rules, scrapeTargets } from '../../db/schema';
 
 type Env = {
   DB: D1Database;
@@ -72,6 +72,41 @@ app.get('/stats', async (c) => {
   const allRules = await db.select().from(rules);
   const totalRulesCount = allRules.reduce((acc, r) => acc + r.ruleCount, 0);
   return c.json({ serviceCount: allRules.length, ruleCount: totalRulesCount, formats: 5 });
+});
+
+// Target Management API
+app.get('/targets', async (c) => {
+  const db = getDb(c.env.DB);
+  const targets = await db.select().from(scrapeTargets);
+  return c.json(targets);
+});
+
+app.post('/targets', async (c) => {
+  const { name, url, type } = await c.req.json();
+  const db = getDb(c.env.DB);
+  const result = await db.insert(scrapeTargets).values({
+    name,
+    url,
+    type: type || 'html',
+    createdAt: new Date(),
+    enabled: true
+  }).returning();
+  return c.json(result[0]);
+});
+
+app.put('/targets/:id', async (c) => {
+  const id = parseInt(c.req.param('id'));
+  const { enabled } = await c.req.json();
+  const db = getDb(c.env.DB);
+  await db.update(scrapeTargets).set({ enabled }).where(eq(scrapeTargets.id, id));
+  return c.json({ ok: true });
+});
+
+app.delete('/targets/:id', async (c) => {
+  const id = parseInt(c.req.param('id'));
+  const db = getDb(c.env.DB);
+  await db.delete(scrapeTargets).where(eq(scrapeTargets.id, id));
+  return c.json({ ok: true });
 });
 
 app.get('/status', async (c) => {

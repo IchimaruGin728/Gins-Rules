@@ -1,0 +1,241 @@
+---
+import Layout from "../components/Layout";
+import "../styles/global.css";
+---
+
+<Layout title="Scraper Targets" activePath="/targets">
+  <targets-manager class="block space-y-12">
+    <div
+      class="flex flex-col md:flex-row items-start md:items-end justify-between gap-6"
+    >
+      <div class="space-y-3">
+        <div class="flex items-center gap-2">
+          <div class="i-ph-target-fill text-2xl text-gradient"></div>
+          <span
+            class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500"
+            >Source Configuration</span
+          >
+        </div>
+        <h2 class="text-5xl font-black font-outfit tracking-tighter">
+          Scraper <span class="text-gradient">Targets</span>
+        </h2>
+        <p class="text-gray-500 font-medium max-w-xl">
+          Manage the data sources for your ruleset. Add documentation URLs or
+          vendor JSON endpoints to automate rules.
+        </p>
+      </div>
+
+      <button
+        id="add-target-btn"
+        class="btn-brand !rounded-full py-2 px-8 flex items-center gap-2 group"
+      >
+        <div class="i-ph-plus-bold transition-transform group-hover:rotate-90">
+        </div>
+        Add New Source
+      </button>
+    </div>
+
+    <div
+      id="targets-list"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
+      <!-- Dynamic Targets -->
+      <div class="col-span-full py-20 text-center opacity-30">
+        <div class="i-ph-circle-notch-bold text-4xl animate-spin mx-auto mb-4">
+        </div>
+        <p class="font-black uppercase tracking-widest text-[10px]">
+          Loading Sources...
+        </p>
+      </div>
+    </div>
+
+    <!-- Add Target Modal -->
+    <div
+      id="add-modal"
+      class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm hidden"
+    >
+      <div class="glass-panel max-w-lg w-full scale-in animate-scale-up">
+        <div class="flex justify-between items-center mb-8">
+          <h3 class="text-2xl font-black font-outfit tracking-tight">
+            New Source
+          </h3>
+          <button
+            id="close-modal"
+            class="text-gray-500 hover:text-white transition-colors"
+          >
+            <div class="i-ph-x-bold text-xl"></div>
+          </button>
+        </div>
+
+        <form id="target-form" class="space-y-6">
+          <div class="space-y-2">
+            <label
+              class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1"
+              >Source Name</label
+            >
+            <input
+              type="text"
+              name="name"
+              required
+              placeholder="e.g. AWS Public IP Ranges"
+              class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-brand-primary/50 transition-colors"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label
+              class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1"
+              >Endpoint URL</label
+            >
+            <input
+              type="url"
+              name="url"
+              required
+              placeholder="https://..."
+              class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-brand-primary/50 transition-colors"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label
+              class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1"
+              >Source Type</label
+            >
+            <select
+              name="type"
+              class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-brand-primary/50 transition-colors appearance-none"
+            >
+              <option value="html" class="bg-[#0a0a0c]"
+                >HTML (Docs/Webpages)</option
+              >
+              <option value="json" class="bg-[#0a0a0c]"
+                >JSON (Official Vendor Lists)</option
+              >
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full btn-brand !rounded-full py-3 font-bold mt-4"
+          >
+            Initialize Source
+          </button>
+        </form>
+      </div>
+    </div>
+  </targets-manager>
+</Layout>
+
+<script>
+  class TargetsManager extends HTMLElement {
+    constructor() {
+      super();
+      this.init();
+    }
+
+    async init() {
+      const list = this.querySelector("#targets-list");
+      const modal = this.querySelector("#add-modal");
+      const addBtn = this.querySelector("#add-target-btn");
+      const closeBtn = this.querySelector("#close-modal");
+      const form = this.querySelector("#target-form") as HTMLFormElement;
+
+      const refresh = async () => {
+        const resp = await fetch("/api/targets");
+        const targets = (await resp.json()) as any[];
+
+        if (list) {
+          list.innerHTML = targets
+            .map(
+              (t: any) => `
+            <div class="glass-panel border-white/5 group relative overflow-hidden">
+              <div class="flex justify-between items-start mb-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-brand-primary">
+                    <div class="${t.type === "json" ? "i-ph-brackets-curly-bold" : "i-ph-globe-simple-bold"} text-xl"></div>
+                  </div>
+                  <div>
+                    <h4 class="font-bold font-outfit tracking-tight">${t.name}</h4>
+                    <div class="text-[9px] font-black uppercase tracking-widest text-gray-600">${t.type}</div>
+                  </div>
+                </div>
+                <button data-id="${t.id}" class="delete-btn text-gray-700 hover:text-red-500 transition-colors">
+                  <div class="i-ph-trash-bold"></div>
+                </button>
+              </div>
+              
+              <div class="text-[10px] font-mono text-gray-500 truncate mb-6 pb-4 border-b border-white/5">${t.url}</div>
+              
+              <div class="flex items-center justify-between">
+                <div class="text-[9px] font-black uppercase tracking-widest text-gray-600">
+                  Last Run: ${t.lastRun ? new Date(t.lastRun).toLocaleDateString() : "Never"}
+                </div>
+                
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" data-id="${t.id}" class="toggle-enabled sr-only peer" ${t.enabled ? "checked" : ""}>
+                  <div class="w-9 h-5 bg-white/5 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-600 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-primary peer-checked:after:bg-white"></div>
+                </label>
+              </div>
+            </div>
+          `,
+            )
+            .join("");
+
+          // Attach listeners
+          list
+            .querySelectorAll(".delete-btn")
+            .forEach((b) =>
+              b.addEventListener("click", (ev) => handleDelete(ev)),
+            );
+          list
+            .querySelectorAll(".toggle-enabled")
+            .forEach((b) =>
+              b.addEventListener("change", (ev) => handleToggle(ev)),
+            );
+        }
+      };
+
+      const handleDelete = async (ev: any) => {
+        const id = ev.currentTarget.dataset.id;
+        if (confirm("Remove this source?")) {
+          await fetch(`/api/targets/${id}`, { method: "DELETE" });
+          refresh();
+        }
+      };
+
+      const handleToggle = async (ev: any) => {
+        const id = ev.target.dataset.id;
+        const enabled = ev.target.checked;
+        await fetch(`/api/targets/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled }),
+        });
+      };
+
+      addBtn?.addEventListener("click", () =>
+        modal?.classList.remove("hidden"),
+      );
+      closeBtn?.addEventListener("click", () => modal?.classList.add("hidden"));
+
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        await fetch("/api/targets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        form.reset();
+        modal?.classList.add("hidden");
+        refresh();
+      });
+
+      refresh();
+    }
+  }
+  customElements.define("targets-manager", TargetsManager);
+</script>
