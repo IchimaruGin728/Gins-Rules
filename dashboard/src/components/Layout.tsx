@@ -40,6 +40,12 @@ export default function Layout({ children, title }: Props) {
             >
               <div class="i-ph-sparkle-bold" /> AI Monitor
             </a>
+            <a
+              href="/status"
+              class="hover:text-white transition-colors duration-300 flex items-center gap-1.5"
+            >
+              <div class="i-ph-pulse-bold" /> Status
+            </a>
           </div>
         </nav>
       </header>

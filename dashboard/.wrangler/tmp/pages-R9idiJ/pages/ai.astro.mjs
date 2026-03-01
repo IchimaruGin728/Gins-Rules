@@ -1,0 +1,59 @@
+globalThis.process ??= {}; globalThis.process.env ??= {};
+/* empty css                              */
+import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_BTqzngb8.mjs';
+import { L as Layout } from '../chunks/Layout_BGy5vrpZ.mjs';
+export { r as renderers } from '../chunks/_@astro-renderers_B2-kUL1M.mjs';
+
+const $$Ai = createComponent(($$result, $$props, $$slots) => {
+  return renderTemplate`${renderComponent($$result, "Layout", Layout, { "title": "AI Monitor" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="space-y-12"> <div class="flex flex-col md:flex-row items-start md:items-end justify-between gap-6"> <div class="space-y-3"> <div class="flex items-center gap-2"> <div class="i-ph-sparkle-fill text-2xl text-gradient"></div> <span class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Live Infrastructure Analysis</span> </div> <h2 class="text-5xl font-black font-outfit tracking-tighter">
+AI <span class="text-gradient underline decoration-white/5 underline-offset-4">Monitor</span> </h2> <p class="text-gray-500 font-medium max-w-xl">
+Real-time verification of automated domain classifications powered by
+          Meta's Llama-4-Scout engine.
+</p> </div> <div class="flex items-center gap-4 bg-white/5 border border-white/5 p-2 px-6 rounded-full font-bold text-xs"> <div class="w-2 h-2 rounded-full bg-green-500"></div> <span class="tracking-widest uppercase opacity-70">Scout Cluster Active</span> </div> </div> <div class="grid grid-cols-1 lg:grid-cols-12 gap-12"> <div class="lg:col-span-8 space-y-8"> <div class="glass-panel !p-0 border-white/5 overflow-hidden"> <div class="bg-white/[0.03] p-6 border-b border-white/5 flex justify-between items-center"> <h4 class="font-bold font-outfit tracking-tight text-xl">
+Ingestion Feed
+</h4> <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-600"> <div class="i-ph-clock-bold"></div> Updated just now
+</div> </div> <div class="divide-y divide-white/5"> ${[
+    {
+      domain: "api.anthropic.com",
+      time: "2h ago",
+      cat: "Proxy",
+      conf: "98%"
+    },
+    {
+      domain: "download.docker.com",
+      time: "5h ago",
+      cat: "Direct",
+      conf: "99%"
+    },
+    {
+      domain: "telemetry.microsoft.com",
+      time: "8h ago",
+      cat: "Reject",
+      conf: "94%"
+    }
+  ].map((item) => renderTemplate`<div class="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group"> <div class="flex items-center gap-6"> <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-brand-primary/10 transition-colors"> <div class="i-ph-activity-bold text-2xl text-gray-600 group-hover:text-brand-primary"></div> </div> <div> <div class="font-bold font-mono tracking-tight text-white"> ${item.domain} </div> <div class="text-[10px] font-black uppercase tracking-widest text-gray-600 mt-1">
+Classification Triggered • ${item.time} </div> </div> </div> <div class="flex items-center gap-6"> <div class="text-right hidden sm:block"> <div class="text-[10px] font-black text-brand-primary uppercase tracking-widest"> ${item.cat} </div> <div class="text-[10px] text-gray-600 font-bold"> ${item.conf} CONFIDENCE
+</div> </div> <div class="flex gap-2"> <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center cursor-pointer hover:bg-green-500/20 hover:border-green-500/50 transition-all"> <div class="i-ph-check-bold text-green-500"></div> </div> <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center cursor-pointer hover:bg-red-500/20 hover:border-red-500/50 transition-all"> <div class="i-ph-trash-bold text-red-500"></div> </div> </div> </div> </div>`)} </div> </div> </div> <div class="lg:col-span-4 space-y-8"> <div class="glass-panel space-y-6 border-white/5"> <h4 class="font-black font-outfit tracking-widest uppercase text-xs text-gray-500 pb-2 border-b border-white/5">
+Compute Node
+</h4> <div class="space-y-4"> <div class="flex items-center justify-between"> <span class="text-sm font-medium text-gray-500">Model Engine</span> <span class="font-mono text-xs text-brand-primary font-bold">Llama-4-Scout-17B</span> </div> <div class="flex items-center justify-between"> <span class="text-sm font-medium text-gray-500">Average TTFT</span> <span class="font-mono text-xs text-green-400 font-bold">12ms</span> </div> <div class="flex items-center justify-between"> <span class="text-sm font-medium text-gray-500">Auto-Apply</span> <span class="px-3 py-1 bg-brand-primary/10 border border-brand-primary/30 rounded-full text-[9px] font-black uppercase text-brand-primary">Enabled</span> </div> </div> <div class="pt-4"> <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden"> <div class="h-full bg-brand-primary w-[94%]"></div> </div> <div class="flex justify-between mt-2"> <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Global Accuracy</span> <span class="text-[10px] font-bold text-brand-primary uppercase tracking-widest">94.2%</span> </div> </div> </div> <div class="glass-panel bg-gradient-to-br from-brand-primary/20 to-brand-secondary/20 border-brand-primary/30 relative overflow-hidden group"> <div class="i-ph-brain-bold absolute -right-4 -bottom-4 text-8xl text-white/5 group-hover:text-white/10 transition-all duration-700"></div> <h4 class="font-black font-outfit tracking-tight mb-2 text-xl">
+Cloud Native IQ
+</h4> <p class="text-xs text-gray-400 leading-relaxed font-medium">
+Scanner Worker leverages Browser Rendering and AI to "see" official
+            documentation the same way you do, providing sub-millisecond
+            classification suggestions.
+</p> </div> </div> </div> </div> ` })}`;
+}, "/Users/ichimarugin728/Gins-Configs/Gins-Rules/dashboard/src/pages/ai.astro", void 0);
+
+const $$file = "/Users/ichimarugin728/Gins-Configs/Gins-Rules/dashboard/src/pages/ai.astro";
+const $$url = "/ai";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: $$Ai,
+  file: $$file,
+  url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };

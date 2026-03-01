@@ -6,6 +6,9 @@
   "observability": {
     "enabled": true
   },
+  "vars": {
+    "CF_ACCOUNT_ID": "cd4ce461acea5097153abf9e2deb26ec"
+  },
   "d1_databases": [
     {
       "binding": "DB",
