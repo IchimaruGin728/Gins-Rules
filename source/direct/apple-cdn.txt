@@ -1,37 +1,50 @@
-appldnld.apple.com
+# ==============================
+# Apple Direct (CDN/Download) Rules
+# App downloads, system updates, media content
+# ==============================
+
+# --- App Store Downloads ---
 apps.apple.com
-audiocontentdownload.apple.com
-certs.apple.com
-configuration.apple.com
-crl.apple.com
-crl3.digicert.com
-crl4.digicert.com
-devimages-cdn.apple.com
-download.developer.apple.com
-gdmf.apple.com
-gg.apple.com
-ig.apple.com
 itunes.apple.com
 itunes.com
-lcdn-locator.apple.com
-lcdn-registration.apple.com
-mesu.apple.com
 mzstatic.com
-ocsp.apple.com
-ocsp.digicert.cn
-ocsp.digicert.com
-ocsp2.apple.com
+
+# --- System Update Downloads ---
+# These are the actual binary download servers (large files)
+# Update CATALOG checking is in proxy (mesu/swscan/gdmf)
+appldnld.apple.com
 oscdn.apple.com
 osrecovery.apple.com
-pkg.apple.com
-playgrounds-assets-cdn.apple.com
-playgrounds-cdn.apple.com
-skl.apple.com
 swcdn.apple.com
 swdist.apple.com
 swdownload.apple.com
-swscan.apple.com
-sylvan.apple.com
 updates-http.cdn-apple.com
 updates.cdn-apple.com
+pkg.apple.com
+
+# --- Developer & Media CDN ---
+devimages-cdn.apple.com
+download.developer.apple.com
+audiocontentdownload.apple.com
+playgrounds-assets-cdn.apple.com
+playgrounds-cdn.apple.com
+sylvan.apple.com
+
+# --- Caching & Content Delivery ---
+lcdn-locator.apple.com
+lcdn-registration.apple.com
+ig.apple.com
+gg.apple.com
+skl.apple.com
+
+# --- Certificate & OCSP ---
+certs.apple.com
+configuration.apple.com
+crl.apple.com
+ocsp.apple.com
+ocsp2.apple.com
 valid.apple.com
+crl3.digicert.com
+crl4.digicert.com
+ocsp.digicert.cn
+ocsp.digicert.com

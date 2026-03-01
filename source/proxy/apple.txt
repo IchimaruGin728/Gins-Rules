@@ -1,67 +1,109 @@
+# ==============================
+# Apple Proxy Rules
+# Auth / iCloud / AI / Location / Update Check
+# ==============================
+
+# --- Authentication & Apple ID ---
 account.apple.com
+appleid.apple.com
+appleid.cdn-apple.com
+gsa.apple.com
+idmsa.apple.com
+identity.apple.com
 appattest.apple.com
+
+# --- iCloud Sync (Drive, Photos, Contacts, Calendar, Keychain) ---
+icloud.com
+icloud.com.cn
+icloud.apple.com
+icloud-content.com
+setup.icloud.com
+metrics.icloud.com
+pong.icloud.com
+probe.icloud.com
+gateway.icloud.com
+
+# --- Apple Intelligence & Siri ---
+guzzoni.apple.com
+smoot.apple.com
 apple-cloudkit.com
 apple-livephotoskit.com
-apple-native-relay.apple.com
+full:dejavu.apple.com
+full:swallow.apple.com
+full:assistant.apple.com
+full:bag.itunes.apple.com
+
+# --- Private Relay (iCloud+) ---
+mask.icloud.com
+mask-h2.icloud.com
+mask-api.icloud.com
 apple-relay.akamaized.net
 apple-relay.apple.com
 apple-relay.cloudflare.com
 apple-relay.fastly-edge.com
 apple-relay.mask.apple-dns.net
-appleid.apple.com
-appleid.cdn-apple.com
-apzones.com
+apple-native-relay.apple.com
+cp4.cloudflare.com
+
+# --- Maps & Location Services ---
+full:gspe1-ssl.ls.apple.com
+full:gs.apple.com
+gc.apple.com
+full:gsp-ssl.ls.apple.com
+full:gsp64-ssl.ls.apple.com
+
+# --- Push Notifications (APNs) ---
+push.apple.com
+courier.push.apple.com
+full:init-p01md.apple.com
+
+# --- Update Catalog Check (region-sensitive) ---
+# Checking for available updates requires proxy for correct region content
+# Actual downloads go through direct (apple-cdn.txt)
+mesu.apple.com
+swscan.apple.com
+full:gdmf.apple.com
+
+# --- App Store Account & Purchases ---
+vpp.itunes.apple.com
+iprofiles.apple.com
+iwork.apple.com
+
+# --- MDM & Device Enrollment ---
 axm-adm-enroll.apple.com
 axm-adm-mdm.apple.com
 axm-adm-scep.apple.com
 axm-app.apple.com
 axm-servicediscovery.apple.com
-bpapi.apple.com
-cdn-apple.com
-courier.push.apple.com
-cp4.cloudflare.com
 deviceenrollment.apple.com
 deviceservices-external.apple.com
-diagassets.apple.com
-full:albert.apple.com
-full:app-site-association.cdn-apple.com
-full:app-site-association.networking.apple
-full:captive.apple.com
+mdmenrollment.apple.com
+
+# --- DNS & Captive Portal ---
 full:doh.dns.apple.com
-full:gs.apple.com
-full:gspe1-ssl.ls.apple.com
+full:captive.apple.com
+
+# --- Device Verification & Security ---
+full:albert.apple.com
 full:humb.apple.com
 full:idv-prod1.apple.com
 full:idv.cdn-apple.com
+full:static.ips.apple.com
+full:tbsc.apple.com
 full:pos-device.apple.com
 full:smp-device-content.apple.com
 full:sq-device.apple.com
-full:static.ips.apple.com
-full:tbsc.apple.com
+
+# --- Time Sync ---
+full:time.apple.com
 full:time-ios.apple.com
 full:time-macos.apple.com
-full:time.apple.com
-gateway.icloud.com
-gc.apple.com
-gsa.apple.com
-guzzoni.apple.com
-icloud-content.com
-icloud.apple.com
-icloud.com
-icloud.com.cn
-identity.apple.com
-idmsa.apple.com
-iprofiles.apple.com
+
+# --- Other Infra ---
+cdn-apple.com
+apzones.com
+bpapi.apple.com
+diagassets.apple.com
 itunnel.apple.com
-iwork.apple.com
-mask-api.icloud.com
-mask-h2.icloud.com
-mask.icloud.com
-mdmenrollment.apple.com
-metrics.icloud.com
-pong.icloud.com
-probe.icloud.com
-push.apple.com
-setup.icloud.com
-smoot.apple.com
-vpp.itunes.apple.com
+full:app-site-association.cdn-apple.com
+full:app-site-association.networking.apple
