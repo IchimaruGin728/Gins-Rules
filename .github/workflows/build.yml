@@ -94,6 +94,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: cmd/scanner
-          command: deploy
+          command: deploy src/index.ts --config wrangler.jsonc
+          wranglerVersion: 'latest'
       - name: Wait for Propagation
         run: sleep 20
