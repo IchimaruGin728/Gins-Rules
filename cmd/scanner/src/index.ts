@@ -77,6 +77,23 @@ Response format: Output EXACTLY one word from the categories above.`;
   }
 }
 
+// Puppeteer Budget: max launches per day (Paid plan = 10hr/mo ≈ 600min)
+// Each launch ≈ 30-60s, so 5/day = ~150/mo = ~2.5hr/mo (safe margin)
+const PUPPETEER_DAILY_LIMIT = 5;
+
+async function canUsePuppeteer(kv: KVNamespace): Promise<boolean> {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = `browser_usage_${today}`;
+  const count = parseInt(await kv.get(key) ?? '0');
+  return count < PUPPETEER_DAILY_LIMIT;
+}
+
+async function trackPuppeteerUsage(kv: KVNamespace): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = `browser_usage_${today}`;
+  const count = parseInt(await kv.get(key) ?? '0');
+  await kv.put(key, String(count + 1), { expirationTtl: 172800 }); // Auto-expire in 48h
+}
 
 async function crawlTarget(env: Bindings, target: { name: string; url: string; type: string }): Promise<string[]> {
   const domains: Set<string> = new Set();
@@ -121,22 +138,28 @@ async function crawlTarget(env: Bindings, target: { name: string; url: string; t
           .arrayBuffer();
       }
 
-      // Phase 2: Puppeteer Fallback (Only for HTML type)
+      // Phase 2: Puppeteer Fallback (Budget-Controlled)
       if (domains.size === 0) {
-        console.log(`Fallback to Puppeteer for ${target.name}`);
-        const browser = await puppeteer.launch(env.MYBROWSER);
-        try {
-          const page = await browser.newPage();
-          await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-          const dynamicDomains = (await page.evaluate(`
-            Array.from(document.querySelectorAll('a'))
-              .map(a => a.innerText)
-              .filter(text => text.startsWith('https://'))
-              .map(url => url.replace('https://', ''))
-          `)) as string[];
-          dynamicDomains.forEach(d => domains.add(d.toLowerCase()));
-        } finally {
-          await browser.close();
+        const allowed = await canUsePuppeteer(env.RULES_KV);
+        if (!allowed) {
+          console.log(`[QUOTA] Puppeteer daily limit reached (${PUPPETEER_DAILY_LIMIT}/day). Skipping fallback for ${target.name}`);
+        } else {
+          console.log(`[PUPPETEER] Launching browser for ${target.name}...`);
+          await trackPuppeteerUsage(env.RULES_KV);
+          const browser = await puppeteer.launch(env.MYBROWSER);
+          try {
+            const page = await browser.newPage();
+            await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            const dynamicDomains = (await page.evaluate(`
+              Array.from(document.querySelectorAll('a'))
+                .map(a => a.innerText)
+                .filter(text => text.startsWith('https://'))
+                .map(url => url.replace('https://', ''))
+            `)) as string[];
+            dynamicDomains.forEach(d => domains.add(d.toLowerCase()));
+          } finally {
+            await browser.close();
+          }
         }
       }
     }
