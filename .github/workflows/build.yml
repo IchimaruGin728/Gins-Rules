@@ -46,8 +46,10 @@ jobs:
           curl -sL "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz" | gunzip > mihomo
           chmod +x mihomo && sudo mv mihomo /usr/local/bin/
 
-      - name: Compile
-        run: go run ./cmd/compile/
+      - name: Compile and Merge
+        run: |
+          go run ./cmd/compile/
+          cp -r public/* compiled/
 
       - name: Deploy Rules to Pages
         uses: cloudflare/wrangler-action@v3
@@ -55,13 +57,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy compiled --project-name=gins-rules --branch=main
-      
-      - name: Deploy Index to Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=gins-rules --branch=main
 
 
   dashboard:
