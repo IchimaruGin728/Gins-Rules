@@ -74,7 +74,6 @@ func main() {
 		os.MkdirAll(dir, 0o755)
 		for _, cat := range []string{"proxy", "direct", "reject", "ip"} {
 			os.MkdirAll(filepath.Join(dir, cat), 0o755)
-			// Create yaml subfolder for Mihomo and Stash sources
 			if dir == mihomoDir || dir == stashDir {
 				os.MkdirAll(filepath.Join(dir, cat, "yaml"), 0o755)
 			}
@@ -85,7 +84,6 @@ func main() {
 	stats := Stats{}
 
 	for _, category := range categories {
-		// Collect all unique rule names from both source/ and source/upstream/
 		ruleNames := make(map[string]bool)
 		
 		localDir := filepath.Join(root, "source", category)
@@ -126,14 +124,12 @@ func main() {
 				continue
 			}
 
-			// Compile to various formats
 			jsonPath := compileSingBoxJSON(name, rules, filepath.Join(singboxDir, category))
 			srsOK := false
 			if hasSingBox {
 				srsOK = compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 			}
 
-			// Mihomo output: .mrs in main, .yaml in /yaml/ folder
 			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category, "yaml"), isIP)
 			behavior := "domain"
 			if isIP {
@@ -144,7 +140,6 @@ func main() {
 				mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
 			}
 
-			// Stash output: exact same as Mihomo (Stash 3.x+ supports MRS)
 			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category, "yaml"), isIP)
 			if hasMihomo && mrsOK {
 				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), behavior, mihomoPath)
@@ -205,7 +200,6 @@ func main() {
 }
 
 func findRoot() string {
-	// Try executable directory first, then working directory
 	exe, _ := os.Executable()
 	dir := filepath.Dir(exe)
 
@@ -230,12 +224,10 @@ func findRoot() string {
 }
 
 func findBinary(name, binDir string) string {
-	// 1. Check ./bin/
 	local := filepath.Join(binDir, name)
 	if _, err := os.Stat(local); err == nil {
 		return local
 	}
-	// 2. Check PATH
 	p, err := exec.LookPath(name)
 	if err == nil {
 		return p
@@ -368,11 +360,6 @@ func compileMihomoYAML(name string, rules Rules, outDir string, isIP bool) strin
 			lines = append(lines, fmt.Sprintf("  - '%s'", cidr))
 		}
 	} else {
-		// Domain behavior in Mihomo ruleset:
-		// 1. Matches subdomains automatically (usually)
-		// 2. Panic if dot count > 5 in some versions
-		// 3. Just provide raw domains, no +.
-		
 		var domains []string
 		domains = append(domains, rules.DomainSuffix...)
 		domains = append(domains, rules.Domain...)
@@ -471,8 +458,6 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool) {
 }
 
 func compileEgernYAML(name string, rules Rules, outDir string) {
-	// Egern optimized format: Structured YAML Rule Set
-	// https://egernapp.com/docs/configuration/proxy-rule-set
 	var lines []string
 	lines = append(lines, "# Gins-Rules: "+name)
 	lines = append(lines, "# Optimized Egern Rule Set")

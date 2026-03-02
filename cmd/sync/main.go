@@ -65,7 +65,6 @@ func main() {
 		mergedResults[src.Category][src.Target] = append(mergedResults[src.Category][src.Target], rules...)
 	}
 
-	// Write merged results to files
 	for cat, targets := range mergedResults {
 		outDir := filepath.Join(upstreamDir, cat)
 		os.MkdirAll(outDir, 0755)
@@ -111,13 +110,6 @@ func processRules(content string) []string {
 		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") || strings.HasPrefix(line, "//") {
 			continue
 		}
-
-		// Normalize Surge format to our internal format
-		// Surge: DOMAIN-SUFFIX,google.com -> google.com
-		// Surge: DOMAIN,google.com -> full:google.com
-		// Surge: DOMAIN-KEYWORD,google -> keyword:google
-		// IPCIDR entries stay as is if they match our IPCIDR detection
-
 		parts := strings.Split(line, ",")
 		if len(parts) >= 2 {
 			ruleType := strings.ToUpper(strings.TrimSpace(parts[0]))
@@ -131,14 +123,11 @@ func processRules(content string) []string {
 				rules = append(rules, "keyword:"+val)
 			case "IP-CIDR", "IP-CIDR6":
 				rules = append(rules, val)
-			default:
-				// If it's just a domain in a line (v2ray-rules-dat direct-list style)
 				if !strings.Contains(line, ",") {
 					rules = append(rules, line)
 				}
 			}
 		} else if !strings.Contains(line, ",") {
-			// Plain domain lines
 			rules = append(rules, line)
 		}
 	}
