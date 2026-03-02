@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '0 20 * * *' # 每天凌晨 4:00 CST 自动运行
+    - cron: '0 16 * * *' # 每天 00:00 SGT (UTC+8) 自动运行
   workflow_dispatch:
   repository_dispatch:
     types: [scrape_update]
