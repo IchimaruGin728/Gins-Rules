@@ -146,7 +146,7 @@ func main() {
 			}
 
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
-			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP)
+			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP, category)
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category)) 
 			compileLoonList(name, rules, filepath.Join(loonDir, category))
 			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
@@ -438,23 +438,30 @@ func compileTextList(name string, rules Rules, outDir string, isIP bool) int {
 	return len(lines)
 }
 
-func compileQuanXList(name string, rules Rules, outDir string, isIP bool) {
+func compileQuanXList(name string, rules Rules, outDir string, isIP bool, category string) {
 	var lines []string
 
+	policy := "Proxy"
+	if category == "direct" {
+		policy = "Direct"
+	} else if category == "reject" {
+		policy = "Reject"
+	}
+
 	for _, d := range rules.DomainSuffix {
-		lines = append(lines, fmt.Sprintf("host-suffix,%s", d))
+		lines = append(lines, fmt.Sprintf("host-suffix,%s,%s", d, policy))
 	}
 	for _, d := range rules.Domain {
-		lines = append(lines, fmt.Sprintf("host,%s", d))
+		lines = append(lines, fmt.Sprintf("host,%s,%s", d, policy))
 	}
 	for _, d := range rules.DomainKeyword {
-		lines = append(lines, fmt.Sprintf("host-keyword,%s", d))
+		lines = append(lines, fmt.Sprintf("host-keyword,%s,%s", d, policy))
 	}
 	for _, cidr := range rules.IPCIDR {
 		if strings.Contains(cidr, ":") {
-			lines = append(lines, fmt.Sprintf("ip6-cidr,%s", cidr))
+			lines = append(lines, fmt.Sprintf("ip6-cidr,%s,%s", cidr, policy))
 		} else {
-			lines = append(lines, fmt.Sprintf("ip-cidr,%s", cidr))
+			lines = append(lines, fmt.Sprintf("ip-cidr,%s,%s", cidr, policy))
 		}
 	}
 
