@@ -43,7 +43,6 @@ type Stats struct {
 
 func main() {
 	root := findRoot()
-	sourceDir := filepath.Join(root, "source")
 	compiledDir := filepath.Join(root, "compiled")
 
 	singboxDir := filepath.Join(compiledDir, "singbox")
@@ -51,22 +50,34 @@ func main() {
 	textDir := filepath.Join(compiledDir, "text")
 	quanxDir := filepath.Join(compiledDir, "quanx")
 	egernDir := filepath.Join(compiledDir, "egern")
+	loonDir := filepath.Join(compiledDir, "loon")
+	stashDir := filepath.Join(compiledDir, "stash")
+	shadowrocketDir := filepath.Join(compiledDir, "shadowrocket")
 
 	fmt.Println("============================================================")
 	fmt.Println("  Gins-Rules Compiler (Go)")
 	fmt.Println("============================================================")
 
-	hasSingBox := hasCommand("sing-box")
-	hasMihomo := hasCommand("mihomo")
-	fmt.Printf("\n  sing-box: %s\n", boolIcon(hasSingBox))
-	fmt.Printf("  mihomo:   %s\n\n", boolIcon(hasMihomo))
+	binDir := filepath.Join(root, "bin")
+	mihomoPath := findBinary("mihomo", binDir)
+	singboxPath := findBinary("sing-box", binDir)
+
+	fmt.Printf("\n  sing-box: %s (%s)\n", boolIcon(singboxPath != ""), singboxPath)
+	fmt.Printf("  mihomo:   %s (%s)\n\n", boolIcon(mihomoPath != ""), mihomoPath)
+
+	hasSingBox := singboxPath != ""
+	hasMihomo := mihomoPath != ""
 
 
-	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir} {
+	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
 		for _, cat := range []string{"proxy", "direct", "reject", "ip"} {
 			os.MkdirAll(filepath.Join(dir, cat), 0o755)
+			// Create yaml subfolder for Mihomo and Stash sources
+			if dir == mihomoDir || dir == stashDir {
+				os.MkdirAll(filepath.Join(dir, cat, "yaml"), 0o755)
+			}
 		}
 	}
 
@@ -74,49 +85,76 @@ func main() {
 	stats := Stats{}
 
 	for _, category := range categories {
-		catDir := filepath.Join(sourceDir, category)
-		if _, err := os.Stat(catDir); os.IsNotExist(err) {
-			continue
+		// Collect all unique rule names from both source/ and source/upstream/
+		ruleNames := make(map[string]bool)
+		
+		localDir := filepath.Join(root, "source", category)
+		upstreamDir := filepath.Join(root, "source", "upstream", category)
+
+		for _, d := range []string{localDir, upstreamDir} {
+			if _, err := os.Stat(d); err == nil {
+				for _, f := range listTxtFiles(d) {
+					ruleNames[strings.TrimSuffix(filepath.Base(f), ".txt")] = true
+				}
+			}
 		}
 
 		isIP := category == "ip"
-		behavior := "domain"
-		if isIP {
-			behavior = "ipcidr"
-		}
 
-		files := listTxtFiles(catDir)
-		for _, srcPath := range files {
-			name := strings.TrimSuffix(filepath.Base(srcPath), ".txt")
-			rules := parseSource(srcPath)
+		var sortedNames []string
+		for name := range ruleNames {
+			sortedNames = append(sortedNames, name)
+		}
+		sort.Strings(sortedNames)
+
+		for _, name := range sortedNames {
+			localPath := filepath.Join(localDir, name+".txt")
+			upstreamPath := filepath.Join(upstreamDir, name+".txt")
+
+			var rules Rules
+			if _, err := os.Stat(localPath); err == nil {
+				rules = parseSource(localPath)
+			}
+			if _, err := os.Stat(upstreamPath); err == nil {
+				uRules := parseSource(upstreamPath)
+				rules = mergeRules(rules, uRules)
+			}
+
 			total := len(rules.DomainSuffix) + len(rules.Domain) +
 				len(rules.DomainKeyword) + len(rules.DomainRegex) + len(rules.IPCIDR)
 			if total == 0 {
 				continue
 			}
 
-
+			// Compile to various formats
 			jsonPath := compileSingBoxJSON(name, rules, filepath.Join(singboxDir, category))
 			srsOK := false
 			if hasSingBox {
-				srsOK = compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category))
+				srsOK = compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 			}
 
-
-			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), isIP)
+			// Mihomo output: .mrs in main, .yaml in /yaml/ folder
+			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category, "yaml"), isIP)
+			behavior := "domain"
+			if isIP {
+				behavior = "ipcidr"
+			}
 			mrsOK := false
 			if hasMihomo {
-				mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior)
+				mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
 			}
 
+			// Stash output: exact same as Mihomo (Stash 3.x+ supports MRS)
+			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category, "yaml"), isIP)
+			if hasMihomo && mrsOK {
+				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), behavior, mihomoPath)
+			}
 
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
-
-
 			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP)
-
-
-			compileEgernYAML(name, rules, filepath.Join(egernDir, category), isIP)
+			compileEgernYAML(name, rules, filepath.Join(egernDir, category)) 
+			compileLoonList(name, rules, filepath.Join(loonDir, category))
+			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
 
 			srsIcon := "·"
 			if srsOK {
@@ -142,7 +180,7 @@ func main() {
 	}
 
 
-	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern"} {
+	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket"} {
 		for _, cat := range categories {
 			dir := filepath.Join(compiledDir, formatDir, cat)
 			entries, _ := os.ReadDir(dir)
@@ -191,9 +229,18 @@ func findRoot() string {
 	return ""
 }
 
-func hasCommand(name string) bool {
-	_, err := exec.LookPath(name)
-	return err == nil
+func findBinary(name, binDir string) string {
+	// 1. Check ./bin/
+	local := filepath.Join(binDir, name)
+	if _, err := os.Stat(local); err == nil {
+		return local
+	}
+	// 2. Check PATH
+	p, err := exec.LookPath(name)
+	if err == nil {
+		return p
+	}
+	return ""
 }
 
 func boolIcon(b bool) string {
@@ -239,10 +286,42 @@ func parseSource(path string) Rules {
 		case strings.Contains(line, "/"):
 			r.IPCIDR = append(r.IPCIDR, line)
 		default:
-			r.DomainSuffix = append(r.DomainSuffix, line)
+			// Sanitize domain: remove +. and leading dots
+			domain := line
+			domain = strings.TrimPrefix(domain, "+.")
+			domain = strings.TrimPrefix(domain, ".")
+			r.DomainSuffix = append(r.DomainSuffix, domain)
 		}
 	}
 	return r
+}
+
+func mergeRules(a, b Rules) Rules {
+	a.DomainSuffix = append(a.DomainSuffix, b.DomainSuffix...)
+	a.Domain = append(a.Domain, b.Domain...)
+	a.DomainKeyword = append(a.DomainKeyword, b.DomainKeyword...)
+	a.DomainRegex = append(a.DomainRegex, b.DomainRegex...)
+	a.IPCIDR = append(a.IPCIDR, b.IPCIDR...)
+
+	a.DomainSuffix = unique(a.DomainSuffix)
+	a.Domain = unique(a.Domain)
+	a.DomainKeyword = unique(a.DomainKeyword)
+	a.DomainRegex = unique(a.DomainRegex)
+	a.IPCIDR = unique(a.IPCIDR)
+	return a
+}
+
+func unique(slice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	sort.Strings(list)
+	return list
 }
 
 func compileSingBoxJSON(name string, rules Rules, outDir string) string {
@@ -265,10 +344,10 @@ func compileSingBoxJSON(name string, rules Rules, outDir string) string {
 	return jsonPath
 }
 
-func compileSingBoxSRS(jsonPath, outDir string) bool {
+func compileSingBoxSRS(jsonPath, outDir, singboxPath string) bool {
 	name := strings.TrimSuffix(filepath.Base(jsonPath), ".json")
 	srsPath := filepath.Join(outDir, name+".srs")
-	cmd := exec.Command("sing-box", "rule-set", "compile", jsonPath, "-o", srsPath)
+	cmd := exec.Command(singboxPath, "rule-set", "compile", jsonPath, "-o", srsPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "  [ERROR] sing-box compile %s: %v\n  Output: %s\n", name, err, string(output))
@@ -289,14 +368,25 @@ func compileMihomoYAML(name string, rules Rules, outDir string, isIP bool) strin
 			lines = append(lines, fmt.Sprintf("  - '%s'", cidr))
 		}
 	} else {
-		for _, d := range rules.DomainSuffix {
-			lines = append(lines, fmt.Sprintf("  - '+.%s'", d))
-		}
-		for _, d := range rules.Domain {
-			lines = append(lines, fmt.Sprintf("  - '%s'", d))
-		}
-		for _, d := range rules.DomainKeyword {
-			lines = append(lines, fmt.Sprintf("  - '+.%s'", d))
+		// Domain behavior in Mihomo ruleset:
+		// 1. Matches subdomains automatically (usually)
+		// 2. Panic if dot count > 5 in some versions
+		// 3. Just provide raw domains, no +.
+		
+		var domains []string
+		domains = append(domains, rules.DomainSuffix...)
+		domains = append(domains, rules.Domain...)
+		
+		uniqueDomains := make(map[string]bool)
+		for _, d := range domains {
+			// Skip domains with too many dots to avoid Mihomo panic
+			if strings.Count(d, ".") > 5 {
+				continue
+			}
+			if !uniqueDomains[d] {
+				uniqueDomains[d] = true
+				lines = append(lines, fmt.Sprintf("  - '%s'", d))
+			}
 		}
 	}
 
@@ -305,10 +395,10 @@ func compileMihomoYAML(name string, rules Rules, outDir string, isIP bool) strin
 	return yamlPath
 }
 
-func compileMihomoMRS(yamlPath, outDir, behavior string) bool {
+func compileMihomoMRS(yamlPath, outDir, behavior, mihomoPath string) bool {
 	name := strings.TrimSuffix(filepath.Base(yamlPath), ".yaml")
 	mrsPath := filepath.Join(outDir, name+".mrs")
-	cmd := exec.Command("mihomo", "convert-ruleset", behavior, "yaml", yamlPath, mrsPath)
+	cmd := exec.Command(mihomoPath, "convert-ruleset", behavior, "yaml", yamlPath, mrsPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "  [ERROR] mihomo compile %s: %v\n  Output: %s\n", name, err, string(output))
@@ -320,24 +410,21 @@ func compileMihomoMRS(yamlPath, outDir, behavior string) bool {
 func compileTextList(name string, rules Rules, outDir string, isIP bool) int {
 	var lines []string
 
-	if isIP {
-		for _, cidr := range rules.IPCIDR {
-			prefix := "IP-CIDR"
-			if strings.Contains(cidr, ":") {
-				prefix = "IP-CIDR6"
-			}
-			lines = append(lines, fmt.Sprintf("%s,%s", prefix, cidr))
+	for _, d := range rules.DomainSuffix {
+		lines = append(lines, fmt.Sprintf("DOMAIN-SUFFIX,%s", d))
+	}
+	for _, d := range rules.Domain {
+		lines = append(lines, fmt.Sprintf("DOMAIN,%s", d))
+	}
+	for _, d := range rules.DomainKeyword {
+		lines = append(lines, fmt.Sprintf("DOMAIN-KEYWORD,%s", d))
+	}
+	for _, cidr := range rules.IPCIDR {
+		prefix := "IP-CIDR"
+		if strings.Contains(cidr, ":") {
+			prefix = "IP-CIDR6"
 		}
-	} else {
-		for _, d := range rules.DomainSuffix {
-			lines = append(lines, fmt.Sprintf("DOMAIN-SUFFIX,%s", d))
-		}
-		for _, d := range rules.Domain {
-			lines = append(lines, fmt.Sprintf("DOMAIN,%s", d))
-		}
-		for _, d := range rules.DomainKeyword {
-			lines = append(lines, fmt.Sprintf("DOMAIN-KEYWORD,%s", d))
-		}
+		lines = append(lines, fmt.Sprintf("%s,%s", prefix, cidr))
 	}
 
 	suffix := ".list"
@@ -356,23 +443,20 @@ func compileTextList(name string, rules Rules, outDir string, isIP bool) int {
 func compileQuanXList(name string, rules Rules, outDir string, isIP bool) {
 	var lines []string
 
-	if isIP {
-		for _, cidr := range rules.IPCIDR {
-			if strings.Contains(cidr, ":") {
-				lines = append(lines, fmt.Sprintf("ip6-cidr, %s", cidr))
-			} else {
-				lines = append(lines, fmt.Sprintf("ip-cidr, %s", cidr))
-			}
-		}
-	} else {
-		for _, d := range rules.DomainSuffix {
-			lines = append(lines, fmt.Sprintf("host-suffix, %s", d))
-		}
-		for _, d := range rules.Domain {
-			lines = append(lines, fmt.Sprintf("host, %s", d))
-		}
-		for _, d := range rules.DomainKeyword {
-			lines = append(lines, fmt.Sprintf("host-keyword, %s", d))
+	for _, d := range rules.DomainSuffix {
+		lines = append(lines, fmt.Sprintf("host-suffix, %s", d))
+	}
+	for _, d := range rules.Domain {
+		lines = append(lines, fmt.Sprintf("host, %s", d))
+	}
+	for _, d := range rules.DomainKeyword {
+		lines = append(lines, fmt.Sprintf("host-keyword, %s", d))
+	}
+	for _, cidr := range rules.IPCIDR {
+		if strings.Contains(cidr, ":") {
+			lines = append(lines, fmt.Sprintf("ip6-cidr, %s", cidr))
+		} else {
+			lines = append(lines, fmt.Sprintf("ip-cidr, %s", cidr))
 		}
 	}
 
@@ -386,59 +470,80 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool) {
 	os.WriteFile(listPath, []byte(content), 0o644)
 }
 
-func compileEgernYAML(name string, rules Rules, outDir string, isIP bool) {
+func compileEgernYAML(name string, rules Rules, outDir string) {
+	// Egern optimized format: Structured YAML Rule Set
+	// https://egernapp.com/docs/configuration/proxy-rule-set
 	var lines []string
+	lines = append(lines, "# Gins-Rules: "+name)
+	lines = append(lines, "# Optimized Egern Rule Set")
+	lines = append(lines, "")
 
-	if isIP {
-		if len(rules.IPCIDR) > 0 {
-			var v4, v6 []string
-			for _, cidr := range rules.IPCIDR {
-				if strings.Contains(cidr, ":") {
-					v6 = append(v6, cidr)
-				} else {
-					v4 = append(v4, cidr)
-				}
-			}
-			if len(v4) > 0 {
-				lines = append(lines, "ip_cidr_set:")
-				for _, c := range v4 {
-					lines = append(lines, fmt.Sprintf("  - %s", c))
-				}
-			}
-			if len(v6) > 0 {
-				lines = append(lines, "ip_cidr6_set:")
-				for _, c := range v6 {
-					lines = append(lines, fmt.Sprintf("  - \"%s\"", c))
-				}
-			}
+	if len(rules.DomainSuffix) > 0 {
+		lines = append(lines, "domain_suffix_set:")
+		for _, d := range rules.DomainSuffix {
+			lines = append(lines, fmt.Sprintf("  - %s", d))
 		}
-	} else {
-		if len(rules.DomainSuffix) > 0 {
-			lines = append(lines, "domain_suffix_set:")
-			for _, d := range rules.DomainSuffix {
-				lines = append(lines, fmt.Sprintf("  - %s", d))
-			}
+	}
+	if len(rules.Domain) > 0 {
+		lines = append(lines, "domain_set:")
+		for _, d := range rules.Domain {
+			lines = append(lines, fmt.Sprintf("  - %s", d))
 		}
-		if len(rules.Domain) > 0 {
-			lines = append(lines, "domain_set:")
-			for _, d := range rules.Domain {
-				lines = append(lines, fmt.Sprintf("  - %s", d))
-			}
-		}
-		if len(rules.DomainKeyword) > 0 {
-			lines = append(lines, "domain_keyword_set:")
-			for _, d := range rules.DomainKeyword {
-				lines = append(lines, fmt.Sprintf("  - %s", d))
-			}
-		}
-		if len(rules.DomainRegex) > 0 {
-			lines = append(lines, "domain_regex_set:")
-			for _, d := range rules.DomainRegex {
-				lines = append(lines, fmt.Sprintf("  - \"%s\"", d))
-			}
+	}
+	if len(rules.DomainKeyword) > 0 {
+		lines = append(lines, "domain_keyword_set:")
+		for _, d := range rules.DomainKeyword {
+			lines = append(lines, fmt.Sprintf("  - %s", d))
 		}
 	}
 
-	yamlPath := filepath.Join(outDir, name+".yaml")
-	os.WriteFile(yamlPath, []byte(strings.Join(lines, "\n")+"\n"), 0o644)
+	var v4, v6 []string
+	for _, cidr := range rules.IPCIDR {
+		if strings.Contains(cidr, ":") {
+			v6 = append(v6, cidr)
+		} else {
+			v4 = append(v4, cidr)
+		}
+	}
+	if len(v4) > 0 {
+		lines = append(lines, "ip_cidr_set:")
+		for _, c := range v4 {
+			lines = append(lines, fmt.Sprintf("  - %s", c))
+		}
+	}
+	if len(v6) > 0 {
+		lines = append(lines, "ip_cidr6_set:")
+		for _, c := range v6 {
+			lines = append(lines, fmt.Sprintf("  - %s", c))
+		}
+	}
+
+	content := strings.Join(lines, "\n") + "\n"
+	os.WriteFile(filepath.Join(outDir, name+".yaml"), []byte(content), 0o644)
+}
+
+func compileLoonList(name string, rules Rules, outDir string) {
+	var lines []string
+
+	for _, d := range rules.DomainSuffix {
+		lines = append(lines, fmt.Sprintf("DOMAIN-SUFFIX,%s", d))
+	}
+	for _, d := range rules.Domain {
+		lines = append(lines, fmt.Sprintf("DOMAIN,%s", d))
+	}
+	for _, d := range rules.DomainKeyword {
+		lines = append(lines, fmt.Sprintf("DOMAIN-KEYWORD,%s", d))
+	}
+	for _, cidr := range rules.IPCIDR {
+		prefix := "IP-CIDR"
+		if strings.Contains(cidr, ":") {
+			prefix = "IP-CIDR6"
+		}
+		lines = append(lines, fmt.Sprintf("%s,%s", prefix, cidr))
+	}
+
+	suffix := ".list"
+	content := strings.Join(lines, "\n") + "\n"
+	listPath := filepath.Join(outDir, name+suffix)
+	os.WriteFile(listPath, []byte(content), 0o644)
 }
