@@ -220,6 +220,9 @@ func sanitizeRules(rules Rules) Rules {
 		"ipleak.net", "ipleak.vip",
 		"ipinfo.io", "ip.sb",
 		"whoer.net", "dnsleaktest.com",
+		"tiktok.com", "tiktokv.com", "tiktokcdn.com",
+		"byteoversea.com", "ibytedtos.com", "ipstatp.com",
+		"muscdn.com", "musical.ly", "tik-tokapi.com",
 	}
 
 	isForce := func(d string) bool {
