@@ -74,9 +74,24 @@ func main() {
 			err := os.WriteFile(outPath, []byte(strings.Join(rules, "\n")+"\n"), 0644)
 			if err != nil {
 				fmt.Printf("  [ERROR] Failed to write %s: %v\n", outPath, err)
-				continue
+			} else {
+				fmt.Printf("  [SUCCESS] Written %d rules to %s.txt\n", len(rules), name)
 			}
-			fmt.Printf("  [SUCCESS] Written %d rules to %s/%s.txt\n", len(rules), cat, name)
+		}
+	}
+
+	fmt.Println("\n  Syncing QX-Resource-Parser.js...")
+	parserURL := "https://raw.githubusercontent.com/KOP-XIAO/QuantumultX/master/Scripts/resource-parser.js"
+	parserContent, err := fetchURL(parserURL)
+	if err != nil {
+		fmt.Printf("  [ERROR] Failed to fetch QX-Resource-Parser.js: %v\n", err)
+	} else {
+		parserPath := filepath.Join(root, "source", "QX-Resource-Parser.js")
+		err = os.WriteFile(parserPath, []byte(parserContent), 0644)
+		if err != nil {
+			fmt.Printf("  [ERROR] Failed to write QX-Resource-Parser.js: %v\n", err)
+		} else {
+			fmt.Println("  [SUCCESS] QX-Resource-Parser.js updated successfully")
 		}
 	}
 
