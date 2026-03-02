@@ -442,19 +442,19 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool) {
 	var lines []string
 
 	for _, d := range rules.DomainSuffix {
-		lines = append(lines, fmt.Sprintf("host-suffix, %s", d))
+		lines = append(lines, fmt.Sprintf("HOST-SUFFIX,%s", d))
 	}
 	for _, d := range rules.Domain {
-		lines = append(lines, fmt.Sprintf("host, %s", d))
+		lines = append(lines, fmt.Sprintf("HOST,%s", d))
 	}
 	for _, d := range rules.DomainKeyword {
-		lines = append(lines, fmt.Sprintf("host-keyword, %s", d))
+		lines = append(lines, fmt.Sprintf("HOST-KEYWORD,%s", d))
 	}
 	for _, cidr := range rules.IPCIDR {
 		if strings.Contains(cidr, ":") {
-			lines = append(lines, fmt.Sprintf("ip6-cidr, %s", cidr))
+			lines = append(lines, fmt.Sprintf("IP6-CIDR,%s", cidr))
 		} else {
-			lines = append(lines, fmt.Sprintf("ip-cidr, %s", cidr))
+			lines = append(lines, fmt.Sprintf("IP-CIDR,%s", cidr))
 		}
 	}
 
