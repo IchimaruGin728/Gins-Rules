@@ -118,6 +118,10 @@ func main() {
 				rules = mergeRules(rules, uRules)
 			}
 
+			if category != "proxy" {
+				rules = sanitizeRules(rules)
+			}
+
 			total := len(rules.DomainSuffix) + len(rules.Domain) +
 				len(rules.DomainKeyword) + len(rules.DomainRegex) + len(rules.IPCIDR)
 			if total == 0 {
@@ -208,6 +212,42 @@ func copyParserJS(root string, compiledDir string) {
 	if err == nil {
 		os.WriteFile(dstPath, data, 0o644)
 	}
+}
+
+func sanitizeRules(rules Rules) Rules {
+	forceProxy := []string{
+		"browserleaks.com", "browserleaks.org",
+		"ipleak.net", "ipleak.vip",
+		"ipinfo.io", "ip.sb",
+		"whoer.net", "dnsleaktest.com",
+	}
+
+	isForce := func(d string) bool {
+		for _, p := range forceProxy {
+			if d == p || strings.HasSuffix(d, "."+p) {
+				return true
+			}
+		}
+		return false
+	}
+
+	var newDomain []string
+	for _, d := range rules.Domain {
+		if !isForce(d) {
+			newDomain = append(newDomain, d)
+		}
+	}
+
+	var newSuffix []string
+	for _, d := range rules.DomainSuffix {
+		if !isForce(d) {
+			newSuffix = append(newSuffix, d)
+		}
+	}
+
+	rules.Domain = newDomain
+	rules.DomainSuffix = newSuffix
+	return rules
 }
 
 func findRoot() string {
@@ -442,9 +482,10 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool, catego
 	var lines []string
 
 	policy := "Proxy"
-	if category == "direct" {
+	switch category {
+	case "direct":
 		policy = "Direct"
-	} else if category == "reject" {
+	case "reject":
 		policy = "Reject"
 	}
 
