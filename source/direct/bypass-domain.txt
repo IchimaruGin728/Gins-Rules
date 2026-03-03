@@ -1,0 +1,6 @@
+localhost
+local
+lan
+router
+captive.apple.com
+e.crashlynatics.com

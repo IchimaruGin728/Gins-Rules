@@ -1,7 +1,8 @@
+full:api.imem.app
+full:api.swiftgram.app
 cdn-telegram.org
 comments.app
 contest.com
-core.telegram.org
 graph.org
 legra.ph
 mbrx.app
@@ -21,3 +22,10 @@ telesco.pe
 tg.dev
 tx.me
 usercontent.dev
+keyword:nicegram
+109.239.140.0/24
+139.59.210.98/32
+149.154.160.0/20
+196.55.216.167/32
+5.28.192.0/18
+91.108.0.0/16

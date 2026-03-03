@@ -1,12 +1,12 @@
+full:lf16-effectcdn.byteeffecttos-g.com
+full:lf16-pkgcdn.pitaya-clientai.com
+full:p16-tiktokcdn-com.akamaized.net
+full:trae-api-sg.mchost.guru
 bytedapm.com
 bytegecko-i18n.com
 byteintlapi.com
 byteoversea.com
 capcut.com
-full:lf16-effectcdn.byteeffecttos-g.com
-full:lf16-pkgcdn.pitaya-clientai.com
-full:p16-tiktokcdn-com.akamaized.net
-full:trae-api-sg.mchost.guru
 ibytedtos.com
 ibyteimg.com
 ipstatp.com
@@ -15,6 +15,7 @@ marscode.com
 muscdn.com
 musical.ly
 sgpstatp.com
+snssdk.com
 tik-tokapi.com
 tiktok.com
 tiktokcdn-us.com
@@ -26,3 +27,5 @@ tiktokv.com
 tiktokv.us
 trae.ai
 ttwebview.com
+keyword:musical.ly
+keyword:tiktok
