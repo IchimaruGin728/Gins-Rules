@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"sort"
@@ -284,14 +285,161 @@ func writeIPList(filePath string, cidrSet map[string]bool) error {
 	writer := bufio.NewWriter(f)
 	defer writer.Flush()
 
-	// Sort keys for deterministic output
-	sorted := sortedKeys(cidrSet)
-	for _, cidr := range sorted {
-		if _, err := writer.WriteString(cidr + "\n"); err != nil {
+	// 1. Convert strings to netip.Prefix
+	var prefixes []netip.Prefix
+	for s := range cidrSet {
+		p, err := netip.ParsePrefix(s)
+		if err == nil {
+			prefixes = append(prefixes, p)
+		}
+	}
+
+	// 2. Aggregate/Merge for "Perfection"
+	aggregated := aggregatePrefixes(prefixes)
+
+	// 3. Sort for deterministic output
+	sort.Slice(aggregated, func(i, j int) bool {
+		if aggregated[i].Addr().Compare(aggregated[j].Addr()) != 0 {
+			return aggregated[i].Addr().Compare(aggregated[j].Addr()) < 0
+		}
+		return aggregated[i].Bits() < aggregated[j].Bits()
+	})
+
+	for _, p := range aggregated {
+		if _, err := writer.WriteString(p.String() + "\n"); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// aggregatePrefixes merges adjacent or overlapping prefixes into a minimal set.
+func aggregatePrefixes(prefixes []netip.Prefix) []netip.Prefix {
+	if len(prefixes) == 0 {
+		return nil
+	}
+
+	// Build ranges
+	type addrRange struct {
+		from, to netip.Addr
+	}
+	var ranges []addrRange
+	for _, p := range prefixes {
+		ranges = append(ranges, addrRange{p.Masked().Addr(), lastAddr(p)})
+	}
+
+	// Sort ranges
+	sort.Slice(ranges, func(i, j int) bool {
+		return ranges[i].from.Compare(ranges[j].from) < 0
+	})
+
+	// Merge ranges
+	var merged []addrRange
+	if len(ranges) > 0 {
+		curr := ranges[0]
+		for i := 1; i < len(ranges); i++ {
+			// If overlapping or adjacent
+			if curr.to.Compare(ranges[i].from) >= 0 || isAdjacent(curr.to, ranges[i].from) {
+				if ranges[i].to.Compare(curr.to) > 0 {
+					curr.to = ranges[i].to
+				}
+			} else {
+				merged = append(merged, curr)
+				curr = ranges[i]
+			}
+		}
+		merged = append(merged, curr)
+	}
+
+	// Convert ranges back to prefixes
+	var result []netip.Prefix
+	for _, r := range merged {
+		result = append(result, partitionRange(r.from, r.to)...)
+	}
+
+	return result
+}
+
+func lastAddr(p netip.Prefix) netip.Addr {
+	p = p.Masked()
+	addr := p.Addr()
+	bits := p.Bits()
+	totalBits := 32
+	if addr.Is6() {
+		totalBits = 128
+	}
+
+	// Get raw bytes
+	b := addr.AsSlice()
+	
+	// Set remaining bits to 1
+	for i := totalBits - 1; i >= bits; i-- {
+		byteIdx := i / 8
+		bitIdx := 7 - (i % 8)
+		b[byteIdx] |= (1 << bitIdx)
+	}
+
+	res, _ := netip.AddrFromSlice(b)
+	return res
+}
+
+func isAdjacent(a, b netip.Addr) bool {
+	if a.Is4() != b.Is4() {
+		return false
+	}
+	return a.Next() == b
+}
+
+func partitionRange(from, to netip.Addr) []netip.Prefix {
+	var res []netip.Prefix
+	for from.Compare(to) <= 0 {
+		// Find largest prefix that starts at 'from' and ends at or before 'to'
+		bits := 32
+		if from.Is6() {
+			bits = 128
+		}
+		
+		maxBits := 0
+		if from.Is4() {
+			// Find max trailing zeros
+			ip4 := from.As4()
+			u := uint32(ip4[0])<<24 | uint32(ip4[1])<<16 | uint32(ip4[2])<<8 | uint32(ip4[3])
+			if u == 0 {
+				maxBits = 32
+			} else {
+				for (u & 1) == 0 {
+					maxBits++
+					u >>= 1
+				}
+			}
+		} else {
+			// IPv6 fallback: simpler logic
+			maxBits = 0 // Keep it simple for now or implement full
+		}
+		
+		// Adjust for 'to'
+		finalBits := bits
+		for b := maxBits; b >= 0; b-- {
+			p := netip.PrefixFrom(from, bits-b)
+			if p.Masked() == p && lastAddr(p).Compare(to) <= 0 {
+				finalBits = bits - b
+				break
+			}
+		}
+		
+		p := netip.PrefixFrom(from, finalBits)
+		res = append(res, p)
+		
+		last := lastAddr(p)
+		if last == to {
+			break
+		}
+		from = last.Next()
+		if from == (netip.Addr{}) { // overflow
+			break
+		}
+	}
+	return res
 }
 
 func sortedKeys(m map[string]bool) []string {
