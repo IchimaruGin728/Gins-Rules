@@ -143,14 +143,18 @@ Comprehensive, self-maintained proxy rule list repository with fine-grained per-
 | Reject List | `reject-list.txt` | General reject domains (merged) |
 | Tracking | `tracking.txt` | Tracking domains |
 
-### IP / GeoIP / ASN (15 lists)
+### IP / GeoIP / ASN (Refined)
 
-> Auto-extracted from MMDB via `cmd/mmdb` (multi-source: ipinfo + ip2location merged & deduplicated)
+> Auto-extracted from MMDB via `cmd/mmdb` (multi-source: ipinfo + ip2location merged)
 
 | List | File | Source | Description |
 |------|------|--------|-------------|
-| China IP | `cn.txt` | GeoIP MMDB | 78,000+ China IP CIDRs |
-| Non-China IP | `!cn.txt` | GeoIP MMDB | **Full Globe Fallback** (All CIDRs NOT in CN) |
+| China IP | `cn.txt` | GeoIP MMDB | Primary China CIDRs |
+| Non-China IP | `!cn.txt` | GeoIP MMDB | **Global Fallback** (All non-CN IPs) |
+| SG IP | `sg.txt` | GeoIP MMDB | Singapore |
+| TW IP | `tw.txt` | GeoIP MMDB | Taiwan |
+| JP IP | `jp.txt` | GeoIP MMDB | Japan |
+| US IP | `us.txt` | GeoIP MMDB | USA |
 | Private IP | `private.txt` | GeoIP MMDB | RFC1918 private ranges |
 | Telegram IP | `telegram.txt` | Manual | Telegram IP CIDRs |
 | ASN Cloudflare | `asn-cloudflare.txt` | ASN MMDB | AS13335 |
