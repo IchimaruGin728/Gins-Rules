@@ -132,12 +132,13 @@ export class BuildWorkflow extends WorkflowEntrypoint<Env, BuildStats> {
 async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
   const parts = path.replace('/ruleset/', '').split('/');
   
+  let app: string | null = null;
   let category: string;
   let name: string;
   let ext: string;
 
   if (parts.length === 1) {
-    // Format: ruleset/proxy.srs
+    // Format: ruleset/proxy.srs (Legacy/Merged Default)
     const fileName = parts[0];
     const dotIdx = fileName.lastIndexOf('.');
     if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
@@ -145,9 +146,33 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
     name = `${category}-total`;
     ext = fileName.slice(dotIdx + 1);
   } else if (parts.length === 2) {
-    // Format: ruleset/proxy/google.srs
-    category = parts[0];
-    const fileName = parts[1];
+    // Format A: ruleset/proxy/google.srs (Merged Default)
+    // Format B: ruleset/shadowrocket/proxy.list (New App-specific Merged)
+    // We check if parts[0] is a known app or a known category
+    const apps = ['singbox', 'mihomo', 'stash', 'surge', 'quanx', 'loon', 'egern', 'shadowrocket', 'clash'];
+    const categories = ['proxy', 'direct', 'reject', 'ip'];
+    
+    if (apps.includes(parts[0])) {
+      app = parts[0];
+      const fileName = parts[1];
+      const dotIdx = fileName.lastIndexOf('.');
+      if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
+      category = fileName.slice(0, dotIdx);
+      name = `${category}-total`;
+      ext = fileName.slice(dotIdx + 1);
+    } else {
+      category = parts[0];
+      const fileName = parts[1];
+      const dotIdx = fileName.lastIndexOf('.');
+      if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
+      name = fileName.slice(0, dotIdx);
+      ext = fileName.slice(dotIdx + 1);
+    }
+  } else if (parts.length === 3) {
+    // Format: ruleset/shadowrocket/proxy/google.list
+    app = parts[0];
+    category = parts[1];
+    const fileName = parts[2];
     const dotIdx = fileName.lastIndexOf('.');
     if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
     name = fileName.slice(0, dotIdx);
@@ -159,24 +184,38 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
   const pagesDomain = url.searchParams.get('domain') ?? env.PAGES_DOMAIN ?? 'rules.ichimarugin728.dev';
 
   if (!['proxy', 'direct', 'reject', 'ip'].includes(category)) {
-    return new Response('Invalid category. Use: proxy, direct, reject, ip', { status: 400 });
+    return new Response('Invalid category', { status: 400 });
   }
 
-  // Map extension to directory name
-  const formatMap: Record<string, string> = {
-    list: 'text',
-    yaml: 'egern',
-    srs: 'singbox',
-    mrs: 'mihomo',
+  // App to Directory Mapping
+  const appToDir: Record<string, string> = {
+    'singbox': 'singbox',
+    'mihomo': 'mihomo',
+    'clash': 'mihomo',
+    'stash': 'stash',
+    'surge': 'text',
+    'quanx': 'quanx',
+    'loon': 'loon',
+    'egern': 'egern',
+    'shadowrocket': 'shadowrocket',
   };
-  const dir = formatMap[ext] ?? ext;
+
+  // Extension Mapping
+  const extMap: Record<string, string> = {
+    'list': 'text',
+    'yaml': 'egern',
+    'srs': 'singbox',
+    'mrs': 'mihomo',
+  };
+
+  const dir = app ? appToDir[app] : (extMap[ext] ?? ext);
   
-  // Predictable filename structure
-  // text/proxy/google.list
-  // singbox/proxy/google.srs
+  if (!dir) return new Response('Invalid app or extension', { status: 400 });
+
   let targetFile = `${name}.${ext}`;
-  if (ext === 'list' && category === 'ip') {
-    targetFile = `${name}.ip.list`; // Match compiler's output for IP lists
+  // Special correction for IP lists in text format (compiler outputs .ip.list)
+  if (dir === 'text' && category === 'ip' && ext === 'list' && !targetFile.includes('.ip.')) {
+    targetFile = targetFile.replace('.list', '.ip.list');
   }
   
   const targetUrl = `https://${pagesDomain}/${dir}/${category}/${targetFile}`;
