@@ -45,9 +45,9 @@ pnpm-debug.log*
 
 # Go
 bin/
-main
-sync
-compile
+/main
+/sync
+/compile
 
 # Wrangler temp files
 .wrangler/
