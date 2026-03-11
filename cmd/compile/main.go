@@ -141,7 +141,17 @@ func main() {
 			}
 			mrsOK := false
 			if hasMihomo {
-				mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
+				// Safety check: Mihomo converter panics on empty payloads
+				isEmpty := false
+				if isIP && len(rules.IPCIDR) == 0 {
+					isEmpty = true
+				} else if !isIP && len(rules.Domain) == 0 && len(rules.DomainSuffix) == 0 {
+					isEmpty = true
+				}
+
+				if !isEmpty {
+					mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
+				}
 			}
 
 			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category, "yaml"), isIP)

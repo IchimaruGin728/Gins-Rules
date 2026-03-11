@@ -197,17 +197,31 @@ async function handleBuildComplete(request: Request, env: Env): Promise<Response
 
   const stats: BuildStats = await request.json();
 
-  // Trigger the Workflow
-  const instance = await env.BUILD_WORKFLOW.create({
-    id: `build-${Date.now()}`,
-    params: stats,
-  });
+  // Use build timestamp as ID to deduplicate (GitHub Actions 'on push' might trigger twice)
+  // Format: 20260311T120000Z
+  const instanceId = `build-${stats.timestamp.replace(/[:.-]/g, '')}`;
 
-  return json({
-    status: 'accepted',
-    workflow_id: instance.id,
-    message: 'Workflow triggered successfully',
-  });
+  try {
+    const instance = await env.BUILD_WORKFLOW.create({
+      id: instanceId,
+      params: stats,
+    });
+
+    return json({
+      status: 'accepted',
+      workflow_id: instance.id,
+      message: 'Workflow triggered successfully',
+    });
+  } catch (err) {
+    // If instance already exists, it's a deduplicated duplicate trigger
+    if (err instanceof Error && err.message.includes('already exists')) {
+      return json({
+        status: 'deduplicated',
+        message: 'Workflow already running for this build',
+      });
+    }
+    throw err;
+  }
 }
 
 // ============================================================
