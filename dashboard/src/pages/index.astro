@@ -3,6 +3,7 @@ import Layout from '../components/Layout.astro';
 import fs from 'node:fs';
 import path from 'node:path';
 import CopyCard from '../components/CopyCard.preact';
+import ServiceItem from '../components/ServiceItem.preact';
 
 // Read service lists from source/ at build time
 const sourceDir = path.resolve('..', 'source');
@@ -86,7 +87,7 @@ const buildTime = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UT
     <div class="space-y-4">
       <div class="flex items-center justify-between px-1">
         <h2 class="font-outfit font-black text-lg tracking-tight text-white/90">Detailed Lists</h2>
-        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Click entries to copy raw URL</span>
+        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Select format for individual lists</span>
       </div>
       {categories.map((cat, idx) => (
         <details class="glass-panel !p-0 overflow-hidden group/details" open={idx === 0}>
@@ -102,22 +103,15 @@ const buildTime = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UT
           </summary>
 
           <div class="border-t border-white/5 p-5">
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {cat.services.map((svc) => (
-                <button
-                  onclick={`navigator.clipboard.writeText('https://rules.ichimarugin728.dev/text/${cat.id}/${svc.name}').then(() => { this.classList.add('!bg-brand-primary/20', '!border-brand-primary/40'); setTimeout(() => this.classList.remove('!bg-brand-primary/20', '!border-brand-primary/40'), 1000); })`}
-                  class="group/item relative flex flex-col items-start p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/20 transition-all text-left active:scale-95"
-                >
-                  <span class="text-gray-300 font-mono text-[11px] truncate w-full group-hover/item:text-white transition-colors">
-                    {svc.name.replace('.txt', '')}
-                  </span>
-                  <div class="flex items-center justify-between w-full mt-1.5 opacity-60 group-hover/item:opacity-100 transition-opacity">
-                    <span class="text-[9px] text-gray-500 font-black uppercase tracking-tighter">
-                      {svc.lines} Lines
-                    </span>
-                    <div class="i-ph-copy-simple text-[10px] text-brand-primary opacity-0 group-hover/item:opacity-100 transform translate-x-1 group-hover/item:translate-x-0 transition-all"></div>
-                  </div>
-                </button>
+                <ServiceItem 
+                  client:load
+                  name={svc.name}
+                  category={cat.id}
+                  lines={svc.lines}
+                  apiBase={apiBase}
+                />
               ))}
             </div>
           </div>
