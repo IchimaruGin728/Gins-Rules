@@ -1,6 +1,5 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { execSync } from 'child_process';
 
 interface Rules {
   domainSuffix: string[];
@@ -9,6 +8,8 @@ interface Rules {
   domainRegex: string[];
   ipCidr: string[];
 }
+
+const MAX_JSON_SIZE = 20 * 1024 * 1024; // 20 MiB safety limit (CF Pages limit is 25 MiB)
 
 const findRoot = () => {
   let curr = process.cwd();
@@ -35,14 +36,68 @@ function parseSource(filePath: string): Rules {
   return r;
 }
 
+function mergeRules(a: Rules, b: Rules): Rules {
+  return {
+    domainSuffix: [...a.domainSuffix, ...b.domainSuffix],
+    domain: [...a.domain, ...b.domain],
+    domainKeyword: [...a.domainKeyword, ...b.domainKeyword],
+    domainRegex: [...a.domainRegex, ...b.domainRegex],
+    ipCidr: [...a.ipCidr, ...b.ipCidr],
+  };
+}
+
+function dedup(rules: Rules): Rules {
+  return {
+    domainSuffix: [...new Set(rules.domainSuffix)],
+    domain: [...new Set(rules.domain)],
+    domainKeyword: [...new Set(rules.domainKeyword)],
+    domainRegex: [...new Set(rules.domainRegex)],
+    ipCidr: [...new Set(rules.ipCidr)],
+  };
+}
+
+function compileSingbox(rules: Rules): object {
+  const ruleObj: Record<string, string[]> = {};
+  if (rules.domain.length) ruleObj.domain = rules.domain;
+  if (rules.domainSuffix.length) ruleObj.domain_suffix = rules.domainSuffix;
+  if (rules.domainKeyword.length) ruleObj.domain_keyword = rules.domainKeyword;
+  if (rules.domainRegex.length) ruleObj.domain_regex = rules.domainRegex;
+  if (rules.ipCidr.length) ruleObj.ip_cidr = rules.ipCidr;
+  return { version: 2, rules: [ruleObj] };
+}
+
+function compileText(rules: Rules): string {
+  const lines: string[] = [];
+  for (const d of rules.domain) lines.push(`full:${d}`);
+  for (const s of rules.domainSuffix) lines.push(s);
+  for (const k of rules.domainKeyword) lines.push(`keyword:${k}`);
+  for (const r of rules.domainRegex) lines.push(`regexp:${r}`);
+  for (const ip of rules.ipCidr) lines.push(ip);
+  return lines.join('\n') + '\n';
+}
+
+function compileMihomo(rules: Rules): string {
+  const lines: string[] = [];
+  for (const d of rules.domain) lines.push(`DOMAIN,${d}`);
+  for (const s of rules.domainSuffix) lines.push(`DOMAIN-SUFFIX,${s}`);
+  for (const k of rules.domainKeyword) lines.push(`DOMAIN-KEYWORD,${k}`);
+  for (const ip of rules.ipCidr) lines.push(ip.includes(':') ? `IP-CIDR6,${ip}` : `IP-CIDR,${ip}`);
+  return lines.join('\n') + '\n';
+}
+
 async function main() {
   const root = findRoot();
   const compiledDir = path.join(root, 'compiled');
-  const formats = ['singbox', 'mihomo', 'text', 'quanx', 'egern', 'loon', 'stash', 'shadowrocket'];
+  const formats = ['singbox', 'mihomo', 'text'];
   const categories = ['proxy', 'direct', 'reject', 'ip'];
 
-  for (const f of formats as string[]) {
-    for (const c of categories as string[]) {
+  console.log('============================================================');
+  console.log('  Gins-Rules Compiler (TS/Bun)');
+  console.log('============================================================');
+
+  // Create all directories
+  for (const f of formats) {
+    for (const c of categories) {
       await fs.ensureDir(path.join(compiledDir, f, c));
     }
   }
@@ -52,28 +107,49 @@ async function main() {
     const upstreamDir = path.join(root, 'source', 'upstream', category);
     const ruleNames = new Set<string>();
 
-    [localDir, upstreamDir].forEach(d => {
+    [localDir, upstreamDir].forEach((d: string) => {
       if (fs.existsSync(d)) {
-        fs.readdirSync(d).filter(f => f.endsWith('.txt')).forEach(f => ruleNames.add(path.parse(f).name));
+        fs.readdirSync(d).filter((f: string) => f.endsWith('.txt')).forEach((f: string) => ruleNames.add(path.parse(f).name));
       }
     });
 
     for (const name of Array.from(ruleNames).sort()) {
-      const rules = parseSource(path.join(localDir, name + '.txt'));
-      // Simplification: only local source for now in this restore, add upstream merging if needed
+      let rules: Rules = { domainSuffix: [], domain: [], domainKeyword: [], domainRegex: [], ipCidr: [] };
+
+      const localFile = path.join(localDir, name + '.txt');
+      const upstreamFile = path.join(upstreamDir, name + '.txt');
       
-      const sbJson = { version: 2, rules: [{
-        domain: rules.domain.length ? rules.domain : undefined,
-        domain_suffix: rules.domainSuffix.length ? rules.domainSuffix : undefined,
-        ip_cidr: rules.ipCidr.length ? rules.ipCidr : undefined,
-      }]};
-      await fs.writeJson(path.join(compiledDir, 'singbox', category, name + '.json'), sbJson, { spaces: 2 });
-      console.log(`  [${category}] ${name}: compiled`);
+      if (fs.existsSync(localFile)) rules = mergeRules(rules, parseSource(localFile));
+      if (fs.existsSync(upstreamFile)) rules = mergeRules(rules, parseSource(upstreamFile));
+      rules = dedup(rules);
+
+      const totalRules = rules.domain.length + rules.domainSuffix.length + rules.domainKeyword.length + rules.ipCidr.length;
+      if (totalRules === 0) continue;
+
+      // --- sing-box JSON ---
+      const sbJson = compileSingbox(rules);
+      const sbStr = JSON.stringify(sbJson, null, 2);
+      
+      if (sbStr.length < MAX_JSON_SIZE) {
+        await fs.writeFile(path.join(compiledDir, 'singbox', category, name + '.json'), sbStr);
+      } else {
+        // Too large for CF Pages — skip JSON, log warning
+        console.log(`  ⚠️ [${category}] ${name}: singbox JSON too large (${(sbStr.length / 1024 / 1024).toFixed(1)} MiB), skipped`);
+      }
+
+      // --- text format (always output) ---
+      await fs.writeFile(path.join(compiledDir, 'text', category, name + '.txt'), compileText(rules));
+
+      // --- mihomo / clash format ---
+      await fs.writeFile(path.join(compiledDir, 'mihomo', category, name + '.txt'), compileMihomo(rules));
+
+      console.log(`  [${category}] ${name}: ${totalRules} rules`);
     }
   }
 
-  for (const f of formats as string[]) {
-    for (const c of categories as string[]) {
+  // Generate manifests
+  for (const f of formats) {
+    for (const c of categories) {
       const d = path.join(compiledDir, f, c);
       if (fs.existsSync(d)) {
         const files = fs.readdirSync(d).filter((file: string) => !fs.statSync(path.join(d, file)).isDirectory() && file !== 'manifest.json');
@@ -81,6 +157,9 @@ async function main() {
       }
     }
   }
+
+  console.log('\n  Compile complete!');
+  console.log('============================================================');
 }
 
 main();

@@ -72,4 +72,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy compiled --project-name=gins-rules --branch=main
+          command: pages deploy compiled --project-name=gins-rules --branch=main --commit-dirty=true
