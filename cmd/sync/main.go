@@ -22,7 +22,7 @@ type UpstreamSource struct {
 func main() {
 	root := findRoot()
 	configPath := filepath.Join(root, "source", "sources.json")
-	
+
 	configData, err := os.ReadFile(configPath)
 	if err != nil {
 		fmt.Printf("  [ERROR] Failed to read %s: %v\n", configPath, err)
@@ -58,7 +58,7 @@ func main() {
 		}
 
 		rules := processRules(content)
-		
+
 		if mergedResults[src.Category] == nil {
 			mergedResults[src.Category] = make(map[string][]string)
 		}

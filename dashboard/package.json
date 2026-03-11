@@ -18,6 +18,16 @@
     "@unocss/astro": "latest",
     "@unocss/reset": "latest",
     "typescript": "latest",
-    "unocss": "latest"
+    "unocss": "latest",
+    "@astrojs/check": "latest",
+    "@unocss/transformer-variant-group": "latest",
+    "@unocss/transformer-directives": "latest",
+    "@types/node": "latest"
+  },
+  "pnpm": {
+    "allowedBuildScripts": [
+      "esbuild",
+      "sharp"
+    ]
   }
 }

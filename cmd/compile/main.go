@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-
 type Rules struct {
 	DomainSuffix  []string
 	Domain        []string
@@ -19,10 +18,9 @@ type Rules struct {
 	IPCIDR        []string
 }
 
-
 type SingBoxRuleSet struct {
-	Version int              `json:"version"`
-	Rules   []SingBoxRule    `json:"rules"`
+	Version int           `json:"version"`
+	Rules   []SingBoxRule `json:"rules"`
 }
 
 type SingBoxRule struct {
@@ -32,7 +30,6 @@ type SingBoxRule struct {
 	DomainRegex   []string `json:"domain_regex,omitempty"`
 	IPCIDR        []string `json:"ip_cidr,omitempty"`
 }
-
 
 type Stats struct {
 	Files int
@@ -68,7 +65,6 @@ func main() {
 	hasSingBox := singboxPath != ""
 	hasMihomo := mihomoPath != ""
 
-
 	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
@@ -88,7 +84,7 @@ func main() {
 
 	for _, category := range categories {
 		ruleNames := make(map[string]bool)
-		
+
 		localDir := filepath.Join(root, "source", category)
 		upstreamDir := filepath.Join(root, "source", "upstream", category)
 
@@ -164,7 +160,7 @@ func main() {
 
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
 			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP, category)
-			compileEgernYAML(name, rules, filepath.Join(egernDir, category)) 
+			compileEgernYAML(name, rules, filepath.Join(egernDir, category))
 			compileLoonList(name, rules, filepath.Join(loonDir, category))
 			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
 
@@ -225,7 +221,6 @@ func main() {
 
 		fmt.Printf("  ✅ [%-6s] Created full merged rule-set: %s\n", category, name)
 	}
-
 
 	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket"} {
 		for _, cat := range categories {
@@ -305,13 +300,11 @@ func findRoot() string {
 	exe, _ := os.Executable()
 	dir := filepath.Dir(exe)
 
-
 	for d := dir; d != "/"; d = filepath.Dir(d) {
 		if _, err := os.Stat(filepath.Join(d, "go.mod")); err == nil {
 			return d
 		}
 	}
-
 
 	wd, _ := os.Getwd()
 	for d := wd; d != "/"; d = filepath.Dir(d) {
@@ -465,7 +458,7 @@ func compileMihomoYAML(name string, rules Rules, outDir string, isIP bool) strin
 		var domains []string
 		domains = append(domains, rules.DomainSuffix...)
 		domains = append(domains, rules.Domain...)
-		
+
 		uniqueDomains := make(map[string]bool)
 		for _, d := range domains {
 			// Skip domains with too many dots to avoid Mihomo panic

@@ -1,6 +1,6 @@
 import {
   defineConfig,
-  presetUno,
+  presetWind,
   presetIcons,
   presetTypography,
 } from 'unocss';
@@ -9,7 +9,7 @@ import transformerVariantGroup from '@unocss/transformer-variant-group';
 
 export default defineConfig({
   presets: [
-    presetUno(),
+    presetWind(),
     presetTypography(),
     presetIcons({
       scale: 1.2,

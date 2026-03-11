@@ -139,13 +139,9 @@ fn extract_country_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<String,
     let iter = reader.networks(Default::default())?;
     for result in iter {
         let lookup = result?;
-        if let Some(record) = lookup.decode::<CountryRecord>()? {
-            if let Some(country) = record.country {
-                if let Some(code) = country.iso_code {
-                    storage.entry(code).or_default().insert(lookup.network()?);
-                    count += 1;
-                }
-            }
+        if let Some(code) = lookup.decode::<CountryRecord>()?.and_then(|r| r.country).and_then(|c| c.iso_code) {
+            storage.entry(code).or_default().insert(lookup.network()?);
+            count += 1;
         }
     }
     Ok(count)
@@ -156,11 +152,9 @@ fn extract_asn_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<u32, HashSe
     let iter = reader.networks(Default::default())?;
     for result in iter {
         let lookup = result?;
-        if let Some(record) = lookup.decode::<AsnRecord>()? {
-            if let Some(asn) = record.autonomous_system_number {
-                storage.entry(asn).or_default().insert(lookup.network()?);
-                count += 1;
-            }
+        if let Some(asn) = lookup.decode::<AsnRecord>()?.and_then(|r| r.autonomous_system_number) {
+            storage.entry(asn).or_default().insert(lookup.network()?);
+            count += 1;
         }
     }
     Ok(count)
