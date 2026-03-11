@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 maxminddb = "*"
 ipnet = "*"
+ipnetwork = "*"
 tokio = { version = "*", features = ["full"] }
 reqwest = { version = "*", features = ["json"] }
 serde = { version = "*", features = ["derive"] }

@@ -1,6 +1,7 @@
 use anyhow::Result;
-use ipnet::{IpNet, Ipv4Net, Ipv6Net};
-use maxminddb::{Reader, WithinOptions};
+use ipnet::{Ipv4Net, Ipv6Net};
+use ipnetwork::IpNetwork;
+use maxminddb::Reader;
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -77,8 +78,8 @@ async fn main() -> Result<()> {
     println!("  Gins-Rules MMDB Parser (Rust Extreme Version)");
     println!("============================================================");
 
-    let mut country_cidrs: HashMap<String, HashSet<IpNet>> = HashMap::new();
-    let mut asn_cidrs: HashMap<u32, HashSet<IpNet>> = HashMap::new();
+    let mut country_cidrs: HashMap<String, HashSet<IpNetwork>> = HashMap::new();
+    let mut asn_cidrs: HashMap<u32, HashSet<IpNetwork>> = HashMap::new();
 
     for src in MMDB_SOURCES {
         println!("\n  Processing {}...", src.name);
@@ -133,27 +134,31 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn extract_country_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<String, HashSet<IpNet>>) -> Result<usize> {
+fn extract_country_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<String, HashSet<IpNetwork>>) -> Result<usize> {
     let mut count = 0;
-    let iter = reader.networks::<CountryRecord>(WithinOptions::default());
-    for net_res in iter {
-        if let Ok(net) = net_res {
-            if let Some(code) = net.model().country.as_ref().and_then(|c| c.iso_code.as_ref()) {
-                storage.entry(code.clone()).or_default().insert(net.network());
-                count += 1;
+    let iter = reader.networks(Default::default())?;
+    for result in iter {
+        let lookup = result?;
+        if let Some(record) = lookup.decode::<CountryRecord>()? {
+            if let Some(country) = record.country {
+                if let Some(code) = country.iso_code {
+                    storage.entry(code).or_default().insert(lookup.network()?);
+                    count += 1;
+                }
             }
         }
     }
     Ok(count)
 }
 
-fn extract_asn_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<u32, HashSet<IpNet>>) -> Result<usize> {
+fn extract_asn_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<u32, HashSet<IpNetwork>>) -> Result<usize> {
     let mut count = 0;
-    let iter = reader.networks::<AsnRecord>(WithinOptions::default());
-    for net_res in iter {
-        if let Ok(net) = net_res {
-            if let Some(asn) = net.model().autonomous_system_number {
-                storage.entry(asn).or_default().insert(net.network());
+    let iter = reader.networks(Default::default())?;
+    for result in iter {
+        let lookup = result?;
+        if let Some(record) = lookup.decode::<AsnRecord>()? {
+            if let Some(asn) = record.autonomous_system_number {
+                storage.entry(asn).or_default().insert(lookup.network()?);
                 count += 1;
             }
         }
@@ -168,13 +173,21 @@ async fn download_file(url: &str, dest: &Path) -> Result<()> {
     Ok(())
 }
 
-fn write_aggregated_ip_list(path: &Path, nets: &HashSet<IpNet>) -> Result<()> {
+fn write_aggregated_ip_list(path: &Path, nets: &HashSet<IpNetwork>) -> Result<()> {
     let mut v4: Vec<Ipv4Net> = Vec::new();
     let mut v6: Vec<Ipv6Net> = Vec::new();
     for net in nets {
         match net {
-            IpNet::V4(n) => v4.push(*n),
-            IpNet::V6(n) => v6.push(*n),
+            IpNetwork::V4(n) => {
+                if let Ok(converted) = Ipv4Net::new(n.ip(), n.prefix()) {
+                    v4.push(converted);
+                }
+            }
+            IpNetwork::V6(n) => {
+                if let Ok(converted) = Ipv6Net::new(n.ip(), n.prefix()) {
+                    v6.push(converted);
+                }
+            }
         }
     }
     let file = fs::File::create(path)?;
