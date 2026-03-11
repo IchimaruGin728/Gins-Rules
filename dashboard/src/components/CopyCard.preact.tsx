@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { activeApp, getActiveConfig } from '../store.preact';
 
 interface Props {
   label: string;
@@ -8,65 +9,61 @@ interface Props {
 }
 
 export default function CopyCard({ label, category, icon, baseUrl }: Props) {
-  const [copied, setCopied] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const config = getActiveConfig();
 
-  const formats = [
-    { label: 'Sing-box', ext: 'srs', icon: 'i-ph-cube-bold' },
-    { label: 'Mihomo', ext: 'mrs', icon: 'i-ph-navigation-arrow-bold' },
-    { label: 'Text List', ext: 'list', icon: 'i-ph-file-text-bold' },
-    { label: 'Egern', ext: 'yaml', icon: 'i-ph-scroll-bold' },
-  ];
-
-  const handleCopy = async (ext: string, e: MouseEvent) => {
-    e.stopPropagation();
-    const url = `${baseUrl}/ruleset/${category}.${ext}`;
+  const handleCopy = async () => {
+    // URL Format: ruleset/:app/:category.ext
+    const url = `${baseUrl}/ruleset/${activeApp.value}/${category}.${config.ext}`;
+    
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(ext);
-      setTimeout(() => setCopied(null), 2000);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy!', err);
+      console.error('Copy failed', err);
     }
   };
 
   return (
-    <div class="glass-panel group relative overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-brand-primary/10">
-      {/* Background Glow */}
-      <div class="absolute -inset-1 bg-gradient-to-r from-brand-primary/0 via-brand-primary/5 to-brand-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur"></div>
-      
-      <div class="relative p-6 flex flex-col h-full">
-        <div class="flex items-center gap-4 mb-6">
-          <div class={`${icon} text-3xl text-brand-primary group-hover:scale-110 transition-transform duration-500`}></div>
-          <div>
-            <h3 class="font-outfit font-black text-xl tracking-tight text-white group-hover:text-brand-primary transition-colors">{label}</h3>
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Ruleset Bundle</p>
-          </div>
-        </div>
+    <button
+      onClick={handleCopy}
+      class={`
+        group relative w-full overflow-hidden glass-panel !p-8 flex flex-col items-center justify-center gap-5 transition-all duration-500
+        ${copied ? '!border-brand-primary/40' : 'hover:border-white/20 hover:scale-[1.02]'}
+        active:scale-[0.98]
+      `}
+    >
+      {/* Dynamic Background Glow */}
+      <div 
+        class="absolute -inset-20 opacity-0 group-hover:opacity-10 transition-opacity duration-1000 blur-[80px] pointer-events-none"
+        style={{ backgroundColor: config.color }}
+      ></div>
 
-        <div class="grid grid-cols-2 gap-2 mt-auto">
-          {formats.map((f) => (
-            <button
-              onClick={(e) => handleCopy(f.ext, e)}
-              class={`
-                relative flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300
-                ${copied === f.ext 
-                  ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                  : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white hover:border-white/10'
-                }
-                border active:scale-95
-              `}
-            >
-              <div class={`${copied === f.ext ? 'i-ph-check-circle-bold scale-110' : f.icon} transition-all`}></div>
-              <span>{copied === f.ext ? 'Copied!' : f.label}</span>
-              
-              {/* Particle Burst Effect on Copy */}
-              {copied === f.ext && (
-                <div class="absolute inset-0 pointer-events-none animate-ping opacity-50 bg-green-500/20 rounded-xl"></div>
-              )}
-            </button>
-          ))}
+      <div class="relative flex items-center justify-center p-5 rounded-[2.5rem] bg-white/[0.03] border border-white/5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+        <div class={`${icon} text-4xl transition-colors duration-500`} style={{ color: config.color }}></div>
+      </div>
+
+      <div class="relative text-center">
+        <div class="font-outfit font-black text-2xl tracking-tighter text-white group-hover:text-brand-primary transition-colors">{label}</div>
+        <div class="flex items-center gap-2 justify-center mt-2">
+          <div class={`${config.icon} text-xs`} style={{ color: config.color }}></div>
+          <span class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 group-hover:text-gray-400 transition-colors">
+            {config.label} Link
+          </span>
         </div>
       </div>
-    </div>
+
+      {/* Action Overlay */}
+      <div class={`
+        absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-md transition-all duration-500
+        ${copied ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'}
+      `}>
+        <div class="flex flex-col items-center gap-3">
+          <div class="i-ph-check-circle-fill text-5xl text-brand-primary"></div>
+          <span class="font-outfit font-black text-sm uppercase tracking-[0.4em] text-brand-primary animate-pulse">Copied!</span>
+        </div>
+      </div>
+    </button>
   );
 }

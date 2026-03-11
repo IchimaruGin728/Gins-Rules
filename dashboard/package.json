@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@astrojs/preact": "latest",
+    "@preact/signals": "^2.8.2",
     "astro": "latest",
     "preact": "latest"
   },

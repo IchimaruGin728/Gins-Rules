@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { activeApp, getActiveConfig } from '../store.preact';
 
 interface Props {
   name: string;
@@ -8,71 +9,69 @@ interface Props {
 }
 
 export default function ServiceItem({ name, category, lines, apiBase }: Props) {
-  const [copied, setCopied] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const cleanName = name.replace('.txt', '');
+  const config = getActiveConfig();
 
-  const formats = [
-    { id: 'srs', icon: 'i-ph-cube-bold', tooltip: 'Sing-box' },
-    { id: 'mrs', icon: 'i-ph-navigation-arrow-bold', tooltip: 'Mihomo' },
-    { id: 'list', icon: 'i-ph-file-text-bold', tooltip: 'Text List' },
-  ];
-
-  const handleCopy = async (ext: string, e: any) => {
-    // Prevent standard click behavior or text selection
+  const handleCopy = async (e: any) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const url = `${apiBase}/ruleset/${category}/${cleanName}.${ext}`;
+    // URL Format: ruleset/:app/:category/:name.ext
+    const url = `${apiBase}/ruleset/${activeApp.value}/${category}/${cleanName}.${config.ext}`;
+    
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(ext);
-      setTimeout(() => setCopied(null), 1000);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     } catch (err) {
       console.error('Copy failed', err);
     }
   };
 
   return (
-    <div 
+    <button
+      onClick={handleCopy}
       class={`
-        group/item relative flex flex-col items-start p-3 rounded-2xl transition-all duration-300
-        bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/20
+        group/item relative flex items-center justify-between w-full p-3 rounded-xl transition-all duration-300
+        bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06] hover:border-white/20
         ${copied ? '!bg-brand-primary/10 !border-brand-primary/30' : ''}
+        active:scale-[0.98]
       `}
     >
-      <div class="flex items-center justify-between w-full mb-2">
-        <span class="text-gray-200 font-mono text-[11px] font-bold truncate pr-2 group-hover/item:text-brand-primary transition-colors">
-          {cleanName}
-        </span>
-        <span class="text-[9px] text-gray-500 font-black uppercase tracking-tighter opacity-60">
-          {lines} L
-        </span>
+      <div class="flex items-center gap-3 overflow-hidden">
+        <div 
+          class="w-1.5 h-1.5 rounded-full transition-transform duration-500 group-hover/item:scale-150"
+          style={{ backgroundColor: config.color }}
+        ></div>
+        <div class="flex flex-col items-start overflow-hidden">
+          <span class="text-gray-300 font-mono text-[11px] font-bold truncate w-full group-hover/item:text-white transition-colors">
+            {cleanName}
+          </span>
+          <span class="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
+            {lines} Rules
+          </span>
+        </div>
       </div>
 
-      <div class="flex gap-1.5 w-full">
-        {formats.map((f) => (
-          <button
-            title={f.tooltip}
-            onClick={(e) => handleCopy(f.id, e)}
-            class={`
-              flex-1 flex items-center justify-center py-1.5 rounded-lg border transition-all active:scale-90
-              ${copied === f.id 
-                ? 'bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/20' 
-                : 'bg-white/5 text-gray-500 border-white/5 hover:bg-white/10 hover:text-brand-primary hover:border-brand-primary/20'
-              }
-            `}
-          >
-            <div class={`${copied === f.id ? 'i-ph-check-bold scale-110' : f.icon} text-[10px] transition-all`}></div>
-          </button>
-        ))}
+      <div class="flex items-center gap-2">
+        <div class={`
+          p-1.5 rounded-lg border transition-all duration-300
+          ${copied 
+            ? 'bg-brand-primary border-brand-primary text-white scale-110 shadow-lg shadow-brand-primary/20' 
+            : 'bg-white/5 border-white/5 text-gray-500 group-hover/item:text-brand-primary group-hover/item:border-brand-primary/20 group-hover/item:bg-brand-primary/5'
+          }
+        `}>
+          <div class={`${copied ? 'i-ph-check-bold' : config.icon} text-xs transition-transform duration-500`}></div>
+        </div>
       </div>
 
-      {/* Inline Feedback Toast */}
+      {/* Mini Feedback */}
       {copied && (
-        <div class="absolute -top-2 -right-1 px-2 py-0.5 bg-brand-primary text-white text-[8px] font-black uppercase tracking-widest rounded-full animate-bounce shadow-lg">
+        <div class="absolute -top-1 -right-1 px-1.5 py-0.5 bg-brand-primary text-white text-[7px] font-black uppercase tracking-widest rounded-md shadow-lg animate-bounce">
           Copied
         </div>
       )}
-    </div>
+    </button>
   );
 }
