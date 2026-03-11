@@ -1,14 +1,14 @@
 {
-  "name": "gins-rules-scanner",
+  "name": "gins-rules-worker",
+  "type": "module",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
-    "typescript": "^5.9.3",
-    "wrangler": "latest"
-  },
-  "dependencies": {
-    "@cloudflare/puppeteer": "latest",
-    "hono": "latest"
+    "wrangler": "latest",
+    "typescript": "latest"
   }
 }

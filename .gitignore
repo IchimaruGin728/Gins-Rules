@@ -36,3 +36,6 @@ main
 
 # Wrangler temp files
 .wrangler/
+
+# MMDB cache
+.mmdb-cache/

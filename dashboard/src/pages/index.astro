@@ -1,139 +1,117 @@
 ---
-import Layout from "../components/Layout";
-import "../styles/global.css";
+import Layout from '../components/Layout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Read service lists from source/ at build time
+const sourceDir = path.resolve('..', 'source');
+
+function getServices(category: string): { name: string; lines: number }[] {
+  const dir = path.join(sourceDir, category);
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter((f: string) => f.endsWith('.txt'))
+    .map((f: string) => {
+      const content = fs.readFileSync(path.join(dir, f), 'utf-8');
+      const lines = content.split('\n').filter((l: string) => l.trim() && !l.startsWith('#')).length;
+      return { name: f, lines };
+    })
+    .sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
+}
+
+const categories = [
+  { id: 'proxy', label: 'Proxy', icon: 'i-ph-globe-bold', services: getServices('proxy') },
+  { id: 'direct', label: 'Direct', icon: 'i-ph-house-bold', services: getServices('direct') },
+  { id: 'reject', label: 'Reject', icon: 'i-ph-shield-warning-bold', services: getServices('reject') },
+  { id: 'ip', label: 'IP / GeoIP / ASN', icon: 'i-ph-map-pin-bold', services: getServices('ip') },
+];
+
+const totalServices = categories.reduce((sum, c) => sum + c.services.length, 0);
+const totalRules = categories.reduce((sum, c) => sum + c.services.reduce((s, svc) => s + svc.lines, 0), 0);
+const buildTime = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
 ---
 
-<Layout title="Home" activePath="/">
-  <div class="space-y-24">
-    <section class="max-w-4xl mx-auto text-center space-y-8 py-12">
-      <div
-        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 animate-fade-in-up"
-      >
-        <div class="i-ph-lightning-fill text-brand-primary"></div> Automated Cloudflare
-        Infra
-      </div>
-
-      <h2
-        class="text-6xl md:text-8xl font-extrabold font-outfit tracking-tighter leading-[0.9] animate-fade-in-up"
-        style="animation-delay: 0.1s"
-      >
-        Rule <span
-          class="text-gradient underline decoration-white/10 underline-offset-8"
-          >Infrastructure</span
-        >
-        <br />
-        at the Edge.
-      </h2>
-
-      <p
-        class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto font-medium animate-fade-in-up"
-        style="animation-delay: 0.2s"
-      >
-        Official documentation crawlers, Llama-4 powered classification, and
-        high-performance global distribution.
-      </p>
-
-      <div
-        class="flex flex-wrap justify-center gap-6 pt-4 animate-fade-in-up"
-        style="animation-delay: 0.3s"
-      >
-        <a href="/search" class="btn-brand">
-          <div class="i-ph-magnifying-glass-bold inline-block mr-2"></div> Search
-          Domains
-        </a>
-        <a
-          href="https://github.com/IchimaruGin/Gins-Rules"
-          class="glass-panel !py-2 !px-8 flex items-center gap-2 hover:bg-white/10 hover:border-white/30 !rounded-full text-sm font-bold tracking-wide"
-        >
-          <div class="i-ph-github-logo-bold text-xl"></div> Explorer
-        </a>
-      </div>
-    </section>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-      <div class="glass-panel group hover:scale-[1.02] duration-500">
-        <div
-          class="p-4 bg-white/5 rounded-2xl mb-4 w-14 h-14 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary/10 transition-colors"
-        >
-          <div class="i-ph-files-bold text-3xl"></div>
+<Layout title="Status Board">
+  <div class="space-y-8 mt-4">
+    <!-- System Status -->
+    <div class="glass-panel !p-0 overflow-hidden">
+      <div class="bg-white/[0.03] p-6 flex items-center justify-between border-b border-white/5">
+        <div class="flex items-center gap-4">
+          <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/40"></div>
+          <div>
+            <div class="font-outfit font-extrabold text-xl tracking-tight">System Operational</div>
+            <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mt-0.5">
+              All services running normally
+            </div>
+          </div>
         </div>
-        <div class="text-4xl font-black font-outfit tracking-tighter">86</div>
-        <div
-          class="text-gray-500 text-sm font-bold uppercase tracking-widest mt-1"
-        >
-          Verified Services
+        <div class="text-right hidden sm:block">
+          <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Last Build</div>
+          <div class="font-mono text-sm text-gray-400 mt-0.5">{buildTime}</div>
         </div>
       </div>
 
-      <div class="glass-panel group hover:scale-[1.02] duration-500">
-        <div
-          class="p-4 bg-white/5 rounded-2xl mb-4 w-14 h-14 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary/10 transition-colors"
-        >
-          <div class="i-ph-shield-check-bold text-3xl"></div>
+      <div class="grid grid-cols-3 divide-x divide-white/5">
+        <div class="p-5 text-center">
+          <div class="text-3xl font-black font-outfit tracking-tighter text-gradient">{totalServices}</div>
+          <div class="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 mt-1">Services</div>
         </div>
-        <div class="text-4xl font-black font-outfit tracking-tighter">
-          1,238
+        <div class="p-5 text-center">
+          <div class="text-3xl font-black font-outfit tracking-tighter text-gradient">{(totalRules / 1000).toFixed(0)}K</div>
+          <div class="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 mt-1">Rules</div>
         </div>
-        <div
-          class="text-gray-500 text-sm font-bold uppercase tracking-widest mt-1"
-        >
-          Active Rules
-        </div>
-      </div>
-
-      <div class="glass-panel group hover:scale-[1.02] duration-500">
-        <div
-          class="p-4 bg-white/5 rounded-2xl mb-4 w-14 h-14 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary/10 transition-colors"
-        >
-          <div class="i-ph-globe-bold text-3xl"></div>
-        </div>
-        <div class="text-4xl font-black font-outfit tracking-tighter">5</div>
-        <div
-          class="text-gray-500 text-sm font-bold uppercase tracking-widest mt-1"
-        >
-          Dist. Formats
+        <div class="p-5 text-center">
+          <div class="text-3xl font-black font-outfit tracking-tighter text-gradient">8</div>
+          <div class="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 mt-1">Formats</div>
         </div>
       </div>
     </div>
 
-    <section class="max-w-6xl mx-auto space-y-12">
-      <div class="flex items-end justify-between border-b border-white/5 pb-6">
-        <div class="space-y-2">
-          <h3 class="text-3xl font-black font-outfit tracking-tight">
-            Standard Subscriptions
-          </h3>
-          <p class="text-gray-500 font-medium">
-            Auto-merged rules distributed via Cloudflare CDN.
-          </p>
-        </div>
-        <div class="flex gap-2">
-          <div class="w-2 h-2 rounded-full bg-brand-primary animate-pulse">
-          </div>
-          <div class="w-2 h-2 rounded-full bg-brand-primary/40"></div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {
-          ["Proxy", "Direct", "Reject", "IP"].map((cat) => (
-            <div class="glass-panel group overflow-hidden border-white/5 hover:border-brand-primary/30 transition-all cursor-pointer relative">
-              <div class="absolute -right-4 -top-4 text-white/5 font-black text-8xl transition-all group-hover:text-brand-primary/5 select-none">
-                {cat[0]}
-              </div>
-              <div class="relative z-10 space-y-4">
-                <span class="text-xl font-black font-outfit">{cat} Group</span>
-                <div class="bg-black/40 rounded-xl p-3 border border-white/5 font-mono text-[11px] text-brand-primary/80 overflow-hidden">
-                  /sub/{cat.toLowerCase()}.list
-                </div>
-                <div class="flex items-center text-[10px] font-black uppercase tracking-widest text-gray-500 gap-2">
-                  <div class="i-ph-copy-simple-bold text-sm" /> Click to Copy
-                  URL
-                </div>
-              </div>
+    <!-- Service Lists -->
+    <div class="space-y-4">
+      {categories.map((cat, idx) => (
+        <details class="glass-panel !p-0 overflow-hidden group" open={idx === 0}>
+          <summary class="p-5 cursor-pointer select-none flex items-center justify-between hover:bg-white/[0.02] transition-colors list-none [&::-webkit-details-marker]:hidden">
+            <div class="flex items-center gap-3">
+              <div class={`${cat.icon} text-xl text-brand-primary`}></div>
+              <span class="font-outfit font-extrabold text-lg tracking-tight">{cat.label}</span>
+              <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 bg-white/5 px-2.5 py-0.5 rounded-full">
+                {cat.services.length}
+              </span>
             </div>
-          ))
-        }
+            <div class="i-ph-caret-down-bold text-gray-500 transition-transform duration-300 group-open:rotate-180"></div>
+          </summary>
+
+          <div class="border-t border-white/5 p-4">
+            <div class="flex flex-wrap gap-2">
+              {cat.services.map((svc) => (
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm font-medium text-gray-300 hover:bg-white/[0.08] hover:border-white/[0.12] transition-all cursor-default">
+                  <span class="text-gray-500 font-mono text-xs">{svc.name}</span>
+                  <span class="text-[9px] text-gray-600 font-bold">{svc.lines}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </details>
+      ))}
+    </div>
+
+    <!-- Sources -->
+    <div class="glass-panel !p-5">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="i-ph-git-branch-bold text-brand-primary"></div>
+        <span class="font-outfit font-bold text-sm tracking-tight">Upstream Sources</span>
       </div>
-    </section>
+      <div class="flex flex-wrap gap-2 text-[11px]">
+        {['Loyalsoldier', 'MetaCubeX', 'Blackmatrix7', 'xream/geoip (ipinfo)', 'xream/geoip (ip2location)'].map((s) => (
+          <span class="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] text-gray-400 font-medium">
+            {s}
+          </span>
+        ))}
+      </div>
+      <div class="text-[10px] text-gray-600 mt-3 font-medium">
+        All sources auto-merged &amp; deduplicated · 8 output formats · Compiled daily via GitHub Actions
+      </div>
+    </div>
   </div>
 </Layout>

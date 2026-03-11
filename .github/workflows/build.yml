@@ -3,14 +3,12 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '0 16 * * *' # 每天 00:00 SGT (UTC+8) 自动运行
+    - cron: '0 16 * * *' # 每天 00:00 SGT (UTC+8)
   workflow_dispatch:
-  repository_dispatch:
-    types: [scrape_update]
 
 jobs:
-  rules:
-    name: Compile Rules
+  build:
+    name: Build & Deploy
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -18,11 +16,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: latest
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: dashboard/pnpm-lock.yaml
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
+      # ── Sync upstream rules ──
       - name: Sync Upstream Rules
         run: go run ./cmd/sync/
 
@@ -36,6 +40,11 @@ jobs:
             git push
           fi
 
+      # ── Extract GeoIP & ASN ──
+      - name: Extract GeoIP & ASN from MMDB
+        run: go run ./cmd/mmdb/
+
+      # ── Install binary compilers ──
       - name: Install Compilers
         run: |
           SINGBOX_VERSION=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.tag_name' | sed 's/v//')
@@ -46,65 +55,62 @@ jobs:
           curl -sL "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz" | gunzip > mihomo
           chmod +x mihomo && sudo mv mihomo /usr/local/bin/
 
-      - name: Compile and Merge
+      # ── Compile rules ──
+      - name: Compile Rules
+        id: compile
         run: |
           go run ./cmd/compile/
           cp -r public/* compiled/
 
-      - name: Deploy Rules to Pages
+          # Collect build stats
+          SERVICES=$(find source/proxy source/direct source/reject source/ip -name '*.txt' 2>/dev/null | wc -l | tr -d ' ')
+          RULES=$(cat source/proxy/*.txt source/direct/*.txt source/reject/*.txt source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          IP_RULES=$(cat source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          ASN_FILES=$(ls source/ip/asn-*.txt 2>/dev/null | wc -l | tr -d ' ')
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+          echo "rules=$RULES" >> $GITHUB_OUTPUT
+          echo "ip_rules=$IP_RULES" >> $GITHUB_OUTPUT
+          echo "asn_files=$ASN_FILES" >> $GITHUB_OUTPUT
+
+      # ── Build dashboard into compiled/ ──
+      - name: Build Dashboard
+        run: |
+          cd dashboard
+          pnpm install
+          pnpm build
+          cp -r dist/* ../compiled/
+
+      # ── Deploy everything to one Pages ──
+      - name: Deploy to Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy compiled --project-name=gins-rules --branch=main
 
-
-  dashboard:
-    name: Build Dashboard
-    needs: rules
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: dashboard/pnpm-lock.yaml
-
-      - name: Install & Build
-        run: |
-          cd dashboard
-          pnpm install
-          pnpm build
-
-      - name: Deploy Dashboard to Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: dashboard
-          command: pages deploy dist --project-name=gins-rules-dashboard --branch=main
-
-
-  scanner:
-    name: Deploy Scanner
-    needs: dashboard
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - name: Deploy Scanner Worker
+      # ── Deploy Worker ──
+      - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: cmd/scanner
           command: deploy src/index.ts --config wrangler.jsonc
-          wranglerVersion: 'latest'
-      - name: Wait for Propagation
-        run: sleep 20
+          wranglerVersion: latest
+
+      # ── Notify via CF Worker ──
+      - name: Notify
+        if: always()
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.WORKFLOW_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "services": ${{ steps.compile.outputs.services || 0 }},
+              "rules": ${{ steps.compile.outputs.rules || 0 }},
+              "formats": 8,
+              "ipRules": ${{ steps.compile.outputs.ip_rules || 0 }},
+              "asnFiles": ${{ steps.compile.outputs.asn_files || 0 }},
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+            }' \
+            "https://rules-api.ichimarugin728.dev/workflow/build-complete" || true

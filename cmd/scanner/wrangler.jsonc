@@ -1,44 +1,38 @@
 {
-	"$schema": "https://unpkg.com/wrangler/config-schema.json",
-	"name": "gins-rules-scanner",
-	"main": "src/index.ts",
-	"compatibility_date": "2026-03-01",
-	"compatibility_flags": ["nodejs_compat"],
-	"routes": [
-		{
-			"pattern": "scanner.ichimarugin728.dev",
-			"custom_domain": true
-		}
-	],
-	"browser": {
-		"binding": "MYBROWSER"
-	},
-	"ai": {
-		"binding": "AI"
-	},
-	"kv_namespaces": [
-		{
-			"binding": "RULES_KV",
-			"id": "3ae57abf6c044ac99c9b7f837645d405"
-		}
-	],
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "gins-rules-db",
-			"database_id": "250676c5-78f0-49e6-a9c8-cec4a012e14e"
-		}
-	],
-	"vars": {
-		"GITHUB_USER": "ichimarugin728",
-		"GITHUB_REPO": "Gins-Rules"
-	},
-	"triggers": {
-		"crons": [
-			"0 16 * * *"
-		]
-	},
-	"observability": {
-		"enabled": true
-	}
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "gins-rules",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-03-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "rules-api.ichimarugin728.dev",
+      "custom_domain": true
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "NOTIFY_QUEUE",
+        "queue": "gins-rules-notify"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "gins-rules-notify",
+        "max_batch_size": 5,
+        "max_retries": 3,
+        "dead_letter_queue": "gins-rules-notify-dlq"
+      }
+    ]
+  },
+  "vars": {
+    "PAGES_DOMAIN": "rules.ichimarugin728.dev"
+  },
+  "observability": {
+    "enabled": true
+  }
 }
