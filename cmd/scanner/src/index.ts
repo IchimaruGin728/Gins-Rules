@@ -78,17 +78,19 @@ export default {
     for (const msg of batch.messages) {
       const { text, telegram, discord } = msg.body;
 
-      const combinedText = text.replace('---SPLIT---', '\n\n').trim();
+      const messages = text.split('---SPLIT---').map((m) => m.trim()).filter(Boolean);
 
-      const results = await Promise.allSettled([
-        telegram ? sendTelegram(env, combinedText) : Promise.resolve(),
-        discord ? sendDiscord(env, combinedText) : Promise.resolve(),
-      ]);
+      for (const msgContent of messages) {
+        const results = await Promise.allSettled([
+          telegram ? sendTelegram(env, msgContent) : Promise.resolve(),
+          discord ? sendDiscord(env, msgContent) : Promise.resolve(),
+        ]);
 
-      // Log any failures
-      for (const r of results) {
-        if (r.status === 'rejected') {
-          console.error('Notification failed:', r.reason);
+        // Log any failures
+        for (const r of results) {
+          if (r.status === 'rejected') {
+            console.error('Notification failed:', r.reason);
+          }
         }
       }
 
@@ -213,15 +215,17 @@ async function generateDailySummary(env: Env, stats: BuildStats): Promise<string
 
 要求：
 - 必须输出两段文字，中间用 "---SPLIT---" 分隔。
-- 第一段（中文）：必须包含 "${stats.services} 服务运行平稳"、"${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录已更新"、"一切尽在掌握 🛠️"。
-- 第二段（英文）：对应中文的技术化翻译，保持极客感。
+- 第一段（中文）：标题使用 *加粗*，核心数据使用 \`行内代码\`。必须包含 "${stats.services} 服务运行平稳"、"${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录已更新"。
+- 第二段（英文）：对应中文的技术化翻译，保持极客感，使用相应的 Markdown 格式。
 - 每段结尾：必须加上 (Updated ${date})。
 - 拒绝任何其他多余的解释、前言或总结词。
 
 示例输出：
-${stats.services} 服务运行平稳，${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录已更新，一切尽在掌握 🛠️。 (Updated ${date})
+*🛡️ Gins-Rules 每日报告*
+✅ \`${stats.services}\` 服务运行平稳，\`${domainRules}\` 条域名规则及 \`${stats.ipRules}\` 条 IP 记录已更新，一切尽在掌握 🛠️。 (Updated ${date})
 ---SPLIT---
-${stats.services} services online, ${domainRules} domain rules and ${stats.ipRules} IP records synchronization complete. Engineering status: OK 🛠️. (Updated ${date})
+*🛡️ Gins-Rules Daily Report*
+✅ \`${stats.services}\` services online, \`${domainRules}\` domain rules and \`${stats.ipRules}\` IP records synchronization complete. Engineering status: OK 🛠️. (Updated ${date})
 
 直接输出消息内容。`;
 
@@ -247,6 +251,11 @@ ${stats.services} services online, ${domainRules} domain rules and ${stats.ipRul
 async function sendTelegram(env: Env, text: string): Promise<void> {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
 
+  // Use MarkdownV2 for newer formatting, but we must escape certain characters outside of entities
+  // AI generated markdown entities like *bold* are fine, but individual . or ! might need escaping in V2
+  // For simplicity and compatibility with AI output, we use Markdown (V1) but with rich entities
+  // because MarkdownV2 is extremely brittle without a heavy-duty escaper.
+  
   const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
   const resp = await fetch(url, {
     method: 'POST',
@@ -254,7 +263,7 @@ async function sendTelegram(env: Env, text: string): Promise<void> {
     body: JSON.stringify({
       chat_id: env.TELEGRAM_CHAT_ID,
       text,
-      parse_mode: 'Markdown',
+      parse_mode: 'Markdown', // Standard Markdown is more robust for AI generation
       disable_web_page_preview: true,
     }),
   });
