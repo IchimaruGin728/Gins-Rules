@@ -78,19 +78,17 @@ export default {
     for (const msg of batch.messages) {
       const { text, telegram, discord } = msg.body;
 
-      const messages = text.split('---SPLIT---').map((m) => m.trim()).filter(Boolean);
+      const combinedText = text.replace('---SPLIT---', '\n\n').trim();
 
-      for (const msgText of messages) {
-        const results = await Promise.allSettled([
-          telegram ? sendTelegram(env, msgText) : Promise.resolve(),
-          discord ? sendDiscord(env, msgText) : Promise.resolve(),
-        ]);
+      const results = await Promise.allSettled([
+        telegram ? sendTelegram(env, combinedText) : Promise.resolve(),
+        discord ? sendDiscord(env, combinedText) : Promise.resolve(),
+      ]);
 
-        // Log any failures
-        for (const r of results) {
-          if (r.status === 'rejected') {
-            console.error('Notification failed:', r.reason);
-          }
+      // Log any failures
+      for (const r of results) {
+        if (r.status === 'rejected') {
+          console.error('Notification failed:', r.reason);
         }
       }
 

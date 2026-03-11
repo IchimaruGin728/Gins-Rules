@@ -23,11 +23,5 @@
     "@unocss/transformer-variant-group": "latest",
     "@unocss/transformer-directives": "latest",
     "@types/node": "latest"
-  },
-  "pnpm": {
-    "allowedBuildScripts": [
-      "esbuild",
-      "sharp"
-    ]
   }
 }

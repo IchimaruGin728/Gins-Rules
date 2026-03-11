@@ -31,7 +31,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.24'
-          cache: true
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable

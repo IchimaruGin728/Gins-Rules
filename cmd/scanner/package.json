@@ -10,12 +10,5 @@
     "@cloudflare/workers-types": "latest",
     "wrangler": "latest",
     "typescript": "latest"
-  },
-  "pnpm": {
-    "allowedBuildScripts": [
-      "esbuild",
-      "sharp",
-      "workerd"
-    ]
   }
 }
