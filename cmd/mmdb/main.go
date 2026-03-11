@@ -19,18 +19,18 @@ var mmdbSources = []struct {
 	URL  string
 	Type string // "country" or "asn"
 }{
-	// Country MMDB (CN + Private only — smaller, faster)
+	// Full Country MMDB
 	{
-		Name: "ipinfo.country-only-cn-private",
-		URL:  "https://github.com/xream/geoip/releases/latest/download/ipinfo.country-only-cn-private.mmdb",
+		Name: "ipinfo.country",
+		URL:  "https://github.com/xream/geoip/releases/latest/download/ipinfo.country.mmdb",
 		Type: "country",
 	},
 	{
-		Name: "ip2location.country-only-cn-private",
-		URL:  "https://github.com/xream/geoip/releases/latest/download/ip2location.country-only-cn-private.mmdb",
+		Name: "ip2location.country",
+		URL:  "https://github.com/xream/geoip/releases/latest/download/ip2location.country.mmdb",
 		Type: "country",
 	},
-	// ASN MMDB
+	// ASN MMDB (already full)
 	{
 		Name: "ipinfo.asn",
 		URL:  "https://github.com/xream/geoip/releases/latest/download/ipinfo.asn.mmdb",
@@ -61,6 +61,14 @@ var asnTargets = []struct {
 	{"asn-discord", []uint{49544}},
 	{"asn-spotify", []uint{8403}},
 	{"asn-steam", []uint{32590}},
+	{"asn-disney", []uint{19679}},
+	{"asn-oracle", []uint{31898}},
+	{"asn-akamai", []uint{16625, 20940, 3131, 33905, 34164, 34850, 43639, 53235, 54104}},
+	{"asn-twitch", []uint{46489}},
+	{"asn-alibaba", []uint{37963, 45102, 132335}},
+	{"asn-tencent", []uint{132203, 132591, 133478, 133543}},
+	{"asn-bytedance", []uint{138690}},
+	{"asn-baidu", []uint{55967, 134177}},
 }
 
 // Country MMDB record structure
@@ -123,12 +131,36 @@ func main() {
 
 	// Write country files
 	fmt.Println("\n  Writing country IP lists...")
+	
+	notCN := make(map[string]bool)
+	commonRegions := map[string]bool{
+		"CN": true, "SG": true, "TW": true, "JP": true, "US": true,
+	}
+
 	for code, cidrs := range countryCIDRs {
-		filename := strings.ToLower(code) + ".txt"
-		sorted := sortedKeys(cidrs)
-		outPath := filepath.Join(ipDir, filename)
-		os.WriteFile(outPath, []byte(strings.Join(sorted, "\n")+"\n"), 0o644)
-		fmt.Printf("  [WRITE] ip/%s: %d CIDRs (merged from %d sources)\n", filename, len(sorted), countSources(countryCIDRs, code))
+		// Collect all non-CN for !cn.txt
+		if code != "CN" {
+			for cidr := range cidrs {
+				notCN[cidr] = true
+			}
+		}
+
+		// Only write separate files for common regions to keep dashboard clean
+		if commonRegions[code] {
+			filename := strings.ToLower(code) + ".txt"
+			sorted := sortedKeys(cidrs)
+			outPath := filepath.Join(ipDir, filename)
+			os.WriteFile(outPath, []byte(strings.Join(sorted, "\n")+"\n"), 0o644)
+			fmt.Printf("  [WRITE] ip/%s: %d CIDRs\n", filename, len(sorted))
+		}
+	}
+
+	// Write !cn.txt
+	if len(notCN) > 0 {
+		sortedNotCN := sortedKeys(notCN)
+		outPath := filepath.Join(ipDir, "!cn.txt")
+		os.WriteFile(outPath, []byte(strings.Join(sortedNotCN, "\n")+"\n"), 0o644)
+		fmt.Printf("  [WRITE] ip/!cn.txt: %d CIDRs (All non-CN countries)\n", len(sortedNotCN))
 	}
 
 	// Write ASN files

@@ -4,7 +4,8 @@ Comprehensive, self-maintained proxy rule list repository with fine-grained per-
 
 ## Features
 - **90+ Services**: Including Apple, Microsoft, Google, OpenAI, TikTok, etc.
-- **GeoIP & ASN**: Auto-extracted from MMDB (multi-source merge: ipinfo + ip2location via [xream/geoip](https://github.com/xream/geoip))
+- **GeoIP & ASN**: **Full Globe Coverage** (auto-extracted from MMDB: ipinfo + ip2location via [xream/geoip](https://github.com/xream/geoip))
+- **Fallback Logic**: Specialized `!cn.txt` for all non-China IPs, providing a global fallback for rare regions.
 - **Multi-Format Support**: 
     - **sing-box**: `.srs` (binary), `.json`
     - **Mihomo (Clash Meta) / Stash**: `.mrs` (binary), `.yaml`
@@ -149,20 +150,29 @@ Comprehensive, self-maintained proxy rule list repository with fine-grained per-
 | List | File | Source | Description |
 |------|------|--------|-------------|
 | China IP | `cn.txt` | GeoIP MMDB | 78,000+ China IP CIDRs |
+| Non-China IP | `!cn.txt` | GeoIP MMDB | **Full Globe Fallback** (All CIDRs NOT in CN) |
 | Private IP | `private.txt` | GeoIP MMDB | RFC1918 private ranges |
 | Telegram IP | `telegram.txt` | Manual | Telegram IP CIDRs |
 | ASN Cloudflare | `asn-cloudflare.txt` | ASN MMDB | AS13335 |
 | ASN Google | `asn-google.txt` | ASN MMDB | AS15169, AS396982 |
 | ASN Microsoft | `asn-microsoft.txt` | ASN MMDB | AS8075 |
 | ASN Amazon | `asn-amazon.txt` | ASN MMDB | AS16509, AS14618 |
-| ASN Facebook | `asn-facebook.txt` | ASN MMDB | AS32934 |
+| ASN Meta | `asn-facebook.txt` | ASN MMDB | AS32934 |
 | ASN Telegram | `asn-telegram.txt` | ASN MMDB | AS62041, AS62014, AS59930, AS44907 |
 | ASN Netflix | `asn-netflix.txt` | ASN MMDB | AS2906 |
 | ASN GitHub | `asn-github.txt` | ASN MMDB | AS36459 |
-| ASN Twitter | `asn-twitter.txt` | ASN MMDB | AS13414 |
+| ASN Twitter/X | `asn-twitter.txt` | ASN MMDB | AS13414 |
 | ASN Apple | `asn-apple.txt` | ASN MMDB | AS714, AS6185 |
 | ASN Discord | `asn-discord.txt` | ASN MMDB | AS49544 |
-| ASN Steam | `asn-steam.txt` | ASN MMDB | AS32590 |
+| ASN Spotify | `asn-spotify.txt` | ASN MMDB | AS8403 |
+| ASN Steam/Valve | `asn-steam.txt` | ASN MMDB | AS32590 |
+| ASN Disney+ | `asn-disney.txt` | ASN MMDB | AS19679 |
+| ASN Oracle | `asn-oracle.txt` | ASN MMDB | AS31898 |
+| ASN Akamai | `asn-akamai.txt` | ASN MMDB | AS16625, AS20940, AS3131... |
+| ASN Alibaba | `asn-alibaba.txt` | ASN MMDB | AS37963, AS45102, AS132335 |
+| ASN Tencent | `asn-tencent.txt` | ASN MMDB | AS132203, AS132591, AS133478, AS133543 |
+| ASN ByteDance | `asn-bytedance.txt` | ASN MMDB | AS138690 |
+| ASN Baidu | `asn-baidu.txt` | ASN MMDB | AS55967, AS134177 |
 
 ## Upstream Sources
 
