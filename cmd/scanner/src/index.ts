@@ -130,15 +130,35 @@ export class BuildWorkflow extends WorkflowEntrypoint<Env, BuildStats> {
 // ============================================================
 
 async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
-  const fileName = path.replace('/ruleset/', '');
-  const dotIdx = fileName.lastIndexOf('.');
-  if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
+  const parts = path.replace('/ruleset/', '').split('/');
+  
+  let category: string;
+  let name: string;
+  let ext: string;
 
-  const type = fileName.slice(0, dotIdx);
-  const ext = fileName.slice(dotIdx + 1);
+  if (parts.length === 1) {
+    // Format: ruleset/proxy.srs
+    const fileName = parts[0];
+    const dotIdx = fileName.lastIndexOf('.');
+    if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
+    category = fileName.slice(0, dotIdx);
+    name = `${category}-total`;
+    ext = fileName.slice(dotIdx + 1);
+  } else if (parts.length === 2) {
+    // Format: ruleset/proxy/google.srs
+    category = parts[0];
+    const fileName = parts[1];
+    const dotIdx = fileName.lastIndexOf('.');
+    if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
+    name = fileName.slice(0, dotIdx);
+    ext = fileName.slice(dotIdx + 1);
+  } else {
+    return new Response('Not Found', { status: 404 });
+  }
+
   const pagesDomain = url.searchParams.get('domain') ?? env.PAGES_DOMAIN ?? 'rules.ichimarugin728.dev';
 
-  if (!['proxy', 'direct', 'reject', 'ip'].includes(type)) {
+  if (!['proxy', 'direct', 'reject', 'ip'].includes(category)) {
     return new Response('Invalid category. Use: proxy, direct, reject, ip', { status: 400 });
   }
 
@@ -151,11 +171,16 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
   };
   const dir = formatMap[ext] ?? ext;
   
-  // Use the pre-compiled *-total.* file for maximum performance
-  const targetFile = `${type}-total.${ext}`;
-  const targetUrl = `https://${pagesDomain}/${dir}/${type}/${targetFile}`;
+  // Predictable filename structure
+  // text/proxy/google.list
+  // singbox/proxy/google.srs
+  let targetFile = `${name}.${ext}`;
+  if (ext === 'list' && category === 'ip') {
+    targetFile = `${name}.ip.list`; // Match compiler's output for IP lists
+  }
+  
+  const targetUrl = `https://${pagesDomain}/${dir}/${category}/${targetFile}`;
 
-  // Use 302 Found to point directly to the static file on Pages
   return Response.redirect(targetUrl, 302);
 }
 
