@@ -138,7 +138,7 @@ func main() {
 	}
 
 	for code, cidrs := range countryCIDRs {
-		// Collect all non-CN for !cn.txt
+		// Collect all non-CN for !cn.txt (Complete Global Fallback)
 		if code != "CN" {
 			for cidr := range cidrs {
 				notCN[cidr] = true

@@ -150,7 +150,7 @@ Comprehensive, self-maintained proxy rule list repository with fine-grained per-
 | List | File | Source | Description |
 |------|------|--------|-------------|
 | China IP | `cn.txt` | GeoIP MMDB | Primary China CIDRs |
-| Non-China IP | `!cn.txt` | GeoIP MMDB | **Catch-all Fallback** (All CIDRs NOT in CN, SG, TW, JP, US) |
+| Non-China IP | `!cn.txt` | GeoIP MMDB | **Complete Global Fallback** (All non-CN IPs) |
 | SG IP | `sg.txt` | GeoIP MMDB | Singapore |
 | TW IP | `tw.txt` | GeoIP MMDB | Taiwan |
 | JP IP | `jp.txt` | GeoIP MMDB | Japan |
