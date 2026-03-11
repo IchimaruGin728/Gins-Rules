@@ -193,19 +193,20 @@ async function generateDailySummary(env: Env, stats: BuildStats): Promise<string
 
 要求：
 - 语气要求：专业、严谨、硬核。体现出“工程验证完成”的确定感。
-- 拒绝任何情绪化、口语化或卖萌的修饰词。
+- 拒绝任何情绪化、口语化或卖萌。
+- **添加少量合适的技术类 emoji**（如 🛰️, ⚙️, 🔒, 🚢, 📡, 🏁, 💎），每条摘要限 1-2 个，放在相应句首或句末。
 - 格式：
-  [中文简评，15字以内]
-  [English Technical Summary, concise]
+  [中文简评]
+  [English Technical Summary]
   (Data: ${stats.services} Svc | ${stats.rules} Rules | ${stats.ipRules} IPs)
   (Updated ${date})
 
 示例风格：
-- 数据同步完成，已通过原子性校验。规则库保持高可用。
-  Synchronization complete with atomic verification. Rule-set maintained in HA state.
+- 📡 路由条目哈希一致性验证通过。边缘节点同步就绪。
+  Hash consistency verified for routing entries. Edge synchronization ready. 🏁
 
-- 路由条目哈希一致性验证通过。边缘节点同步就绪。
-  Hash consistency verified for routing entries. Edge synchronization ready.
+- 🔒 数据同步完成，已通过原子性校验。规则库保持高可用。
+  Synchronization complete with atomic verification. Rule-set maintained in HA state. 💎
 
 直接输出消息内容，不要加任何中间过程或标记。`;
 
