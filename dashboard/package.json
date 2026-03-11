@@ -13,15 +13,17 @@
     "preact": "latest"
   },
   "devDependencies": {
+    "@astrojs/check": "latest",
     "@iconify-json/lucide": "latest",
     "@iconify-json/ph": "latest",
+    "@types/node": "latest",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@unocss/astro": "latest",
     "@unocss/reset": "latest",
-    "typescript": "latest",
-    "unocss": "latest",
-    "@astrojs/check": "latest",
-    "@unocss/transformer-variant-group": "latest",
     "@unocss/transformer-directives": "latest",
-    "@types/node": "latest"
+    "@unocss/transformer-variant-group": "latest",
+    "typescript": "latest",
+    "unocss": "latest"
   }
 }
