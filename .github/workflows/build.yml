@@ -5,7 +5,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '28 23 * * *'  # 07:28 SGT
+    - cron: '16 9 * * *'   # 17:16 SGT
   workflow_dispatch:
 
 permissions:
