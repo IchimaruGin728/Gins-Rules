@@ -43,14 +43,11 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
-# Go (legacy)
+# Go
 bin/
 main
 sync
 compile
-go.mod
-go.sum
-cmd/
 
 # Wrangler temp files
 .wrangler/
