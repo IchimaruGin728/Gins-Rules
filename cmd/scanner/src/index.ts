@@ -9,6 +9,8 @@
 // ============================================================
 
 interface Env {
+  // Workflow
+  BUILD_WORKFLOW: Workflow;
   // Queue
   NOTIFY_QUEUE: Queue;
   // AI
@@ -98,6 +100,32 @@ export default {
 };
 
 // ============================================================
+// Cloudflare Workflow — Orchestration
+// ============================================================
+
+import { WorkflowEntrypoint, WorkflowEvent, WorkflowStep } from 'cloudflare:workers';
+
+export class BuildWorkflow extends WorkflowEntrypoint<Env, BuildStats> {
+  async run(event: WorkflowEvent<BuildStats>, step: WorkflowStep) {
+    const stats = event.payload;
+
+    // Step 1: Generate AI Summary
+    const summary = await step.do('generate-summary', async () => {
+      return await generateDailySummary(this.env, stats);
+    });
+
+    // Step 2: Enqueue Notification
+    await step.do('enqueue-notification', async () => {
+      await this.env.NOTIFY_QUEUE.send({
+        text: summary,
+        telegram: true,
+        discord: true,
+      } satisfies NotifyMessage);
+    });
+  }
+}
+
+// ============================================================
 // /ruleset/:file — Merged subscription
 // ============================================================
 
@@ -169,17 +197,17 @@ async function handleBuildComplete(request: Request, env: Env): Promise<Response
 
   const stats: BuildStats = await request.json();
 
-  // Generate daily summary with AI
-  const summary = await generateDailySummary(env, stats);
+  // Trigger the Workflow
+  const instance = await env.BUILD_WORKFLOW.create({
+    id: `build-${Date.now()}`,
+    params: stats,
+  });
 
-  // Enqueue notification
-  await env.NOTIFY_QUEUE.send({
-    text: summary,
-    telegram: true,
-    discord: true,
-  } satisfies NotifyMessage);
-
-  return json({ status: 'queued', message: summary });
+  return json({
+    status: 'accepted',
+    workflow_id: instance.id,
+    message: 'Workflow triggered successfully',
+  });
 }
 
 // ============================================================

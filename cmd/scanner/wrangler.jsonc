@@ -29,6 +29,13 @@
       }
     ]
   },
+  "workflows": [
+    {
+      "name": "gins-rules-build-workflow",
+      "binding": "BUILD_WORKFLOW",
+      "class_name": "BuildWorkflow"
+    }
+  ],
   "vars": {
     "PAGES_DOMAIN": "rules.ichimarugin728.dev"
   },
