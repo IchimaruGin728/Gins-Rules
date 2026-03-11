@@ -189,17 +189,21 @@ async function generateDailySummary(env: Env, stats: BuildStats): Promise<string
     timeZone: 'Asia/Singapore',
   });
 
-  const prompt = `你是一个代理规则维护 bot，名叫 Gins。请用中文写今天的构建日报。
+  const prompt = `你是一个维护代理规则的极客 bot。请用中文写今天的构建日报。
 
 要求：
-- 1-3 行，简短有趣有人味
-- 必须包含 emoji
-- 每天风格不同，可以调皮、正经、文艺、吐槽、鼓励等
-- 不要用模板化的语气
-- 包含以下数据：${stats.services} 个服务，${stats.rules} 条规则，${stats.formats} 种格式，${stats.ipRules} 条 IP 规则
-- 落款带日期 ${date}
+- 语气要自然、专业，带一点点冷幽默或随意的技术感，千万不要卖萌或过于兴奋，拒绝尴尬。
+- 1-2 行即可，保持精简。
+- 适当使用 1-2 个 emoji（如 🛠️, 🛳️, 🛡️, ❄️），不要滥用。
+- 包含核心数据：${stats.services} 服务, ${stats.rules} 规则, ${stats.ipRules} IP 记录。
+- 落款只带日期：(Updated ${date})
 
-直接输出消息内容，不要加任何解释。`;
+示例风格：
+- 规则洗刷完毕。${stats.services} 服务已上线，没有意外。(Updated ${date})
+- 下午茶时间，顺手更新了 ${stats.rules} 条规则。一切正常。(Updated ${date})
+- 今天的网络依然清爽。${stats.ipRules} 条 IP 规则已入库。(Updated ${date})
+
+直接输出消息内容，不要加任何中间过程或标记。`;
 
   try {
     const response = await env.AI.run('@cf/meta/llama-4-scout-17b-16e-instruct', {
