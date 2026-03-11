@@ -1,6 +1,6 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use ipnet::{IpNet, Ipv4Net, Ipv6Net};
-use maxminddb::Reader;
+use maxminddb::{Reader, WithinOptions};
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -135,12 +135,11 @@ async fn main() -> Result<()> {
 
 fn extract_country_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<String, HashSet<IpNet>>) -> Result<usize> {
     let mut count = 0;
-    let mut iter = reader.networks_with_mask(maxminddb::SkipAliasedNetworks);
-    while let Some(Ok((p, record))) = iter.next() {
-        let record: CountryRecord = record;
-        if let Some(code) = record.country.and_then(|c| c.iso_code) {
-            if let Ok(net) = IpNet::new(p, iter.mask() as u8) {
-                storage.entry(code).or_default().insert(net);
+    let iter = reader.networks::<CountryRecord>(WithinOptions::default());
+    for net_res in iter {
+        if let Ok(net) = net_res {
+            if let Some(code) = net.model().country.as_ref().and_then(|c| c.iso_code.as_ref()) {
+                storage.entry(code.clone()).or_default().insert(net.network());
                 count += 1;
             }
         }
@@ -150,12 +149,11 @@ fn extract_country_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<String,
 
 fn extract_asn_cidrs(reader: &Reader<Vec<u8>>, storage: &mut HashMap<u32, HashSet<IpNet>>) -> Result<usize> {
     let mut count = 0;
-    let mut iter = reader.networks_with_mask(maxminddb::SkipAliasedNetworks);
-    while let Some(Ok((p, record))) = iter.next() {
-        let record: AsnRecord = record;
-        if let Some(asn) = record.autonomous_system_number {
-            if let Ok(net) = IpNet::new(p, iter.mask() as u8) {
-                storage.entry(asn).or_default().insert(net);
+    let iter = reader.networks::<AsnRecord>(WithinOptions::default());
+    for net_res in iter {
+        if let Ok(net) = net_res {
+            if let Some(asn) = net.model().autonomous_system_number {
+                storage.entry(asn).or_default().insert(net.network());
                 count += 1;
             }
         }
