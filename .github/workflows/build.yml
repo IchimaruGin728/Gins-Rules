@@ -94,3 +94,28 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy compiled --project-name=gins-rules --branch=main --commit-dirty=true
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: cmd/scanner
+          command: deploy src/index.ts --config wrangler.jsonc
+          wranglerVersion: latest
+
+      - name: Notify
+        if: always()
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.WORKFLOW_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "services": ${{ steps.compile.outputs.services || 0 }},
+              "rules": ${{ steps.compile.outputs.rules || 0 }},
+              "formats": 8,
+              "ipRules": ${{ steps.compile.outputs.ip_rules || 0 }},
+              "asnFiles": ${{ steps.compile.outputs.asn_files || 0 }},
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+            }' \
+            "https://rules-api.ichimarugin728.dev/workflow/build-complete" || true
