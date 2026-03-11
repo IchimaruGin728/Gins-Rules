@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -122,7 +121,7 @@ func main() {
 			count := parseCountryMMDB(db, countryCIDRs)
 			fmt.Printf("  [OK] %s: extracted %d networks\n", src.Name, count)
 		case "asn":
-			count := parseASNMMDB(db, asnCIDRs, src.Name)
+			count := parseASNMMDB(db, asnCIDRs)
 			fmt.Printf("  [OK] %s: extracted %d networks\n", src.Name, count)
 		}
 
@@ -210,7 +209,7 @@ func parseCountryMMDB(db *maxminddb.Reader, countryCIDRs map[string]map[string]b
 	return count
 }
 
-func parseASNMMDB(db *maxminddb.Reader, asnCIDRs map[uint]map[string]bool, sourceName string) int {
+func parseASNMMDB(db *maxminddb.Reader, asnCIDRs map[uint]map[string]bool) int {
 	count := 0
 
 	networks := db.Networks(maxminddb.SkipAliasedNetworks)
@@ -269,10 +268,6 @@ func sortedKeys(m map[string]bool) []string {
 	return keys
 }
 
-func countSources(_ map[string]map[string]bool, _ string) int {
-	// We always merge from 2 MMDB sources (ipinfo + ip2location)
-	return 2
-}
 
 func findRoot() string {
 	// Try GitHub Actions workspace first
@@ -289,19 +284,3 @@ func findRoot() string {
 	return "."
 }
 
-// getLatestReleaseTag fetches the latest release tag from xream/geoip
-// This is kept for potential future use if we need versioned URLs
-func getLatestReleaseTag() (string, error) {
-	resp, err := http.Get("https://api.github.com/repos/xream/geoip/releases/latest")
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	var release struct {
-		TagName string `json:"tag_name"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		return "", err
-	}
-	return release.TagName, nil
-}
