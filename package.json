@@ -7,9 +7,9 @@
     "fs-extra": "latest"
   },
   "devDependencies": {
+    "@types/bun": "latest",
     "@types/fs-extra": "latest",
     "@types/node": "latest",
-    "bun-types": "latest",
     "typescript": "latest"
   }
 }
