@@ -83,6 +83,9 @@ func main() {
 	categories := []string{"proxy", "direct", "reject", "ip"}
 	stats := Stats{}
 
+	// Category-wide merged rules
+	categoryMergedRules := make(map[string]Rules)
+
 	for _, category := range categories {
 		ruleNames := make(map[string]bool)
 		
@@ -168,10 +171,12 @@ func main() {
 			srsIcon := "·"
 			if srsOK {
 				srsIcon = "✓"
+				stats.SRS++
 			}
 			mrsIcon := "·"
 			if mrsOK {
 				mrsIcon = "✓"
+				stats.MRS++
 			}
 
 			fmt.Printf("  [%-6s] %-20s %3d rules  srs:%s  mrs:%s\n",
@@ -179,13 +184,46 @@ func main() {
 
 			stats.Files++
 			stats.Rules += count
-			if srsOK {
-				stats.SRS++
-			}
-			if mrsOK {
-				stats.MRS++
-			}
+
+			// Add to big merge
+			catRules := categoryMergedRules[category]
+			catRules = mergeRules(catRules, rules)
+			categoryMergedRules[category] = catRules
 		}
+	}
+
+	// Final step: Compile merged rules for each category
+	fmt.Println("\n  [Finalizing] Generating merged rule-sets...")
+	for _, category := range categories {
+		fullRules := categoryMergedRules[category]
+		if len(fullRules.DomainSuffix)+len(fullRules.Domain)+len(fullRules.DomainKeyword)+len(fullRules.IPCIDR) == 0 {
+			continue
+		}
+
+		name := category + "-total"
+		isIP := category == "ip"
+
+		// Compile to all formats
+		jsonPath := compileSingBoxJSON(name, fullRules, filepath.Join(singboxDir, category))
+		if hasSingBox {
+			compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
+		}
+		yamlPath := compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category, "yaml"), isIP)
+		if hasMihomo {
+			behavior := "domain"
+			if isIP {
+				behavior = "ipcidr"
+			}
+			compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
+		}
+
+		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
+		compileQuanXList(name, fullRules, filepath.Join(quanxDir, category), isIP, category)
+		compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
+		compileLoonList(name, fullRules, filepath.Join(loonDir, category))
+		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category))
+
+		fmt.Printf("  ✅ [%-6s] Created full merged rule-set: %s\n", category, name)
 	}
 
 
