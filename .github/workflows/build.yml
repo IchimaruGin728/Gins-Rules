@@ -28,13 +28,16 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: dashboard/pnpm-lock.yaml
       
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: true
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
 
       - name: Sync Upstream Rules
-        run: bun run scripts/sync.ts
+        run: go run cmd/sync/main.go
 
       - name: Commit Synced Rules
         run: |
@@ -65,7 +68,7 @@ jobs:
 
       - name: Compile Rules
         run: |
-          bun run scripts/compile.ts
+          go run cmd/compile/main.go
           cp -r public/* compiled/
 
       - name: Build Dashboard
