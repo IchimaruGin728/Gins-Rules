@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { execSync } from 'child_process';
 
 interface Rules {
   domainSuffix: string[];
@@ -8,8 +9,6 @@ interface Rules {
   domainRegex: string[];
   ipCidr: string[];
 }
-
-const MAX_JSON_SIZE = 20 * 1024 * 1024; // 20 MiB safety limit (CF Pages limit is 25 MiB)
 
 const findRoot = () => {
   let curr = process.cwd();
@@ -56,7 +55,7 @@ function dedup(rules: Rules): Rules {
   };
 }
 
-function compileSingbox(rules: Rules): object {
+function compileSingboxJson(rules: Rules): object {
   const ruleObj: Record<string, string[]> = {};
   if (rules.domain.length) ruleObj.domain = rules.domain;
   if (rules.domainSuffix.length) ruleObj.domain_suffix = rules.domainSuffix;
@@ -85,14 +84,26 @@ function compileMihomo(rules: Rules): string {
   return lines.join('\n') + '\n';
 }
 
+// Check if sing-box is available for .srs compilation
+function hasSingbox(): boolean {
+  try {
+    execSync('sing-box version', { stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function main() {
   const root = findRoot();
   const compiledDir = path.join(root, 'compiled');
   const formats = ['singbox', 'mihomo', 'text'];
   const categories = ['proxy', 'direct', 'reject', 'ip'];
+  const canCompileSrs = hasSingbox();
 
   console.log('============================================================');
   console.log('  Gins-Rules Compiler (TS/Bun)');
+  console.log(`  sing-box SRS: ${canCompileSrs ? '✅ available' : '⚠️ not found, outputting JSON only'}`);
   console.log('============================================================');
 
   // Create all directories
@@ -126,18 +137,24 @@ async function main() {
       const totalRules = rules.domain.length + rules.domainSuffix.length + rules.domainKeyword.length + rules.ipCidr.length;
       if (totalRules === 0) continue;
 
-      // --- sing-box JSON ---
-      const sbJson = compileSingbox(rules);
-      const sbStr = JSON.stringify(sbJson, null, 2);
+      // --- sing-box: write JSON then compile to .srs ---
+      const sbDir = path.join(compiledDir, 'singbox', category);
+      const jsonPath = path.join(sbDir, name + '.json');
+      const srsPath = path.join(sbDir, name + '.srs');
       
-      if (sbStr.length < MAX_JSON_SIZE) {
-        await fs.writeFile(path.join(compiledDir, 'singbox', category, name + '.json'), sbStr);
-      } else {
-        // Too large for CF Pages — skip JSON, log warning
-        console.log(`  ⚠️ [${category}] ${name}: singbox JSON too large (${(sbStr.length / 1024 / 1024).toFixed(1)} MiB), skipped`);
+      await fs.writeJson(jsonPath, compileSingboxJson(rules));
+
+      if (canCompileSrs) {
+        try {
+          execSync(`sing-box rule-set compile --output "${srsPath}" "${jsonPath}"`, { stdio: 'pipe' });
+          // Remove the source JSON — only keep the .srs binary
+          await fs.remove(jsonPath);
+        } catch (err: any) {
+          console.log(`  ⚠️ [${category}] ${name}: SRS compile failed, keeping JSON`);
+        }
       }
 
-      // --- text format (always output) ---
+      // --- text format ---
       await fs.writeFile(path.join(compiledDir, 'text', category, name + '.txt'), compileText(rules));
 
       // --- mihomo / clash format ---
