@@ -57,6 +57,12 @@ jobs:
           sudo mv sing-box-${SINGBOX_VERSION}-linux-amd64/sing-box /usr/local/bin/
           sing-box version
 
+          # mihomo (for .mrs rule-set compilation)
+          MIHOMO_VERSION=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.tag_name' | sed 's/v//')
+          curl -sL "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz" | gunzip > mihomo
+          chmod +x mihomo && sudo mv mihomo /usr/local/bin/
+          mihomo version || true
+
       - name: Compile Rules
         run: |
           bun run scripts/compile.ts
