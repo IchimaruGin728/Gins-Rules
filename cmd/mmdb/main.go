@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/oschwald/maxminddb-golang"
 )
@@ -147,19 +149,27 @@ func main() {
 		// Only write separate files for common regions to keep dashboard clean
 		if commonRegions[code] {
 			filename := strings.ToLower(code) + ".txt"
-			sorted := sortedKeys(cidrs)
 			outPath := filepath.Join(ipDir, filename)
-			os.WriteFile(outPath, []byte(strings.Join(sorted, "\n")+"\n"), 0o644)
-			fmt.Printf("  [WRITE] ip/%s: %d CIDRs\n", filename, len(sorted))
+			if err := writeIPList(outPath, cidrs); err != nil {
+				fmt.Printf("  [ERROR] Failed to write ip/%s: %v\n", filename, err)
+			} else {
+				fmt.Printf("  [WRITE] ip/%s: %d CIDRs\n", filename, len(cidrs))
+			}
 		}
 	}
 
+	// Clear country mapping as it's no longer needed
+	countryCIDRs = nil
+
 	// Write !cn.txt
 	if len(notCN) > 0 {
-		sortedNotCN := sortedKeys(notCN)
 		outPath := filepath.Join(ipDir, "!cn.txt")
-		os.WriteFile(outPath, []byte(strings.Join(sortedNotCN, "\n")+"\n"), 0o644)
-		fmt.Printf("  [WRITE] ip/!cn.txt: %d CIDRs (All non-CN countries)\n", len(sortedNotCN))
+		if err := writeIPList(outPath, notCN); err != nil {
+			fmt.Printf("  [ERROR] Failed to write ip/!cn.txt: %v\n", err)
+		} else {
+			fmt.Printf("  [WRITE] ip/!cn.txt: %d CIDRs (All non-CN countries)\n", len(notCN))
+		}
+		notCN = nil // Clear for memory
 	}
 
 	// Write ASN files
@@ -176,10 +186,12 @@ func main() {
 		if len(merged) == 0 {
 			continue
 		}
-		sorted := sortedKeys(merged)
 		outPath := filepath.Join(ipDir, target.Name+".txt")
-		os.WriteFile(outPath, []byte(strings.Join(sorted, "\n")+"\n"), 0o644)
-		fmt.Printf("  [WRITE] ip/%s.txt: %d CIDRs\n", target.Name, len(sorted))
+		if err := writeIPList(outPath, merged); err != nil {
+			fmt.Printf("  [ERROR] Failed to write ip/%s.txt: %v\n", target.Name, err)
+		} else {
+			fmt.Printf("  [WRITE] ip/%s.txt: %d CIDRs\n", target.Name, len(merged))
+		}
 	}
 
 	fmt.Println("\n============================================================")
@@ -235,7 +247,10 @@ func parseASNMMDB(db *maxminddb.Reader, asnCIDRs map[uint]map[string]bool) int {
 }
 
 func downloadFile(url string, dest string) error {
-	resp, err := http.Get(url)
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
+	resp, err := client.Get(url)
 	if err != nil {
 		return err
 	}
@@ -256,6 +271,26 @@ func downloadFile(url string, dest string) error {
 		return err
 	}
 	fmt.Printf("  Downloaded %s (%.1f MB)\n", filepath.Base(dest), float64(written)/1024/1024)
+	return nil
+}
+
+func writeIPList(filePath string, cidrSet map[string]bool) error {
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	writer := bufio.NewWriter(f)
+	defer writer.Flush()
+
+	// Sort keys for deterministic output
+	sorted := sortedKeys(cidrSet)
+	for _, cidr := range sorted {
+		if _, err := writer.WriteString(cidr + "\n"); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
