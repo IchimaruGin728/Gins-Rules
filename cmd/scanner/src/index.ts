@@ -76,15 +76,19 @@ export default {
     for (const msg of batch.messages) {
       const { text, telegram, discord } = msg.body;
 
-      const results = await Promise.allSettled([
-        telegram ? sendTelegram(env, text) : Promise.resolve(),
-        discord ? sendDiscord(env, text) : Promise.resolve(),
-      ]);
+      const messages = text.split('---SPLIT---').map((m) => m.trim()).filter(Boolean);
 
-      // Log any failures
-      for (const r of results) {
-        if (r.status === 'rejected') {
-          console.error('Notification failed:', r.reason);
+      for (const msgText of messages) {
+        const results = await Promise.allSettled([
+          telegram ? sendTelegram(env, msgText) : Promise.resolve(),
+          discord ? sendDiscord(env, msgText) : Promise.resolve(),
+        ]);
+
+        // Log any failures
+        for (const r of results) {
+          if (r.status === 'rejected') {
+            console.error('Notification failed:', r.reason);
+          }
         }
       }
 
@@ -189,26 +193,22 @@ async function generateDailySummary(env: Env, stats: BuildStats): Promise<string
     timeZone: 'Asia/Singapore',
   });
 
-  const prompt = `你是一个专注于网络基座与路由优化的技术专家 (Network Infrastructure & Routing Expert)。请以中英双语撰写每日构建摘要。
+  const domainRules = stats.rules - (stats.ipRules || 0);
+  const prompt = `你是一个网络基础设施与路由专家。请按照以下严格格式撰写双语构建报告。
 
 要求：
-- 语气要求：专业、严谨、硬核。体现出“工程验证完成”的确定感。
-- 拒绝任何情绪化、口语化或卖萌。
-- **添加少量合适的技术类 emoji**（如 🛰️, ⚙️, 🔒, 🚢, 📡, 🏁, 💎），每条摘要限 1-2 个，放在相应句首或句末。
-- 格式：
-  [中文简评]
-  [English Technical Summary]
-  (Data: ${stats.services} Svc | ${stats.rules} Rules | ${stats.ipRules} IPs)
-  (Updated ${date})
+- 必须输出两段文字，中间用 "---SPLIT---" 分隔。
+- 第一段（中文）：必须包含 "${stats.services} 服务运行平稳"、"${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录已更新"、"一切尽在掌握 🛠️"。
+- 第二段（英文）：对应中文的技术化翻译，保持极客感。
+- 每段结尾：必须加上 (Updated ${date})。
+- 拒绝任何其他多余的解释、前言或总结词。
 
-示例风格：
-- 📡 路由条目哈希一致性验证通过。边缘节点同步就绪。
-  Hash consistency verified for routing entries. Edge synchronization ready. 🏁
+示例输出：
+${stats.services} 服务运行平稳，${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录已更新，一切尽在掌握 🛠️。 (Updated ${date})
+---SPLIT---
+${stats.services} services online, ${domainRules} domain rules and ${stats.ipRules} IP records synchronization complete. Engineering status: OK 🛠️. (Updated ${date})
 
-- 🔒 数据同步完成，已通过原子性校验。规则库保持高可用。
-  Synchronization complete with atomic verification. Rule-set maintained in HA state. 💎
-
-直接输出消息内容，不要加任何中间过程或标记。`;
+直接输出消息内容。`;
 
   try {
     const response = await env.AI.run('@cf/meta/llama-4-scout-17b-16e-instruct', {
