@@ -1,34 +1,40 @@
 name: Build and Deploy
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   schedule:
-    - cron: '0 16 * * *' # 每天 00:00 SGT (UTC+8)
+    - cron: '0 0 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build:
-    name: Build & Deploy
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
+      
       - uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 10
       - uses: actions/setup-node@v6
         with:
           node-version: 25
           cache: 'pnpm'
           cache-dependency-path: dashboard/pnpm-lock.yaml
-      - uses: actions/setup-go@v6
+      
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          go-version-file: go.mod
+          toolchain: stable
 
-      # ── Sync upstream rules ──
       - name: Sync Upstream Rules
-        run: go run ./cmd/sync/
+        run: bun run scripts/sync.ts
 
       - name: Commit Synced Rules
         run: |
@@ -40,39 +46,20 @@ jobs:
             git push
           fi
 
-      # ── Extract GeoIP & ASN ──
-      - name: Extract GeoIP & ASN from MMDB
-        run: go run ./cmd/mmdb/
+      - name: Extract GeoIP & ASN
+        run: cargo run --manifest-path infra/aggregator/Cargo.toml --release
 
-      # ── Install binary compilers ──
       - name: Install Compilers
         run: |
-          SINGBOX_VERSION=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.tag_name' | sed 's/v//')
-          curl -sL "https://github.com/SagerNet/sing-box/releases/download/v${SINGBOX_VERSION}/sing-box-${SINGBOX_VERSION}-linux-amd64.tar.gz" | tar xz
-          sudo mv "sing-box-${SINGBOX_VERSION}-linux-amd64/sing-box" /usr/local/bin/
-          
           MIHOMO_VERSION=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.tag_name' | sed 's/v//')
           curl -sL "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz" | gunzip > mihomo
           chmod +x mihomo && sudo mv mihomo /usr/local/bin/
 
-      # ── Compile rules ──
       - name: Compile Rules
-        id: compile
         run: |
-          go run ./cmd/compile/
+          bun run scripts/compile.ts
           cp -r public/* compiled/
 
-          # Collect build stats
-          SERVICES=$(find source/proxy source/direct source/reject source/ip -name '*.txt' 2>/dev/null | wc -l | tr -d ' ')
-          RULES=$(cat source/proxy/*.txt source/direct/*.txt source/reject/*.txt source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          IP_RULES=$(cat source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          ASN_FILES=$(ls source/ip/asn-*.txt 2>/dev/null | wc -l | tr -d ' ')
-          echo "services=$SERVICES" >> $GITHUB_OUTPUT
-          echo "rules=$RULES" >> $GITHUB_OUTPUT
-          echo "ip_rules=$IP_RULES" >> $GITHUB_OUTPUT
-          echo "asn_files=$ASN_FILES" >> $GITHUB_OUTPUT
-
-      # ── Build dashboard into compiled/ ──
       - name: Build Dashboard
         run: |
           cd dashboard
@@ -80,37 +67,9 @@ jobs:
           pnpm build
           cp -r dist/* ../compiled/
 
-      # ── Deploy everything to one Pages ──
       - name: Deploy to Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy compiled --project-name=gins-rules --branch=main
-
-      # ── Deploy Worker ──
-      - name: Deploy Worker
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: cmd/scanner
-          command: deploy src/index.ts --config wrangler.jsonc
-          wranglerVersion: latest
-
-      # ── Notify via CF Worker ──
-      - name: Notify
-        if: always()
-        run: |
-          curl -sf -X POST \
-            -H "Authorization: Bearer ${{ secrets.WORKFLOW_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "services": ${{ steps.compile.outputs.services || 0 }},
-              "rules": ${{ steps.compile.outputs.rules || 0 }},
-              "formats": 8,
-              "ipRules": ${{ steps.compile.outputs.ip_rules || 0 }},
-              "asnFiles": ${{ steps.compile.outputs.asn_files || 0 }},
-              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
-            }' \
-            "https://rules-api.ichimarugin728.dev/workflow/build-complete" || true

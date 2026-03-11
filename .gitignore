@@ -9,6 +9,19 @@ compiled/
 .astro/
 dist/
 
+# Rust
+**/target/
+infra/aggregator/Cargo.lock
+
+# Node / Bun
+bun.lockb
+
+# Rules Source Upstream
+source/upstream/proxy/
+source/upstream/direct/
+source/upstream/reject/
+source/ip/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
@@ -30,9 +43,14 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
-# Go
+# Go (legacy)
 bin/
 main
+sync
+compile
+go.mod
+go.sum
+cmd/
 
 # Wrangler temp files
 .wrangler/

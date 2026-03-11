@@ -1,0 +1,15 @@
+{
+  "name": "gins-rules-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "axios": "latest",
+    "fs-extra": "latest"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "latest",
+    "@types/node": "latest",
+    "bun-types": "latest",
+    "typescript": "latest"
+  }
+}
