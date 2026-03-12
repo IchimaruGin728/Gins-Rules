@@ -143,7 +143,7 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
     const dotIdx = fileName.lastIndexOf('.');
     if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
     category = fileName.slice(0, dotIdx);
-    name = `${category}-total`;
+    name = category;
     ext = fileName.slice(dotIdx + 1);
   } else if (parts.length === 2) {
     // Format A: ruleset/proxy/google.srs (Merged Default)
@@ -158,7 +158,7 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
       const dotIdx = fileName.lastIndexOf('.');
       if (dotIdx === -1) return new Response('Invalid filename', { status: 400 });
       category = fileName.slice(0, dotIdx);
-      name = `${category}-total`;
+      name = category;
       ext = fileName.slice(dotIdx + 1);
     } else {
       category = parts[0];
@@ -218,7 +218,7 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
     targetFile = targetFile.replace('.list', '.ip.list');
   }
   
-  const targetUrl = `https://${pagesDomain}/${dir}/${category}/${targetFile}`;
+  const targetUrl = `https://${pagesDomain}/ruleset/${dir}/${category}/${targetFile}`;
 
   return Response.redirect(targetUrl, 302);
 }

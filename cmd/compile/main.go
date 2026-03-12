@@ -41,15 +41,16 @@ type Stats struct {
 func main() {
 	root := findRoot()
 	compiledDir := filepath.Join(root, "compiled")
+	rulesetDir := filepath.Join(compiledDir, "ruleset")
 
-	singboxDir := filepath.Join(compiledDir, "singbox")
-	mihomoDir := filepath.Join(compiledDir, "mihomo")
-	textDir := filepath.Join(compiledDir, "text")
-	quanxDir := filepath.Join(compiledDir, "quanx")
-	egernDir := filepath.Join(compiledDir, "egern")
-	loonDir := filepath.Join(compiledDir, "loon")
-	stashDir := filepath.Join(compiledDir, "stash")
-	shadowrocketDir := filepath.Join(compiledDir, "shadowrocket")
+	singboxDir := filepath.Join(rulesetDir, "singbox")
+	mihomoDir := filepath.Join(rulesetDir, "mihomo")
+	textDir := filepath.Join(rulesetDir, "text")
+	quanxDir := filepath.Join(rulesetDir, "quanx")
+	egernDir := filepath.Join(rulesetDir, "egern")
+	loonDir := filepath.Join(rulesetDir, "loon")
+	stashDir := filepath.Join(rulesetDir, "stash")
+	shadowrocketDir := filepath.Join(rulesetDir, "shadowrocket")
 
 	fmt.Println("============================================================")
 	fmt.Println("  Gins-Rules Compiler (Go)")
@@ -70,7 +71,7 @@ func main() {
 		os.MkdirAll(dir, 0o755)
 		for _, cat := range []string{"proxy", "direct", "reject", "ip"} {
 			os.MkdirAll(filepath.Join(dir, cat), 0o755)
-			if dir == mihomoDir || dir == stashDir {
+			if strings.Contains(dir, "mihomo") || strings.Contains(dir, "stash") {
 				os.MkdirAll(filepath.Join(dir, cat, "yaml"), 0o755)
 			}
 		}
@@ -196,7 +197,7 @@ func main() {
 			continue
 		}
 
-		name := category + "-total"
+		name := category
 		isIP := category == "ip"
 
 		// Compile to all formats
@@ -224,7 +225,7 @@ func main() {
 
 	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket"} {
 		for _, cat := range categories {
-			dir := filepath.Join(compiledDir, formatDir, cat)
+			dir := filepath.Join(rulesetDir, formatDir, cat)
 			entries, _ := os.ReadDir(dir)
 			var fileList []string
 			for _, e := range entries {
