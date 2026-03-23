@@ -42,6 +42,7 @@ jobs:
         run: go run cmd/sync/main.go
 
       - name: Commit Synced Rules
+        id: sync
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -49,12 +50,17 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "chore: auto sync upstream rules [skip ci]"
             git push
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Extract GeoIP & ASN
+        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: cargo run --manifest-path infra/aggregator/Cargo.toml --release
 
       - name: Install Compilers
+        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           # sing-box (for .srs rule-set compilation)
           SINGBOX_VERSION=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.tag_name' | sed 's/v//')
@@ -69,6 +75,7 @@ jobs:
 
       - name: Compile Rules
         id: compile
+        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           go run cmd/compile/main.go
           cp -r public/* compiled/
@@ -84,6 +91,7 @@ jobs:
           echo "asn_files=$ASN_FILES" >> $GITHUB_OUTPUT
 
       - name: Build Dashboard
+        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           cd dashboard
           pnpm install
@@ -92,6 +100,7 @@ jobs:
 
       - name: Deploy to Pages
         uses: cloudflare/wrangler-action@v3
+        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -99,6 +108,7 @@ jobs:
 
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
+        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -107,7 +117,7 @@ jobs:
           wranglerVersion: latest
 
       - name: Notify
-        if: always()
+        if: always() && (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule')
         run: |
           curl -sf -X POST \
             -H "Authorization: Bearer ${{ secrets.WORKFLOW_SECRET }}" \
