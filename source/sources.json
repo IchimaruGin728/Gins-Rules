@@ -103,5 +103,12 @@
     "category": "direct",
     "target": "bytedance",
     "enabled": true
+  },
+  {
+    "name": "CN Additional",
+    "url": "https://static-file-global.353355.xyz/rules/cn-additional-list.txt",
+    "category": "direct",
+    "target": "direct-list",
+    "enabled": true
   }
 ]
