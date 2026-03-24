@@ -1,0 +1,9 @@
+/ruleset/*
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+/*.js
+  Access-Control-Allow-Origin: *
+  Content-Type: application/javascript; charset=utf-8
+/*.list
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
