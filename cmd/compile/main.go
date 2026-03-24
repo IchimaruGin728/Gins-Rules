@@ -51,6 +51,7 @@ func main() {
 	loonDir := filepath.Join(rulesetDir, "loon")
 	stashDir := filepath.Join(rulesetDir, "stash")
 	shadowrocketDir := filepath.Join(rulesetDir, "shadowrocket")
+	surfboardDir := filepath.Join(rulesetDir, "surfboard")
 
 	fmt.Println("============================================================")
 	fmt.Println("  Gins-Rules Compiler (Go)")
@@ -66,7 +67,7 @@ func main() {
 	hasSingBox := singboxPath != ""
 	hasMihomo := mihomoPath != ""
 
-	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir} {
+	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
 		for _, cat := range []string{"proxy", "direct", "reject", "ip"} {
@@ -164,6 +165,7 @@ func main() {
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category))
 			compileLoonList(name, rules, filepath.Join(loonDir, category))
 			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
+			compileLoonList(name, rules, filepath.Join(surfboardDir, category))
 
 			srsIcon := "·"
 			if srsOK {
@@ -219,11 +221,12 @@ func main() {
 		compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
 		compileLoonList(name, fullRules, filepath.Join(loonDir, category))
 		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category))
+		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category))
 
 		fmt.Printf("  ✅ [%-6s] Created full merged rule-set: %s\n", category, name)
 	}
 
-	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket"} {
+	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket", "surfboard"} {
 		for _, cat := range categories {
 			dir := filepath.Join(rulesetDir, formatDir, cat)
 			entries, _ := os.ReadDir(dir)

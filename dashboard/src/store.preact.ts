@@ -8,7 +8,8 @@ export type AppType =
   | 'quanx' 
   | 'loon' 
   | 'egern' 
-  | 'shadowrocket';
+  | 'shadowrocket'
+  | 'surfboard';
 
 export interface AppConfig {
   id: AppType;
@@ -26,7 +27,8 @@ export const APPS: AppConfig[] = [
   { id: 'quanx', label: 'QuanX', icon: 'i-ph-shield-check-bold', ext: 'list', color: '#f44336' },
   { id: 'loon', label: 'Loon', icon: 'i-ph-balloon-bold', ext: 'list', color: '#03A9F4' },
   { id: 'egern', label: 'Egern', icon: 'i-ph-circles-three-plus-bold', ext: 'yaml', color: '#9C27B0' },
-  { id: 'shadowrocket', label: 'Rocket', icon: 'i-ph-flying-saucer-bold', ext: 'list', color: '#FF4081' },
+  { id: 'shadowrocket', label: 'Shadowrocket', icon: 'i-ph-flying-saucer-bold', ext: 'list', color: '#FF4081' },
+  { id: 'surfboard', label: 'Surfboard', icon: 'i-ph-surfboard-bold', ext: 'list', color: '#68BBE3' },
 ];
 
 export const activeApp = signal<AppType>('singbox');

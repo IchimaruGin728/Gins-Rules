@@ -34,6 +34,7 @@ Comprehensive, self-maintained proxy rule list repository with fine-grained per-
 | sing-box | SRS | `https://rules.ichimarugin728.dev/singbox/proxy/apple.srs` |
 | Mihomo | MRS | `https://rules.ichimarugin728.dev/mihomo/proxy/apple.mrs` |
 | Surge / Loon | List | `https://rules.ichimarugin728.dev/text/proxy/apple.list` |
+| Surfboard | List | `https://rules.ichimarugin728.dev/surfboard/proxy/apple.list` |
 | QuantumultX | List | `https://rules.ichimarugin728.dev/quanx/proxy/apple.list` |
 | Egern | YAML | `https://rules.ichimarugin728.dev/egern/proxy/apple.yaml` |
 
