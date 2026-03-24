@@ -86,5 +86,12 @@ export const APPS: AppConfig[] = [
 ];
 
 export const activeApp = signal<AppType>("singbox");
-export const getActiveConfig = () =>
-  APPS.find((a) => a.id === activeApp.value)!;
+export const getActiveConfig = () => {
+  const config = APPS.find((a) => a.id === activeApp.value);
+
+  if (!config) {
+    throw new Error(`Unknown app config: ${activeApp.value}`);
+  }
+
+  return config;
+};
