@@ -22,21 +22,21 @@ Comprehensive, self-maintained proxy rule list repository with fine-grained per-
 
 | Category | Format | URL |
 |----------|--------|-----|
-| Proxy All | List | `https://rules-api.ichimarugin728.dev/ruleset/proxy.list` |
-| Direct All | List | `https://rules-api.ichimarugin728.dev/ruleset/direct.list` |
-| Reject All | List | `https://rules-api.ichimarugin728.dev/ruleset/reject.list` |
-| IP All | List | `https://rules-api.ichimarugin728.dev/ruleset/ip.list` |
+| Proxy All | List | `https://rules.ichimarugin728.dev/ruleset/text/proxy/proxy.list` |
+| Direct All | List | `https://rules.ichimarugin728.dev/ruleset/text/direct/direct.list` |
+| Reject All | List | `https://rules.ichimarugin728.dev/ruleset/text/reject/reject.list` |
+| IP All | List | `https://rules.ichimarugin728.dev/ruleset/text/ip/ip.list` |
 
 ### 2. Individual Service
 
 | Client | Format | URL Pattern |
 |--------|--------|-------------|
-| sing-box | SRS | `https://rules.ichimarugin728.dev/singbox/proxy/apple.srs` |
-| Mihomo | MRS | `https://rules.ichimarugin728.dev/mihomo/proxy/apple.mrs` |
-| Surge / Loon | List | `https://rules.ichimarugin728.dev/text/proxy/apple.list` |
-| Surfboard | List | `https://rules.ichimarugin728.dev/surfboard/proxy/apple.list` |
-| QuantumultX | List | `https://rules.ichimarugin728.dev/quanx/proxy/apple.list` |
-| Egern | YAML | `https://rules.ichimarugin728.dev/egern/proxy/apple.yaml` |
+| sing-box | SRS | `https://rules.ichimarugin728.dev/ruleset/singbox/proxy/apple.srs` |
+| Mihomo | MRS | `https://rules.ichimarugin728.dev/ruleset/mihomo/proxy/apple.mrs` |
+| Surge / Loon | List | `https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list` |
+| Surfboard | List | `https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.list` |
+| QuantumultX | List | `https://rules.ichimarugin728.dev/ruleset/quanx/proxy/apple.list` |
+| Egern | YAML | `https://rules.ichimarugin728.dev/ruleset/egern/proxy/apple.yaml` |
 
 ## Complete Service List
 

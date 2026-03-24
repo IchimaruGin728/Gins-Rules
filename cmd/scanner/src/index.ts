@@ -56,7 +56,7 @@ export default {
     }
 
     // Routes
-    if (path === '/' || path === '/health') {
+    if (path === '/' || path === '/health' || path === '/api/health') {
       return json({ status: 'ok', service: 'gins-rules', timestamp: Date.now() });
     }
 

@@ -8,7 +8,7 @@ import AppSwitcher from '../components/AppSwitcher.preact';
 
 // Read service lists from source/ at build time
 const sourceDir = path.resolve('..', 'source');
-const apiBase = 'https://rules-api.ichimarugin728.dev';
+const apiBase = 'https://rules.ichimarugin728.dev';
 
 function getServices(category: string): { name: string; lines: number }[] {
   const dir = path.join(sourceDir, category);

@@ -6,6 +6,14 @@
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
+      "pattern": "rules.ichimarugin728.dev/workflow/*",
+      "custom_domain": true
+    },
+    {
+      "pattern": "rules.ichimarugin728.dev/api/*",
+      "custom_domain": true
+    },
+    {
       "pattern": "rules-api.ichimarugin728.dev",
       "custom_domain": true
     }

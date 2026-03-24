@@ -130,4 +130,4 @@ jobs:
               "asnFiles": ${{ steps.compile.outputs.asn_files || 0 }},
               "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
             }' \
-            "https://rules-api.ichimarugin728.dev/workflow/build-complete" || true
+            "https://rules.ichimarugin728.dev/workflow/build-complete" || true
