@@ -1,4 +1,5 @@
 import { activeApp, APPS } from "../store.preact";
+import DynamicIcon from "./DynamicIcon.preact";
 
 export default function AppSwitcher() {
   return (
@@ -14,10 +15,11 @@ export default function AppSwitcher() {
             }
           `}
         >
-          <div 
-            class={`${app.icon} text-lg transition-transform duration-300 ${activeApp.value === app.id ? 'scale-110' : 'scale-100'}`}
+          <DynamicIcon 
+            icon={app.icon}
+            class={`text-lg w-4.5 h-4.5 transition-transform duration-300 ${activeApp.value === app.id ? 'scale-110' : 'scale-100'}`}
             style={activeApp.value === app.id ? { color: app.color } : {}}
-          ></div>
+          />
           <span class={`text-[11px] font-black uppercase tracking-widest ${activeApp.value === app.id ? 'opacity-100' : 'opacity-60'}`}>
             {app.label}
           </span>
