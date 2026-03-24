@@ -5,6 +5,7 @@ import path from 'node:path';
 import CopyCard from '../components/CopyCard.preact';
 import ServiceItem from '../components/ServiceItem.preact';
 import AppSwitcher from '../components/AppSwitcher.preact';
+import ParserItem from '../components/ParserItem.preact';
 
 // Read service lists from source/ at build time
 const sourceDir = path.resolve('..', 'source');
@@ -92,6 +93,28 @@ const buildTime = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UT
           baseUrl={apiBase} 
         />
       ))}
+    </div>
+
+    <!-- Resource Parsers -->
+    <div class="space-y-4">
+      <div class="flex items-center gap-2 px-1">
+        <div class="i-ph-terminal-window-bold text-brand-primary"></div>
+        <span class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Resource Parsers</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <ParserItem 
+          client:load 
+          name="Quantumult X" 
+          url={`${apiBase}/QX-Resource-Parser.js`}
+          icon="i-ph-lightning-bold"
+        />
+        <ParserItem 
+          client:load 
+          name="Loon / Sub-Store" 
+          url={`${apiBase}/Loon-Resource-Parser.js`}
+          icon="i-ph-rocket-launch-bold"
+        />
+      </div>
     </div>
 
     <!-- Service Lists -->
