@@ -21,7 +21,7 @@ export interface AppConfig {
 
 export const APPS: AppConfig[] = [
   { id: 'singbox', label: 'Sing-box', icon: '/singbox.svg', ext: 'srs', color: '#5D5CDE' },
-  { id: 'mihomo', label: 'Mihomo', icon: '/mihomo.png', ext: 'mrs', color: '#00BFA5' },
+  { id: 'mihomo', label: 'Mihomo', icon: '/mihomo.jpg', ext: 'mrs', color: '#00BFA5' },
   { id: 'stash', label: 'Stash', icon: 'i-ph-leaf-fill', ext: 'mrs', color: '#4CAF50' },
   { id: 'surge', label: 'Surge', icon: 'i-ph-lightning-fill', ext: 'list', color: '#FBC02D' },
   { id: 'quanx', label: 'QuanX', icon: 'i-ph-shield-check-fill', ext: 'list', color: '#f44336' },
