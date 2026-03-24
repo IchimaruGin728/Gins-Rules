@@ -96,6 +96,21 @@ func main() {
 		}
 	}
 
+	fmt.Println("\n  Syncing Loon-Resource-Parser.js (Sub-Store)...")
+	loonParserURL := "https://github.com/sub-store-org/Sub-Store/releases/latest/download/sub-store-parser.loon.min.js"
+	loonParserContent, err := fetchURL(loonParserURL)
+	if err != nil {
+		fmt.Printf("  [ERROR] Failed to fetch Loon-Resource-Parser.js: %v\n", err)
+	} else {
+		loonParserPath := filepath.Join(root, "source", "Loon-Resource-Parser.js")
+		err = os.WriteFile(loonParserPath, []byte(loonParserContent), 0644)
+		if err != nil {
+			fmt.Printf("  [ERROR] Failed to write Loon-Resource-Parser.js: %v\n", err)
+		} else {
+			fmt.Println("  [SUCCESS] Loon-Resource-Parser.js updated successfully")
+		}
+	}
+
 	fmt.Println("\n  Sync complete!")
 	fmt.Println("============================================================")
 }

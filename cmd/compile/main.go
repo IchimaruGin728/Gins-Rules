@@ -249,15 +249,19 @@ func main() {
 	fmt.Printf("  Output: %s\n", compiledDir)
 	fmt.Println("============================================================")
 
-	copyParserJS(root, compiledDir)
+	copyParsersJS(root, compiledDir)
 }
 
-func copyParserJS(root string, compiledDir string) {
-	srcPath := filepath.Join(root, "source", "QX-Resource-Parser.js")
-	dstPath := filepath.Join(compiledDir, "QX-Resource-Parser.js")
-	data, err := os.ReadFile(srcPath)
-	if err == nil {
-		os.WriteFile(dstPath, data, 0o644)
+func copyParsersJS(root string, compiledDir string) {
+	parsers := []string{"QX-Resource-Parser.js", "Loon-Resource-Parser.js"}
+	for _, p := range parsers {
+		srcPath := filepath.Join(root, "source", p)
+		dstPath := filepath.Join(compiledDir, p)
+		data, err := os.ReadFile(srcPath)
+		if err == nil {
+			os.WriteFile(dstPath, data, 0o644)
+			fmt.Printf("  [SUCCESS] Copied %s to compiled/\n", p)
+		}
 	}
 }
 
