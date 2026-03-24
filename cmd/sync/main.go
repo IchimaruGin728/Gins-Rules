@@ -86,12 +86,13 @@ func main() {
 	if err != nil {
 		fmt.Printf("  [ERROR] Failed to fetch QX-Resource-Parser.js: %v\n", err)
 	} else {
+		parserContent = cleanQXParser(parserContent)
 		parserPath := filepath.Join(root, "source", "QX-Resource-Parser.js")
 		err = os.WriteFile(parserPath, []byte(parserContent), 0644)
 		if err != nil {
 			fmt.Printf("  [ERROR] Failed to write QX-Resource-Parser.js: %v\n", err)
 		} else {
-			fmt.Println("  [SUCCESS] QX-Resource-Parser.js updated successfully")
+			fmt.Println("  [SUCCESS] QX-Resource-Parser.js updated and cleaned successfully")
 		}
 	}
 
@@ -157,4 +158,20 @@ func findRoot() string {
 		}
 	}
 	return "."
+}
+
+func cleanQXParser(content string) string {
+	// Remove the original header (first /** ... */ block) and replace it with a clean one
+	startIdx := strings.Index(content, "/**")
+	endIdx := strings.Index(content, "*/")
+
+	if startIdx != -1 && endIdx != -1 && endIdx > startIdx {
+		header := `/** 
+ * Gins-Rules QX Resource Parser
+ * - Automated Proxy Rule Conversion
+ */`
+		// Keep everything after the first comment block
+		return header + "\n" + content[endIdx+2:]
+	}
+	return content
 }
