@@ -5,8 +5,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: '28 23 * * *'  # 07:28 SGT
-    - cron: '16 9 * * *'   # 17:16 SGT
+    - cron: "28 23 * * *" # 07:28 SGT
+    - cron: "16 9 * * *" # 17:16 SGT
   workflow_dispatch:
 
 permissions:
@@ -21,19 +21,19 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10
       - uses: actions/setup-node@v6
         with:
           node-version: 25
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: dashboard/pnpm-lock.yaml
-      
+
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: "1.24"
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
@@ -79,7 +79,7 @@ jobs:
         run: |
           go run cmd/compile/main.go
           cp -r public/* compiled/
-          
+
           # Collect build stats
           SERVICES=$(find source/proxy source/direct source/reject source/ip -name '*.txt' 2>/dev/null | wc -l | tr -d ' ')
           RULES=$(cat source/proxy/*.txt source/direct/*.txt source/reject/*.txt source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
@@ -104,7 +104,9 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy compiled --project-name=gins-rules --branch=main --commit-dirty=true
+          packageManager: pnpm
+          workingDirectory: dashboard
+          command: pages deploy ../compiled --project-name=gins-rules --branch=main --commit-dirty=true
 
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
@@ -112,6 +114,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: pnpm
           workingDirectory: cmd/scanner
           command: deploy src/index.ts --config wrangler.jsonc
           wranglerVersion: latest
