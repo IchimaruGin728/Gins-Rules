@@ -4,18 +4,11 @@ import AppLogo from "./AppLogo.preact";
 interface Props {
   name: string;
   url: string;
-  icon: string;
   appIcon: string;
   appAccent: string;
 }
 
-export default function ParserItem({
-  name,
-  url,
-  icon,
-  appIcon,
-  appAccent,
-}: Props) {
+export default function ParserItem({ name, url, appIcon, appAccent }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -42,14 +35,11 @@ export default function ParserItem({
       <div class="flex items-center gap-3">
         <AppLogo icon={appIcon} accent={appAccent} size="sm" />
         <div class="flex flex-col items-start">
-          <div class="flex items-center gap-2">
-            <div class={`${icon} text-sm text-brand-primary`}></div>
-            <span class="text-white font-outfit font-extrabold text-sm tracking-tight group-hover:text-brand-primary transition-colors">
-              {name}
-            </span>
-          </div>
+          <span class="text-white font-outfit font-extrabold text-sm tracking-tight group-hover:text-brand-primary transition-colors">
+            {name}
+          </span>
           <span class="text-[9px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
-            {name} Parser
+            Resource Parser
           </span>
         </div>
       </div>

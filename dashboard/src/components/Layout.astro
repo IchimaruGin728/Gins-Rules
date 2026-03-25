@@ -1,49 +1,60 @@
 ---
 interface Props {
-  title?: string;
+    title?: string;
 }
 
-const { title = 'Gins-Rules' } = Astro.props;
+const { title = "Gins-Rules" } = Astro.props;
 const pageTitle = `${title} | Status Board`;
+void pageTitle;
 ---
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{pageTitle}</title>
-    <meta name="description" content="Gins-Rules Status Board — Proxy rule infrastructure status and service catalog." />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div class="bg-glow"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{pageTitle}</title>
+        <meta
+            name="description"
+            content="Gins-Rules Status Board — Proxy rule infrastructure status and service catalog."
+        />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div class="bg-glow"></div>
 
-    <header class="pt-8 pb-4 px-4 sm:px-6 xl:px-8 max-w-[1480px] mx-auto">
-      <div class="flex items-center gap-3">
-        <div class="i-ph-shield-check-fill text-3xl text-brand-primary"></div>
-        <span class="text-2xl font-extrabold font-outfit text-gradient tracking-tight">
-          Gins-Rules
-        </span>
-      </div>
-    </header>
+        <header class="pt-8 pb-4 px-4 sm:px-6 xl:px-8 max-w-[1640px] mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="i-ph-shield-check-fill text-3xl text-brand-primary">
+                </div>
+                <span
+                    class="text-2xl font-extrabold font-outfit text-gradient tracking-tight"
+                >
+                    Gins-Rules
+                </span>
+            </div>
+        </header>
 
-    <main class="max-w-[1480px] mx-auto px-4 sm:px-6 xl:px-8 pb-12 animate-fade-in-up">
-      <slot />
-    </main>
+        <main
+            class="max-w-[1640px] mx-auto px-4 sm:px-6 xl:px-8 pb-12 animate-fade-in-up"
+        >
+            <slot />
+        </main>
 
-    <footer class="py-8 border-t border-white/5 text-center text-gray-600 text-xs font-medium tracking-widest uppercase">
-      &copy; 2026 Gins-Rules
-    </footer>
-  </body>
+        <footer
+            class="py-8 border-t border-white/5 text-center text-gray-600 text-xs font-medium tracking-widest uppercase"
+        >
+            &copy; 2026 Gins-Rules
+        </footer>
+    </body>
 </html>
 
 <style is:global>
-  @import '../styles/global.css';
+    @import "../styles/global.css";
 </style>

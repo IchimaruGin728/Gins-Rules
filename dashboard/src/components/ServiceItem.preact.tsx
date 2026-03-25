@@ -1,7 +1,6 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { activeApp, getActiveConfig } from "../store.preact";
-import AppLogo from "./AppLogo.preact";
 
 interface Props {
   name: string;
@@ -71,12 +70,7 @@ export default function ServiceItem({ name, category, lines, apiBase }: Props) {
           {copied ? (
             <div class="i-ph-check-bold text-xs transition-transform duration-500"></div>
           ) : (
-            <AppLogo
-              icon={config.icon}
-              accent={config.color}
-              size="sm"
-              class="w-7! h-7! rounded-[0.95rem]! p-0.75!"
-            />
+            <div class="i-ph-copy-bold text-xs transition-transform duration-500 group-hover/item:scale-105"></div>
           )}
         </div>
       </div>
