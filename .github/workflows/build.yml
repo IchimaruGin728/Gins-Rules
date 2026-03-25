@@ -98,6 +98,22 @@ jobs:
           pnpm build
           cp -r dist/* ../compiled/
 
+      - name: Debug Cloudflare Auth
+        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
+        run: |
+          set -euo pipefail
+          TOKEN_VERIFY=$(curl -sS "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}")
+          echo "Token verify:"
+          echo "$TOKEN_VERIFY"
+          echo "$TOKEN_VERIFY" | grep -q '"success":true'
+
+          PAGES_PROJECTS=$(curl -sS "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}")
+          echo "Pages projects list:"
+          echo "$PAGES_PROJECTS"
+          echo "$PAGES_PROJECTS" | grep -q '"success":true'
+
       - name: Deploy to Pages
         uses: cloudflare/wrangler-action@v3
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
