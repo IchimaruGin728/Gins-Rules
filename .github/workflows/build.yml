@@ -20,17 +20,17 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@9.15.4 --activate
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "pnpm"
           cache-dependency-path: dashboard/pnpm-lock.yaml
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.24"
           cache: false
@@ -98,21 +98,6 @@ jobs:
           pnpm build
           cp -r dist/* ../compiled/
 
-      - name: Debug Cloudflare Auth
-        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
-        run: |
-          set -euo pipefail
-          TOKEN_VERIFY=$(curl -sS "https://api.cloudflare.com/client/v4/user/tokens/verify" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}")
-          echo "Token verify:"
-          echo "$TOKEN_VERIFY"
-          echo "$TOKEN_VERIFY" | grep -q '"success":true'
-
-          PAGES_PROJECTS=$(curl -sS "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}")
-          echo "Pages projects list:"
-          echo "$PAGES_PROJECTS"
-          echo "$PAGES_PROJECTS" | grep -q '"success":true'
 
       - name: Deploy to Pages
         uses: cloudflare/wrangler-action@v3
