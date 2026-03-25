@@ -2,6 +2,7 @@
   "name": "gins-rules-worker",
   "type": "module",
   "version": "1.0.0",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
