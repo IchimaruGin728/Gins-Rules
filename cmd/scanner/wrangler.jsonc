@@ -2,7 +2,10 @@
   "$schema": "https://unpkg.com/wrangler/config-schema.json",
   "name": "gins-rules",
   "main": "src/index.ts",
-  "compatibility_date": "2026-03-01",
+  "compatibility_date": "2026-02-24",
+  "placement": {
+    "mode": "smart"
+  },
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
