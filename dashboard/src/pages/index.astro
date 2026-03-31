@@ -6,6 +6,7 @@ import CopyCard from "../components/CopyCard.preact";
 import Layout from "../components/Layout.astro";
 import ParserItem from "../components/ParserItem.preact";
 import ServiceItem from "../components/ServiceItem.preact";
+import GeoChecker from "../components/GeoChecker.preact";
 
 const sourceDir = path.resolve("..", "source");
 const apiBase = "https://rules.ichimarugin728.dev";
@@ -98,6 +99,7 @@ void AppSwitcher;
 void CopyCard;
 void ParserItem;
 void ServiceItem;
+void GeoChecker;
 void apiBase;
 void resourceParsers;
 void sourceProviders;
@@ -308,6 +310,8 @@ void appCount;
             </div>
             <AppSwitcher client:load />
         </section>
+
+        <GeoChecker client:load apiBase={apiBase} />
 
         <section class="space-y-4">
             <div class="flex items-center gap-2 px-1">

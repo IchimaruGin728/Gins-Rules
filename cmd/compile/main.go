@@ -253,7 +253,7 @@ func main() {
 }
 
 func copyParsersJS(root string, compiledDir string) {
-	parsers := []string{"QX-Resource-Parser.js", "Loon-Resource-Parser.js"}
+	parsers := []string{"QX-Resource-Parser.js", "Loon-Resource-Parser.js", "geo_location_checker.js"}
 	for _, p := range parsers {
 		srcPath := filepath.Join(root, "source", p)
 		dstPath := filepath.Join(compiledDir, p)
