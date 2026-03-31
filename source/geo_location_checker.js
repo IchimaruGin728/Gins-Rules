@@ -3,45 +3,43 @@ if ($response.statusCode != 200) {
 }
 
 try {
-  var body = $response.body;
-  var obj = JSON.parse(body);
+  var obj = JSON.parse($response.body);
 
-  function getFlagEmoji(countryCode) {
-      if (!countryCode) return "🏁";
-      var codePoints = countryCode
-        .toUpperCase()
-        .split('')
-        .map(char => 127397 + char.charCodeAt(0));
-      return String.fromCodePoint(...codePoints);
+  function getFlagEmoji(cc) {
+    if (!cc) return "🏁";
+    return String.fromCodePoint(...cc.toUpperCase().split("").map(function(c) { return 127397 + c.charCodeAt(0); }));
   }
 
-  var code = obj.countryCode || "UN";
-  var flag = getFlagEmoji(code);
+  var flag = getFlagEmoji(obj.countryCode);
+  var code = obj.countryCode || "??";
   var city = obj.city || "Unknown";
-  var org = obj.asOrganization || obj.org || "Unknown ISP";
+  var region = obj.regionCode || obj.region || "";
+  var ip = obj.ip || "N/A";
+  var asn = obj.asn ? "AS" + obj.asn : "";
+  var org = (obj.asOrganization || "Unknown ISP").replace(/,?\s*(Inc\.|LLC|Corp\.|LTD|Ltd\.|S\.A\.|GmbH)/ig, "").trim();
 
-  // Clean org name
-  org = org.replace(/,?\s*(Inc\.|LLC|Corp\.|LTD|Ltd\.|S\.A\.|GmbH)/ig, "");
-  org = org.trim();
-
-  var score = obj.fraudScore !== undefined ? obj.fraudScore : 0;
-  var riskEmoji = "🔹";
-  if (score > 60) {
-      riskEmoji = "🔺";
-  } else if (score > 30) {
-      riskEmoji = "🔸";
+  var score = obj.fraudScore !== undefined ? obj.fraudScore : -1;
+  var riskTag = "";
+  if (score < 0) {
+    riskTag = "N/A";
+  } else if (score > 66) {
+    riskTag = "🔴 " + score;
+  } else if (score > 33) {
+    riskTag = "🟡 " + score;
+  } else {
+    riskTag = "🟢 " + score;
   }
 
-  var buildType = obj.isResidential ? "🏠" : "🏢";
+  var netType = obj.isResidential ? "🏠 Residential" : "🏢 Datacenter";
 
-  // Style A:
-  // Title: 🇺🇸 US | Risk: 75 🔴
-  // Subtitle: Los Angeles (🏢) • Cloudflare
-  var title = flag + " " + code + " | Risk: " + score + " " + riskEmoji;
-  var subtitle = city + " (" + buildType + ") • " + org;
+  // Title:  🇺🇸 US · Los Angeles, CA | Risk 75 🔴
+  // Subtitle: 🏢 Datacenter · Cloudflare (AS13335) · 104.28.123.123
+  var loc = city + (region ? ", " + region : "");
+  var title = flag + " " + code + " · " + loc + " | Risk " + riskTag;
+  var subtitle = netType + " · " + org + (asn ? " (" + asn + ")" : "") + " · " + ip;
 
   $done({ title: title, subtitle: subtitle });
 
 } catch (e) {
-  $done({ title: "Error", subtitle: "Parse Failed" });
+  $done({ title: "⚠️ Error", subtitle: e.message || "Parse Failed" });
 }

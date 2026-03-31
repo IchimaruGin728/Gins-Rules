@@ -10,7 +10,7 @@ export default function GeoChecker({ apiBase }: Props) {
 
   if (activeApp.value !== "quanx") return null;
 
-  const codeString = `geo_location_checker = https://ippure.com/MyIP-Info-API, ${apiBase}/geo_location_checker.js`;
+  const codeString = `geo_location_checker = https://my.ippure.com/v1/info, ${apiBase}/geo_location_checker.js`;
 
   const handleCopy = async () => {
     try {
