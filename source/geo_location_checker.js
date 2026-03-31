@@ -19,24 +19,25 @@ try {
   var org = (obj.asOrganization || "Unknown ISP").replace(/,?\s*(Inc\.|LLC|Corp\.|LTD|Ltd\.|S\.A\.|GmbH)/ig, "").trim();
 
   var score = obj.fraudScore !== undefined ? obj.fraudScore : -1;
-  var riskTag = "";
+  var riskBar = "";
   if (score < 0) {
-    riskTag = "N/A";
-  } else if (score > 66) {
-    riskTag = "🔴 " + score;
-  } else if (score > 33) {
-    riskTag = "🟡 " + score;
+    riskBar = "N/A";
   } else {
-    riskTag = "🟢 " + score;
+    var filled = Math.round(score / 10);
+    var empty = 10 - filled;
+    riskBar = "";
+    for (var i = 0; i < filled; i++) riskBar += "▓";
+    for (var j = 0; j < empty; j++) riskBar += "░";
+    riskBar += " " + score;
   }
 
-  var netType = obj.isResidential ? "🏠 Residential" : "🏢 Datacenter";
+  var netType = obj.isResidential ? "🏠" : "🏢";
 
-  // Title:  🇺🇸 US · Los Angeles, CA | Risk 75 🔴
-  // Subtitle: 🏢 Datacenter · Cloudflare (AS13335) · 104.28.123.123
+  // Title:  🇺🇸 Los Angeles, CA ║ 🏢 Cloudflare
+  // Subtitle: ⚡ AS13335 · 104.28.123.123 · ▓▓▓▓▓▓▓░░░ 75
   var loc = city + (region ? ", " + region : "");
-  var title = flag + " " + code + " · " + loc + " | Risk " + riskTag;
-  var subtitle = netType + " · " + org + (asn ? " (" + asn + ")" : "") + " · " + ip;
+  var title = flag + " " + loc + " ║ " + netType + " " + org;
+  var subtitle = "⚡ " + (asn ? asn + " · " : "") + ip + " · " + riskBar;
 
   $done({ title: title, subtitle: subtitle });
 
