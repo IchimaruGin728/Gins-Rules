@@ -143,6 +143,20 @@ export class BuildWorkflow extends WorkflowEntrypoint<Env, BuildStats> {
 // ============================================================
 
 async function handleFeed(request: Request, path: string, url: URL, env: Env): Promise<Response> {
+  // Special handling for Xray binary DAT files
+  if (path === '/ruleset/xray/geosite.dat' || path === '/ruleset/xray/geoip.dat') {
+    const key = path.replace(/^\//, '');
+    const r2Object = await env.RULES_BUCKET.get(key);
+    if (!r2Object) return new Response('Xray DAT Asset Not Found', { status: 404 });
+    const headers = new Headers();
+    r2Object.writeHttpMetadata(headers);
+    headers.set('etag', r2Object.httpEtag);
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Content-Type', 'application/octet-stream');
+    headers.set('Cache-Control', 'public, max-age=3600');
+    return new Response(r2Object.body, { headers });
+  }
+
   const parts = path.replace('/ruleset/', '').split('/');
   
   let app: string | null = null;

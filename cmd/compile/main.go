@@ -79,8 +79,17 @@ func main() {
 	categories := []string{"proxy", "direct", "reject", "ip", "asn"}
 	stats := Stats{}
 
+	// Global rule collection for Xray DAT bundling
+	allRules := make(map[string]map[string]Rules)
+	for _, cat := range categories {
+		allRules[cat] = make(map[string]Rules)
+	}
+
 	// Category-wide merged rules
 	categoryMergedRules := make(map[string]Rules)
+	for _, cat := range categories {
+		categoryMergedRules[cat] = Rules{}
+	}
 
 	for _, category := range categories {
 		ruleNames := make(map[string]bool)
@@ -178,7 +187,7 @@ func main() {
 				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), behavior, mihomoPath)
 			}
 
-			compileTextList(name, rules, filepath.Join(textDir, category), isIP)
+			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
 			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP, category)
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category))
 			compileLoonList(name, rules, filepath.Join(loonDir, category))
@@ -186,6 +195,9 @@ func main() {
 			compileLoonList(name, rules, filepath.Join(surfboardDir, category))
 			compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
 			compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
+
+			// Collect for Xray
+			allRules[category][name] = rules
 
 			srsIcon := "·"
 			if srsOK {
@@ -246,7 +258,13 @@ func main() {
 		fmt.Printf("  ✅ [%-6s] Created full merged rule-set: %s\n", category, name)
 	}
 
-	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket", "surfboard"} {
+	// Final step: Bundle everything into Xray DAT files
+	fmt.Println("\n  [Xray] Packing binary assets...")
+	if err := compileXrayDAT(allRules, rulesetDir); err != nil {
+		fmt.Printf("  [Error] Xray packing failed: %v\n", err)
+	}
+
+	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket", "surfboard", "exclave", "xray"} {
 		for _, cat := range categories {
 			dir := filepath.Join(rulesetDir, formatDir, cat)
 			entries, _ := os.ReadDir(dir)

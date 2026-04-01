@@ -9,9 +9,11 @@ Comprehensive, self-maintained proxy rule list repository with high-performance 
 - **High-Speed Sync**: GitHub Actions optimized with **AWS CLI S3 Sync (100 Concurrent Requests)** for lightning-fast, differential rule delivery.
 - **Smart Routing**: Deployed on **Cloudflare Workers** with **Smart Routing** and latest compatibility date (2026-04-01) for global low-latency access.
 - **GeoIP & ASN**: Full Globe Coverage (auto-extracted from MMDB: ipinfo + ip2location) with separate, refined categorization.
-- **Multi-Format Support**:
+- **Multi-Format Support (11 Formats)**:
     - **sing-box**: `.srs` (binary), `.json`
     - **Mihomo (Clash Meta) / Stash**: `.mrs` (binary), `.yaml`
+    - **Surfboard**: `.list` (Standard Ruleset), `.txt` (Highly Optimized Domainset)
+    - **Exclave**: `.list` (Standard Route format)
     - **Surge / Loon / Shadowrocket**: `.list` (Standard format)
     - **QuantumultX**: `.list` (Native format)
     - **Egern**: `.yaml` (Native format)
@@ -25,8 +27,9 @@ The delivery URLs remain consistent, now backed by high-performance R2 storage.
 |--------|--------|-------------|
 | sing-box | SRS | `https://rules.ichimarugin728.dev/ruleset/singbox/proxy/apple.srs` |
 | Mihomo | MRS | `https://rules.ichimarugin728.dev/ruleset/mihomo/proxy/apple.mrs` |
+| Surfboard (Opt) | Domainset | `https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.txt` |
+| Exclave | Route | `https://rules.ichimarugin728.dev/ruleset/exclave/proxy/apple.list` |
 | Surge / Loon | List | `https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list` |
-| QuantumultX | List | `https://rules.ichimarugin728.dev/ruleset/quanx/proxy/apple.list` |
 
 ## 📊 Analytics & Coverage
 
@@ -44,7 +47,7 @@ The delivery URLs remain consistent, now backed by high-performance R2 storage.
   - `source/proxy/`, `source/direct/`, `source/reject/`: Domain lists.
   - `source/ip/`: Combined directory for both **IP CIDR** and **ASN** source files.
 - `cmd/sync/`: Go upstream rule fetcher (multi-source merge).
-- `cmd/compile/`: Go compiler for multi-format output. Smartly categorizes files into `ip` or `asn` directories based on prefixes.
+- `cmd/compile/`: Go compiler for multi-format output. Supports 11 platforms with native optimizations.
 - `cmd/scanner/`: High-performance CF Worker serving the dashboard and R2 gateway.
 - `dashboard/`: Astro-based web UI, served via Workers Assets (Assets isolated from large rulesets).
 - `compiled/`: Ruleset sync source for Cloudflare R2.

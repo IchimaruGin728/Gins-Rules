@@ -109,6 +109,8 @@ void AppSwitcher;
 void CopyCard;
 void ParserItem;
 void ServiceItem;
+import DatCard from "../components/DatCard.preact";
+void DatCard;
 void GeoChecker;
 void apiBase;
 void resourceParsers;
@@ -344,6 +346,21 @@ void appCount;
                         />
                     ))
                 }
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <div class="flex items-center gap-2 px-1">
+                <div class="i-ph-package-bold text-brand-primary"></div>
+                <span
+                    class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+                >
+                    Global Routing Assets (Xray / V2Ray)
+                </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DatCard client:load name="geosite.dat" url={`${apiBase}/ruleset/xray/geosite.dat`} />
+                <DatCard client:load name="geoip.dat" url={`${apiBase}/ruleset/xray/geoip.dat`} />
             </div>
         </section>
 
