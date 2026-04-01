@@ -110,5 +110,26 @@
     "category": "direct",
     "target": "direct-list",
     "enabled": true
+  },
+  {
+    "name": "Claude (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/Claude/Claude.list",
+    "category": "proxy",
+    "target": "ai-other",
+    "enabled": true
+  },
+  {
+    "name": "Gemini (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/Gemini/Gemini.list",
+    "category": "proxy",
+    "target": "ai-other",
+    "enabled": true
+  },
+  {
+    "name": "Copilot (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/Copilot/Copilot.list",
+    "category": "proxy",
+    "target": "ai-other",
+    "enabled": true
   }
 ]

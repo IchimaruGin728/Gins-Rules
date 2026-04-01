@@ -48,9 +48,7 @@ jobs:
         id: cache-bin
         uses: actions/cache@v4
         with:
-          path: |
-            /usr/local/bin/sing-box
-            /usr/local/bin/mihomo
+          path: bin/
           key: ${{ runner.os }}-binaries-${{ steps.tool-versions.outputs.cache_key }}
 
       - name: Sync Upstream Rules
@@ -79,23 +77,28 @@ jobs:
       - name: Install Compilers (Bleeding Edge Alpha)
         if: (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule') && steps.cache-bin.outputs.cache-hit != 'true'
         run: |
-          # Fetch Absolute Latest sing-box (including Alpha/Beta)
+          mkdir -p bin
+          
+          # Fetch Absolute Latest sing-box
           SINGBOX_URL="${{ steps.tool-versions.outputs.singbox_url }}"
           echo "Downloading sing-box from $SINGBOX_URL"
           curl -sL "$SINGBOX_URL" | tar xz --strip-components=1
-          sudo mv sing-box /usr/local/bin/
-          sing-box version
-
-          # Fetch Absolute Latest mihomo (including Alpha/Beta)
+          mv sing-box bin/
+          
+          # Fetch Absolute Latest mihomo
           MIHOMO_URL="${{ steps.tool-versions.outputs.mihomo_url }}"
           echo "Downloading mihomo from $MIHOMO_URL"
           if [[ "$MIHOMO_URL" == *.gz ]]; then
-            curl -sL "$MIHOMO_URL" | gunzip > mihomo
+            curl -sL "$MIHOMO_URL" | gunzip > bin/mihomo
           elif [[ "$MIHOMO_URL" == *.zip ]]; then
-            curl -sL -o mihomo.zip "$MIHOMO_URL" && unzip mihomo.zip && mv mihomo-linux-amd64* mihomo
+            curl -sL -o mihomo.zip "$MIHOMO_URL"
+            unzip -o mihomo.zip
+            mv mihomo-linux-amd64* bin/mihomo
           fi
-          chmod +x mihomo && sudo mv mihomo /usr/local/bin/
-          mihomo -v || true
+          
+          chmod +x bin/sing-box bin/mihomo
+          ./bin/sing-box version
+          ./bin/mihomo -v
 
       - name: Compile Rules
         id: compile
