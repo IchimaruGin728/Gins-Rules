@@ -318,13 +318,18 @@ func main() {
 
 func copyParsersJS(root string, compiledDir string) {
 	parsers := []string{"QX-Resource-Parser.js", "Loon-Resource-Parser.js", "geo_location_checker.js"}
+	dashboardPublic := filepath.Join(root, "dashboard", "public")
+	os.MkdirAll(dashboardPublic, 0o755)
+
 	for _, p := range parsers {
 		srcPath := filepath.Join(root, "source", p)
-		dstPath := filepath.Join(compiledDir, p)
 		data, err := os.ReadFile(srcPath)
 		if err == nil {
-			os.WriteFile(dstPath, data, 0o644)
-			fmt.Printf("  [SUCCESS] Copied %s to compiled/\n", p)
+			// Copy to compiled/ for R2 Sync
+			os.WriteFile(filepath.Join(compiledDir, p), data, 0o644)
+			// Copy to dashboard/public/ for Astro Build & Worker Assets
+			os.WriteFile(filepath.Join(dashboardPublic, p), data, 0o644)
+			fmt.Printf("  [SUCCESS] Distributed %s to compiled/ and dashboard/public/\n", p)
 		}
 	}
 }
