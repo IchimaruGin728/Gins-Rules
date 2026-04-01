@@ -12,9 +12,10 @@ Comprehensive, self-maintained proxy rule list repository with fine-grained per-
     - **Surge / Loon / Shadowrocket**: `.list` (Surge format)
     - **QuantumultX**: `.list` (Native format)
     - **Egern**: `.yaml` (Native format)
-- **High Performance**: Pre-compiled binary rules for modern clients.
-- **Automated**: Multi-source upstream sync + MMDB extraction + auto compile via GitHub Actions.
-- **Global Distribution**: Hosted on Cloudflare Pages for maximum speed and stability.
+- **High Performance**: Pre-compiled binary rules for modern clients, served via **Cloudflare Workers Smart Routing**.
+- **R2 Storage**: Powered by **Cloudflare R2** for unlimited ruleset sizes (perfect for 30MB+ full IP/ASN lists).
+- **Automated**: Multi-source upstream sync + MMDB extraction + auto compile via GitHub Actions (running on **Node 25 + pnpm 10 + Go stable**).
+- **Global Distribution**: Optimized hybrid delivery via **Workers Assets** (Dashboard) and **R2** (Rulesets) for maximum speed.
 
 ## Subscription
 
@@ -207,9 +208,9 @@ Comprehensive, self-maintained proxy rule list repository with fine-grained per-
   - `source/sources.json`: Upstream source configuration
 - `cmd/sync/`: Go upstream rule fetcher (multi-source merge).
 - `cmd/mmdb/`: Go MMDB parser (downloads ipinfo + ip2location MMDB → extracts GeoIP/ASN → txt).
-- `cmd/compile/`: Go compiler for multi-format output (8 formats + manifests).
-- `cmd/scanner/`: CF Worker for automated scanning, AI classification, and rule merging.
-- `compiled/`: Auto-generated rules for distribution (hierarchical structure).
+- `cmd/compile/: Go compiler for multi-format output (8 formats + manifests).
+- `cmd/scanner/: High-performance CF Worker (Smart Routing enabled) for rule delivery and notifications.
+- `compiled/: Auto-generated assets and rules, synced to **Cloudflare R2** for distribution.
 
 ## Development
 ```bash
