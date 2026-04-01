@@ -101,10 +101,13 @@ jobs:
         id: compile
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
-          # Fetch the absolute latest commit SHA from Xray-core's main branch to avoid v26 versioning conflicts
+          # Fetch the absolute latest commit SHA from Xray-core's main branch
           XRAY_SHA=$(git ls-remote https://github.com/xtls/xray-core.git main | awk '{print $1}')
-          echo "Updating Xray-core to latest commit: $XRAY_SHA"
-          go get github.com/xtls/xray-core@$XRAY_SHA
+          echo "Injecting absolute latest Xray-core commit: $XRAY_SHA"
+          
+          # Dynamically replace the stable baseline with the bleeding-edge commit
+          go mod edit -replace github.com/xtls/xray-core=github.com/xtls/xray-core@$XRAY_SHA
+          
           go get google.golang.org/protobuf@latest
           go mod tidy
           go run ./cmd/compile
