@@ -23,22 +23,35 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install pnpm
-        run: corepack enable && corepack prepare pnpm@9.15.4 --activate
+        run: corepack enable && corepack prepare pnpm@latest --activate
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: '25'
           cache: "pnpm"
           cache-dependency-path: dashboard/pnpm-lock.yaml
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
-          cache: false
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: stable
+          go-version: "stable"
+          cache: true
+      - name: Fetch Latest Tool Versions
+        id: tool-versions
+        run: |
+          SINGBOX_URL=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases | jq -r '.[0].assets[] | select(.name | contains("linux-amd64") and endswith(".tar.gz")) | .browser_download_url' | head -n 1)
+          MIHOMO_URL=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '.[0].assets[] | select(.name | contains("linux-amd64") and (contains("alpha") or contains("beta") or . == "mihomo-linux-amd64.gz")) | .browser_download_url' | head -n 1)
+          echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
+          echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
+          # Use hash of URLs as cache key
+          echo "cache_key=$(echo -n "$SINGBOX_URL-$MIHOMO_URL" | sha256sum | awk '{print $1}')" >> $GITHUB_OUTPUT
 
-      - name: Sync Upstream Rules
+      - name: Cache Binaries
+        id: cache-bin
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/bin/sing-box
+            /usr/local/bin/mihomo
+          key: ${{ runner.os }}-binaries-${{ steps.tool-versions.outputs.cache_key }}
         run: go run cmd/sync/main.go
 
       - name: Commit Synced Rules
@@ -59,19 +72,26 @@ jobs:
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: cargo run --manifest-path infra/aggregator/Cargo.toml --release
 
-      - name: Install Compilers
-        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
+      - name: Install Compilers (Bleeding Edge Alpha)
+        if: (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule') && steps.cache-bin.outputs.cache-hit != 'true'
         run: |
-          # sing-box (for .srs rule-set compilation)
-          SINGBOX_VERSION=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.tag_name' | sed 's/v//')
-          curl -sL "https://github.com/SagerNet/sing-box/releases/download/v${SINGBOX_VERSION}/sing-box-${SINGBOX_VERSION}-linux-amd64.tar.gz" | tar xz
-          sudo mv sing-box-${SINGBOX_VERSION}-linux-amd64/sing-box /usr/local/bin/
+          # Fetch Absolute Latest sing-box (including Alpha/Beta)
+          SINGBOX_URL="${{ steps.tool-versions.outputs.singbox_url }}"
+          echo "Downloading sing-box from $SINGBOX_URL"
+          curl -sL "$SINGBOX_URL" | tar xz --strip-components=1
+          sudo mv sing-box /usr/local/bin/
           sing-box version
 
-          # mihomo (for .mrs rule-set compilation)
-          MIHOMO_VERSION=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.tag_name' | sed 's/v//')
-          curl -sL "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz" | gunzip > mihomo
+          # Fetch Absolute Latest mihomo (including Alpha/Beta)
+          MIHOMO_URL="${{ steps.tool-versions.outputs.mihomo_url }}"
+          echo "Downloading mihomo from $MIHOMO_URL"
+          if [[ "$MIHOMO_URL" == *.gz ]]; then
+            curl -sL "$MIHOMO_URL" | gunzip > mihomo
+          elif [[ "$MIHOMO_URL" == *.zip ]]; then
+            curl -sL -o mihomo.zip "$MIHOMO_URL" && unzip mihomo.zip && mv mihomo-linux-amd64* mihomo
+          fi
           chmod +x mihomo && sudo mv mihomo /usr/local/bin/
+          mihomo -v || true
 
       - name: Compile Rules
         id: compile
@@ -82,13 +102,15 @@ jobs:
 
           # Collect build stats
           SERVICES=$(find source/proxy source/direct source/reject source/ip -name '*.txt' 2>/dev/null | wc -l | tr -d ' ')
-          RULES=$(cat source/proxy/*.txt source/direct/*.txt source/reject/*.txt source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          IP_RULES=$(cat source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          ASN_FILES=$(ls source/ip/asn-*.txt 2>/dev/null | wc -l | tr -d ' ')
+          # Rules count: Domain rules + IP rules
+          ALL_TEXT_RULES=$(cat source/proxy/*.txt source/direct/*.txt source/reject/*.txt source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          IP_RULES_COUNT=$(cat source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          ASN_FILES_COUNT=$(ls source/ip/asn-*.txt 2>/dev/null | wc -l | tr -d ' ')
+          
           echo "services=$SERVICES" >> $GITHUB_OUTPUT
-          echo "rules=$RULES" >> $GITHUB_OUTPUT
-          echo "ip_rules=$IP_RULES" >> $GITHUB_OUTPUT
-          echo "asn_files=$ASN_FILES" >> $GITHUB_OUTPUT
+          echo "rules=$ALL_TEXT_RULES" >> $GITHUB_OUTPUT
+          echo "ip_rules=$IP_RULES_COUNT" >> $GITHUB_OUTPUT
+          echo "asn_files=$ASN_FILES_COUNT" >> $GITHUB_OUTPUT
 
       - name: Build Dashboard
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'

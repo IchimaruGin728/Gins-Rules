@@ -55,20 +55,28 @@ export default {
       });
     }
 
-    // Routes
-    if (path === '/health' || path === '/api/health') {
-      return json({ status: 'ok', service: 'gins-rules', timestamp: Date.now() });
+    // 1. Static Assets Priority (Dashboard, Canonical Rules, Resource Parsers)
+    // Try exact match first to save parsing overhead for canonical URLs.
+    if (path === '/' || path.includes('.') || path.startsWith('/ruleset/')) {
+      const assetResp = await env.ASSETS.fetch(new Request(request.url, request));
+      if (assetResp.status !== 404) return assetResp;
     }
 
+    // 2. Dynamic Ruleset Common Routes (Legacy/Short Mapping)
     if (path.startsWith('/ruleset/')) {
       return handleFeed(request, path, url, env);
+    }
+
+    // 3. API & Internal Workflow Handlers
+    if (path === '/health' || path === '/api/health') {
+      return json({ status: 'ok', service: 'gins-rules', timestamp: Date.now() });
     }
 
     if (path === '/workflow/build-complete' && request.method === 'POST') {
       return handleBuildComplete(request, env);
     }
 
-    // Fall through to static assets (dashboard, icons, etc.)
+    // 4. Final Fallback
     return env.ASSETS.fetch(request);
   },
 
@@ -150,8 +158,8 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     // Format A: ruleset/proxy/google.srs (Merged Default)
     // Format B: ruleset/shadowrocket/proxy.list (New App-specific Merged)
     // We check if parts[0] is a known app or a known category
-    const apps = ['singbox', 'mihomo', 'stash', 'surge', 'quanx', 'loon', 'egern', 'shadowrocket', 'clash'];
-    const categories = ['proxy', 'direct', 'reject', 'ip'];
+    const apps = ['singbox', 'mihomo', 'stash', 'surge', 'quanx', 'loon', 'egern', 'shadowrocket', 'surfboard'];
+    const categories = ['proxy', 'direct', 'reject', 'ip', 'asn'];
     
     if (apps.includes(parts[0])) {
       app = parts[0];
@@ -182,7 +190,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     return new Response('Not Found', { status: 404 });
   }
 
-  if (!['proxy', 'direct', 'reject', 'ip'].includes(category)) {
+  if (!['proxy', 'direct', 'reject', 'ip', 'asn'].includes(category)) {
     return new Response('Invalid category', { status: 400 });
   }
 
@@ -212,8 +220,9 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
   if (!dir) return new Response('Invalid app or extension', { status: 400 });
 
   let targetFile = `${name}.${ext}`;
-  // Special correction for IP lists in text format (compiler outputs .ip.list)
-  if (dir === 'text' && category === 'ip' && ext === 'list' && !targetFile.includes('.ip.')) {
+  // Special correction for IP/ASN lists in text format (compiler outputs .ip.list)
+  const isIPLike = category === 'ip' || category === 'asn';
+  if (dir === 'text' && isIPLike && ext === 'list' && !targetFile.includes('.ip.')) {
     targetFile = targetFile.replace('.list', '.ip.list');
   }
 

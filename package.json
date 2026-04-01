@@ -1,5 +1,15 @@
 {
-	"devDependencies": {
-		"wrangler": "^4.77.0"
-	}
+  "name": "gins-rules",
+  "private": true,
+  "scripts": {
+    "sync": "go run ./cmd/sync/",
+    "compile": "go run ./cmd/compile/",
+    "board:build": "pnpm --filter gins-rules-board build && cp -r dashboard/dist/* compiled/",
+    "build": "pnpm sync && pnpm compile && pnpm board:build",
+    "dev": "wrangler dev --config cmd/scanner/wrangler.jsonc",
+    "deploy": "pnpm build && wrangler deploy --config cmd/scanner/wrangler.jsonc"
+  },
+  "devDependencies": {
+    "wrangler": "^4.79.0"
+  }
 }

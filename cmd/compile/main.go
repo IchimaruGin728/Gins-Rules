@@ -70,15 +70,12 @@ func main() {
 	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
-		for _, cat := range []string{"proxy", "direct", "reject", "ip"} {
+		for _, cat := range []string{"proxy", "direct", "reject", "ip", "asn"} {
 			os.MkdirAll(filepath.Join(dir, cat), 0o755)
-			if strings.Contains(dir, "mihomo") || strings.Contains(dir, "stash") {
-				os.MkdirAll(filepath.Join(dir, cat, "yaml"), 0o755)
-			}
 		}
 	}
 
-	categories := []string{"proxy", "direct", "reject", "ip"}
+	categories := []string{"proxy", "direct", "reject", "ip", "asn"}
 	stats := Stats{}
 
 	// Category-wide merged rules
@@ -93,12 +90,20 @@ func main() {
 		for _, d := range []string{localDir, upstreamDir} {
 			if _, err := os.Stat(d); err == nil {
 				for _, f := range listTxtFiles(d) {
-					ruleNames[strings.TrimSuffix(filepath.Base(f), ".txt")] = true
+					ruleName := strings.TrimSuffix(filepath.Base(f), ".txt")
+					// Sort ASN files into 'asn' category instead of 'ip'
+					if category == "ip" && strings.HasPrefix(ruleName, "asn-") {
+						continue
+					}
+					if category == "asn" && !strings.HasPrefix(ruleName, "asn-") {
+						continue
+					}
+					ruleNames[ruleName] = true
 				}
 			}
 		}
 
-		isIP := category == "ip"
+		isIP := category == "ip" || category == "asn"
 
 		var sortedNames []string
 		for name := range ruleNames {
@@ -108,7 +113,13 @@ func main() {
 
 		for _, name := range sortedNames {
 			localPath := filepath.Join(localDir, name+".txt")
+			if category == "asn" {
+				localPath = filepath.Join(root, "source", "ip", name+".txt")
+			}
 			upstreamPath := filepath.Join(upstreamDir, name+".txt")
+			if category == "asn" {
+				upstreamPath = filepath.Join(root, "source", "upstream", "ip", name+".txt")
+			}
 
 			var rules Rules
 			if _, err := os.Stat(localPath); err == nil {
@@ -135,7 +146,7 @@ func main() {
 				srsOK = compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 			}
 
-			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category, "yaml"), isIP)
+			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), isIP)
 			behavior := "domain"
 			if isIP {
 				behavior = "ipcidr"
@@ -155,7 +166,7 @@ func main() {
 				}
 			}
 
-			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category, "yaml"), isIP)
+			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), isIP)
 			if hasMihomo && mrsOK {
 				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), behavior, mihomoPath)
 			}
@@ -207,7 +218,7 @@ func main() {
 		if hasSingBox {
 			compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 		}
-		yamlPath := compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category, "yaml"), isIP)
+		yamlPath := compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category), isIP)
 		if hasMihomo {
 			behavior := "domain"
 			if isIP {
@@ -218,10 +229,7 @@ func main() {
 
 		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
 		compileQuanXList(name, fullRules, filepath.Join(quanxDir, category), isIP, category)
-		// Skip egern merged IP file — all-IP YAML exceeds CF Pages 25 MiB limit
-		if !isIP {
-			compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
-		}
+		compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
 		compileLoonList(name, fullRules, filepath.Join(loonDir, category))
 		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category))
 		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category))
