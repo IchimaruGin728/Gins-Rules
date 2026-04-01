@@ -32,10 +32,12 @@ type SingBoxRule struct {
 }
 
 type Stats struct {
-	Files int
-	Rules int
-	SRS   int
-	MRS   int
+	Files          int            `json:"files"`
+	Rules          int            `json:"rules"`
+	SRS            int            `json:"srs"`
+	MRS            int            `json:"mrs"`
+	CategoryCounts map[string]int `json:"category_counts"`
+	Formats        int            `json:"formats"`
 }
 
 func main() {
@@ -77,7 +79,10 @@ func main() {
 	}
 
 	categories := []string{"proxy", "direct", "reject", "ip", "asn"}
-	stats := Stats{}
+	stats := Stats{
+		CategoryCounts: make(map[string]int),
+		Formats:        12,
+	}
 
 	// Global rule collection for Xray DAT bundling
 	allRules := make(map[string]map[string]Rules)
@@ -215,6 +220,7 @@ func main() {
 
 			stats.Files++
 			stats.Rules += count
+			stats.CategoryCounts[category] += count
 
 			// Add to big merge
 			catRules := categoryMergedRules[category]
@@ -286,6 +292,11 @@ func main() {
 	fmt.Printf("  SRS: %d/%d  MRS: %d/%d\n", stats.SRS, stats.Files, stats.MRS, stats.Files)
 	fmt.Printf("  Output: %s\n", compiledDir)
 	fmt.Println("============================================================")
+
+	// Save build summary for GHA webhook
+	summaryPath := filepath.Join(rulesetDir, "build-summary.json")
+	summaryBytes, _ := json.MarshalIndent(stats, "", "  ")
+	os.WriteFile(summaryPath, summaryBytes, 0o644)
 
 	copyParsersJS(root, compiledDir)
 }

@@ -154,15 +154,30 @@ jobs:
       - name: Notify
         if: always() && (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule')
         run: |
+          # Read categories and metrics from the compiler summary
+          SUMMARY=$(cat compiled/ruleset/build-summary.json 2>/dev/null || echo "{}")
+          
+          # Construct the refined JSON payload
+          PAYLOAD=$(jq -n \
+            --arg project "Gins-Rules" \
+            --arg run_id "${{ github.run_id }}" \
+            --arg sha "${{ github.sha }}" \
+            --arg trigger "${{ github.event_name }}" \
+            --argjson stats "$SUMMARY" \
+            --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
+              project: $project,
+              build: {
+                id: $run_id,
+                sha: $sha,
+                trigger: $trigger
+              },
+              metrics: $stats,
+              timestamp: $time
+            }')
+
           curl -sf -X POST \
             -H "Authorization: Bearer ${{ secrets.WORKFLOW_SECRET }}" \
             -H "Content-Type: application/json" \
-            -d '{
-              "services": ${{ steps.compile.outputs.services || 0 }},
-              "rules": ${{ steps.compile.outputs.rules || 0 }},
-              "formats": 12,
-              "ipRules": ${{ steps.compile.outputs.ip_rules || 0 }},
-              "asnFiles": ${{ steps.compile.outputs.asn_files || 0 }},
-              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
-            }' \
+            -d "$PAYLOAD" \
             "https://rules.ichimarugin728.dev/workflow/build-complete" || true
