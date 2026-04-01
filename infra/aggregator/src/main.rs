@@ -98,7 +98,7 @@ async fn main() -> Result<()> {
         };
     }
 
-    let common_regions: HashSet<&str> = vec!["CN", "SG", "TW", "JP"].into_iter().collect();
+    let common_regions: HashSet<&str> = vec!["CN", "SG", "TW", "JP", "US"].into_iter().collect();
     let mut not_cn = HashSet::new();
 
     for (code, nets) in &country_cidrs {
