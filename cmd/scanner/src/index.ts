@@ -143,11 +143,18 @@ export class BuildWorkflow extends WorkflowEntrypoint<Env, BuildStats> {
 // ============================================================
 
 async function handleFeed(request: Request, path: string, url: URL, env: Env): Promise<Response> {
-  // Special handling for Xray binary DAT files
-  if (path === '/ruleset/xray/geosite.dat' || path === '/ruleset/xray/geoip.dat') {
-    const key = path.replace(/^\//, '');
+  // Special handling for Xray/V2Ray binary DAT files
+  if (
+    path === '/ruleset/xray/geosite.dat' || 
+    path === '/ruleset/xray/geoip.dat' ||
+    path === '/ruleset/v2ray/geosite.dat' ||
+    path === '/ruleset/v2ray/geoip.dat'
+  ) {
+    // Map both /xray/ and /v2ray/ to the same R2 directory 'ruleset/xray/'
+    const key = path.replace(/^\/(ruleset)\/(v2ray|xray)\//, '$1/xray/').replace(/^\//, '');
+    
     const r2Object = await env.RULES_BUCKET.get(key);
-    if (!r2Object) return new Response('Xray DAT Asset Not Found', { status: 404 });
+    if (!r2Object) return new Response('V2Ray/Xray DAT Asset Not Found', { status: 404 });
     const headers = new Headers();
     r2Object.writeHttpMetadata(headers);
     headers.set('etag', r2Object.httpEtag);
@@ -226,6 +233,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     'surfboard': 'surfboard',
     'surfboard_ds': 'surfboard',
     'exclave': 'exclave',
+    'v2ray': 'xray',
   };
 
   // Extension Mapping

@@ -11,7 +11,8 @@ export type AppType =
   | "shadowrocket"
   | "surfboard"
   | "surfboard_ds"
-  | "exclave";
+  | "exclave"
+  | "v2ray";
 
 export interface AppConfig {
   id: AppType;
@@ -98,6 +99,13 @@ export const APPS: AppConfig[] = [
     icon: "/icons/exclave.jpg",
     ext: "list",
     color: "#E91E63",
+  },
+  {
+    id: "v2ray",
+    label: "V2Ray / Xray",
+    icon: "/icons/xray.jpg",
+    ext: "dat",
+    color: "#CFD8DC",
   },
 ];
 
