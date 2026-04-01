@@ -251,7 +251,17 @@ func main() {
 			if isIP {
 				behavior = "ipcidr"
 			}
-			compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
+			// Safety check: Mihomo converter panics on empty payloads
+			isEmpty := false
+			if isIP && len(fullRules.IPCIDR) == 0 {
+				isEmpty = true
+			} else if !isIP && len(fullRules.Domain) == 0 && len(fullRules.DomainSuffix) == 0 {
+				isEmpty = true
+			}
+
+			if !isEmpty {
+				compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
+			}
 		}
 
 		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
