@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/v2fly/v2ray-core/v5/app/router/routercommon"
+	"github.com/xtls/xray-core/app/router/routercommon"
 	"google.golang.org/protobuf/proto"
 )
 
