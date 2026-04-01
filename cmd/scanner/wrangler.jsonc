@@ -19,6 +19,12 @@
   "ai": {
     "binding": "AI",
   },
+  "r2_buckets": [
+    {
+      "binding": "RULES_BUCKET",
+      "bucket_name": "gins-rules"
+    }
+  ],
   "queues": {
     "producers": [
       {

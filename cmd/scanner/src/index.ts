@@ -11,6 +11,8 @@
 interface Env {
   // Workers Assets
   ASSETS: Fetcher;
+  // R2 Storage
+  RULES_BUCKET: R2Bucket;
   // Workflow
   BUILD_WORKFLOW: Workflow;
   // Queue
@@ -225,18 +227,19 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
   if (dir === 'text' && isIPLike && ext === 'list' && !targetFile.includes('.ip.')) {
     targetFile = targetFile.replace('.list', '.ip.list');
   }
+  const assetPath = `ruleset/${dir}/${category}/${targetFile}`;
+  const r2Object = await env.RULES_BUCKET.get(assetPath);
 
-  // Serve directly from Workers Assets — no redirect round-trip
-  const assetPath = `/ruleset/${dir}/${category}/${targetFile}`;
-  const assetRequest = new Request(new URL(assetPath, url.origin).toString(), {
-    method: 'GET',
-    headers: request.headers,
-  });
-  const response = await env.ASSETS.fetch(assetRequest);
-  if (response.status === 404) {
-    return new Response('Rule file not found', { status: 404 });
+  if (!r2Object) {
+    return new Response('Rule Not Found in R2', { status: 404 });
   }
-  return response;
+
+  const headers = new Headers();
+  r2Object.writeHttpMetadata(headers);
+  headers.set('etag', r2Object.httpEtag);
+  headers.set('Access-Control-Allow-Origin', '*');
+
+  return new Response(r2Object.body, { headers });
 }
 
 // ============================================================

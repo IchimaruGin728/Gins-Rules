@@ -195,23 +195,10 @@ func main() {
 			stats.Files++
 			stats.Rules += count
 
-			// Add to big merge (Only allow specific important categories to avoid 25MB limit)
-			shouldMerge := true
-			if category == "ip" {
-				allowed := map[string]bool{
-					"cn": true, "!cn": true, "jp": true, "sg": true, "tw": true,
-					"private": true, "telegram": true,
-				}
-				if !allowed[name] && !strings.HasPrefix(name, "asn-") {
-					shouldMerge = false
-				}
-			}
-
-			if shouldMerge {
-				catRules := categoryMergedRules[category]
-				catRules = mergeRules(catRules, rules)
-				categoryMergedRules[category] = catRules
-			}
+			// Add to big merge
+			catRules := categoryMergedRules[category]
+			catRules = mergeRules(catRules, rules)
+			categoryMergedRules[category] = catRules
 		}
 	}
 
