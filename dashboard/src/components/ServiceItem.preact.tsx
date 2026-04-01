@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { activeApp, getActiveConfig, surfboardDomainSet } from "../store.preact";
+import { activeApp, getActiveConfig, optimizedDomainSet } from "../store.preact";
 
 interface Props {
   name: string;
@@ -18,9 +18,14 @@ export default function ServiceItem({ name, category, lines, apiBase }: Props) {
     e.preventDefault();
     e.stopPropagation();
 
-    // Surfboard Domain Set logic - ONLY for non-IP categories
+    // Optimized Domain Set logic - ONLY for non-IP categories
     const isIPCategory = category === "ip" || category === "asn";
-    const ext = (activeApp.value === "surfboard" && surfboardDomainSet.value && !isIPCategory) ? "txt" : config.ext;
+    let ext = config.ext;
+    
+    if (optimizedDomainSet.value && !isIPCategory) {
+        if (activeApp.value === "surge") ext = "domainset";
+        else if (activeApp.value === "surfboard" || activeApp.value === "shadowrocket") ext = "txt";
+    }
     
     // URL Format: ruleset/:app/:category/:name.ext
     const url = `${apiBase}/ruleset/${activeApp.value}/${category}/${cleanName}.${ext}`;

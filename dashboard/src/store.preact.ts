@@ -102,7 +102,7 @@ export const APPS: AppConfig[] = [
 ];
 
 export const activeApp = signal<AppType>("singbox");
-export const surfboardDomainSet = signal<boolean>(false);
+export const optimizedDomainSet = signal<boolean>(false);
 export const getActiveConfig = () => {
   const config = APPS.find((a) => a.id === activeApp.value);
 

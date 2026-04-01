@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { activeApp, getActiveConfig, surfboardDomainSet } from "../store.preact";
+import { activeApp, getActiveConfig, optimizedDomainSet } from "../store.preact";
 import AppLogo from "./AppLogo.preact";
 
 interface Props {
@@ -14,9 +14,14 @@ export default function CopyCard({ label, category, icon, baseUrl }: Props) {
   const config = getActiveConfig();
 
   const handleCopy = async () => {
-    // Surfboard Domain Set logic - ONLY for non-IP categories
+    // Optimized Domain Set logic - ONLY for non-IP categories
     const isIPCategory = category === "ip" || category === "asn";
-    const ext = (activeApp.value === "surfboard" && surfboardDomainSet.value && !isIPCategory) ? "txt" : config.ext;
+    let ext = config.ext;
+    
+    if (optimizedDomainSet.value && !isIPCategory) {
+        if (activeApp.value === "surge") ext = "domainset";
+        else if (activeApp.value === "surfboard" || activeApp.value === "shadowrocket") ext = "txt";
+    }
 
     // URL Format: ruleset/:app/:category.ext
     const url = `${baseUrl}/ruleset/${activeApp.value}/${category}.${ext}`;

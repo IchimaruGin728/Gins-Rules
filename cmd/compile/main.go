@@ -55,6 +55,7 @@ func main() {
 	shadowrocketDir := filepath.Join(rulesetDir, "shadowrocket")
 	surfboardDir := filepath.Join(rulesetDir, "surfboard")
 	exclaveDir := filepath.Join(rulesetDir, "exclave")
+	surgeDir := filepath.Join(rulesetDir, "surge")
 
 	fmt.Println("============================================================")
 	fmt.Println("  Gins-Rules Compiler (Go)")
@@ -70,7 +71,7 @@ func main() {
 	hasSingBox := singboxPath != ""
 	hasMihomo := mihomoPath != ""
 
-	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir} {
+	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir, surgeDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
 		for _, cat := range []string{"proxy", "direct", "reject", "ip", "asn"} {
@@ -197,6 +198,10 @@ func main() {
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category))
 			compileLoonList(name, rules, filepath.Join(loonDir, category))
 			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
+			compileShadowrocketDomainset(name, rules, filepath.Join(shadowrocketDir, category))
+			compileLoonList(name, rules, filepath.Join(surgeDir, category))
+			compileSurgeDomainset(name, rules, filepath.Join(surgeDir, category))
+			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
 			compileLoonList(name, rules, filepath.Join(surfboardDir, category))
 			compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
 			compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
@@ -269,6 +274,9 @@ func main() {
 		compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
 		compileLoonList(name, fullRules, filepath.Join(loonDir, category))
 		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category))
+		compileShadowrocketDomainset(name, fullRules, filepath.Join(shadowrocketDir, category))
+		compileLoonList(name, fullRules, filepath.Join(surgeDir, category))
+		compileSurgeDomainset(name, fullRules, filepath.Join(surgeDir, category))
 		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category))
 		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
 		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
@@ -711,6 +719,47 @@ func compileLoonList(name string, rules Rules, outDir string) {
 	content := strings.Join(lines, "\n") + "\n"
 	listPath := filepath.Join(outDir, name+suffix)
 	os.WriteFile(listPath, []byte(content), 0o644)
+}
+
+func compileSurgeDomainset(name string, rules Rules, outDir string) {
+	var lines []string
+
+	// Suffixes: .example.com
+	for _, d := range rules.DomainSuffix {
+		lines = append(lines, "."+d)
+	}
+	// Exact: example.com
+	for _, d := range rules.Domain {
+		lines = append(lines, d)
+	}
+
+	if len(lines) == 0 {
+		return
+	}
+
+	content := strings.Join(lines, "\n") + "\n"
+	os.WriteFile(filepath.Join(outDir, name+".domainset"), []byte(content), 0o644)
+}
+
+func compileShadowrocketDomainset(name string, rules Rules, outDir string) {
+	var lines []string
+
+	// For SR optimized domain list: domain,domain2,... (or one per line)
+	// We'll use one per line for better readability
+	for _, d := range rules.DomainSuffix {
+		// In Shadowrocket, its DOMAIN-SET like list is often just a text file
+		lines = append(lines, d)
+	}
+	for _, d := range rules.Domain {
+		lines = append(lines, d)
+	}
+
+	if len(lines) == 0 {
+		return
+	}
+
+	content := strings.Join(lines, "\n") + "\n"
+	os.WriteFile(filepath.Join(outDir, name+".txt"), []byte(content), 0o644)
 }
 
 func compileSurfboardDomainset(name string, rules Rules, outDir string) {
