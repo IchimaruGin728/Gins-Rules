@@ -131,16 +131,9 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Create bucket if it doesn't exist
-          npx wrangler r2 bucket create gins-rules || true
-          
-          # Sync ruleset directory to R2
-          # We use a simple script to upload only the ruleset directory
+          # Sync ruleset directory to R2 with parallel uploads
           cd compiled
-          find ruleset -type f | while read -r file; do
-            echo "Uploading $file..."
-            npx wrangler r2 object put "gins-rules/$file" --file "$file"
-          done
+          find ruleset -type f | xargs -I {} -P 8 npx wrangler r2 object put "gins-rules/{}" --file "{}"
 
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
