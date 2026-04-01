@@ -38,7 +38,7 @@ jobs:
         id: tool-versions
         run: |
           SINGBOX_URL=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases | jq -r '.[0].assets[] | select(.name | contains("linux-amd64") and endswith(".tar.gz")) | .browser_download_url' | head -n 1)
-          MIHOMO_URL=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '.[0].assets[] | select(.name | contains("linux-amd64") and (contains("alpha") or contains("beta") or . == "mihomo-linux-amd64.gz")) | .browser_download_url' | head -n 1)
+          MIHOMO_URL=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '.[0].assets[] | select(.name | contains("linux-amd64") and (contains("alpha") or contains("beta") or contains("rc") or . == "mihomo-linux-amd64.gz")) | .browser_download_url' | head -n 1)
           echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
           echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
           # Use hash of URLs as cache key
