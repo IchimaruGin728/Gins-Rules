@@ -19,18 +19,31 @@ Comprehensive, self-maintained proxy rule list repository with high-performance 
     - **Egern**: `.yaml` (Multi-category config)
 - **Bleeding Edge Binaries**: automated build using the latest **Sing-box (Pre-release)** and **Mihomo (Alpha)** compilers.
 
-## 🚀 Subscription
+## 🚀 Subscription Matrix
 
-Delivery URLs are backed by high-performance R2 storage with Cloudflare Smart Routing.
+The delivery URLs are backed by high-performance R2 storage with Cloudflare Smart Routing.
 
-| Client | Format | URL Pattern |
-|--------|--------|-------------|
-| sing-box | SRS | `https://rules.ichimarugin728.dev/ruleset/singbox/proxy/apple.srs` |
-| Mihomo | MRS | `https://rules.ichimarugin728.dev/ruleset/mihomo/proxy/apple.mrs` |
-| ASN / IP | List | `https://rules.ichimarugin728.dev/ruleset/text/asn/asn-cloudflare.list` |
-| AI Other | List | `https://rules.ichimarugin728.dev/ruleset/text/proxy/ai-other.list` |
+| Client | Format | Base Path Pattern | Example URL (Proxy/Apple) |
+|--------|--------|-------------------|--------------------------|
+| **sing-box** | SRS | `/ruleset/singbox/{cat}/{name}.srs` | [apple.srs](https://rules.ichimarugin728.dev/ruleset/singbox/proxy/apple.srs) |
+| **Mihomo** | MRS | `/ruleset/mihomo/{cat}/{name}.mrs` | [apple.mrs](https://rules.ichimarugin728.dev/ruleset/mihomo/proxy/apple.mrs) |
+| **Stash** | MRS | `/ruleset/stash/{cat}/{name}.mrs` | [apple.mrs](https://rules.ichimarugin728.dev/ruleset/stash/proxy/apple.mrs) |
+| **Surge / Loon** | List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
+| **Quantumult X** | List | `/ruleset/quanx/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/quanx/proxy/apple.list) |
+| **Shadowrocket**| List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
+| **Surfboard** | List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
+| **Surfboard (Opt)**| TXT | `/ruleset/surfboard/{cat}/{name}.txt` | [apple.txt](https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.txt) |
+| **Egern** | YAML | `/ruleset/egern/{cat}/{name}.yaml` | [apple.yaml](https://rules.ichimarugin728.dev/ruleset/egern/proxy/apple.yaml) |
+| **Exclave** | Route | `/ruleset/exclave/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/exclave/proxy/apple.list) |
 
-## 📊 Analytics & Coverage
+### 📂 Available Categories (`{cat}`)
+
+- `proxy`: Global services (Google, Apple, Telegram, etc.)
+- `direct`: Bypass/Domestic routing (CN sites, Private IPs, etc.)
+- `reject`: Ads, Tracking, and Telemetry.
+- `ip`: Country-specific CIDR lists (e.g. `cn`, `us`, `!cn`).
+- `asn`: Network-specific ASN lists (e.g. `asn-google`, `asn-cloudflare`).
+- `ai-other`: High-priority AI services (Claude, Gemini, Copilot).
 
 | Category | Description | Status |
 |----------|-------------|--------|
