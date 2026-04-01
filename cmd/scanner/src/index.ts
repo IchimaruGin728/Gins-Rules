@@ -57,16 +57,18 @@ export default {
       });
     }
 
-    // 1. Static Assets Priority (Dashboard, Canonical Rules, Resource Parsers)
-    // Try exact match first to save parsing overhead for canonical URLs.
-    if (path === '/' || path.includes('.') || path.startsWith('/ruleset/')) {
-      const assetResp = await env.ASSETS.fetch(new Request(request.url, request));
-      if (assetResp.status !== 404) return assetResp;
-    }
-
-    // 2. Dynamic Ruleset Common Routes (Legacy/Short Mapping)
+    // 1. Ruleset Requests (Served from R2 via handleFeed)
     if (path.startsWith('/ruleset/')) {
       return handleFeed(request, path, url, env);
+    }
+
+    // 2. Static Assets (Dashboard components & Canonical Rules)
+    // We try to serve the exact file or a matching directory index first.
+    try {
+      const assetResp = await (env.ASSETS as any).fetch(request.clone());
+      if (assetResp.status !== 404) return assetResp;
+    } catch (e) {
+      console.error('Asset fetch error:', e);
     }
 
     // 3. API & Internal Workflow Handlers
@@ -78,8 +80,8 @@ export default {
       return handleBuildComplete(request, env);
     }
 
-    // 4. Final Fallback
-    return env.ASSETS.fetch(request);
+    // 4. Final Fallback (Serve index.html for SPA/Dashboard entry)
+    return (env.ASSETS as any).fetch(new Request(new URL('/', request.url).toString(), request));
   },
 
   // ============================================================
