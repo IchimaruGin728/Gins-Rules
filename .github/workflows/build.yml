@@ -28,7 +28,10 @@ jobs:
         with:
           node-version: '25'
           cache: "pnpm"
-          cache-dependency-path: dashboard/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install Dependencies (Root)
+        run: pnpm install --no-frozen-lockfile
 
       - uses: actions/setup-go@v5
         with:
@@ -129,14 +132,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # Create bucket if it doesn't exist
-          pnpm exec wrangler r2 bucket create gins-rules || true
+          npx wrangler r2 bucket create gins-rules || true
           
           # Sync ruleset directory to R2
           # We use a simple script to upload only the ruleset directory
           cd compiled
           find ruleset -type f | while read -r file; do
             echo "Uploading $file..."
-            pnpm exec wrangler r2 object put "gins-rules/$file" --file "$file"
+            npx wrangler r2 object put "gins-rules/$file" --file "$file"
           done
 
       - name: Deploy Worker
