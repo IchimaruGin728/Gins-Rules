@@ -7,13 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/xtls/xray-core/app/router/routercommon"
+	"github.com/xtls/xray-core/app/router"
 	"google.golang.org/protobuf/proto"
 )
 
 func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
-	geositeList := &routercommon.GeoSiteList{}
-	geoipList := &routercommon.GeoIPList{}
+	geositeList := &router.GeoSiteList{}
+	geoipList := &router.GeoIPList{}
 
 	for category, rulesMap := range allRules {
 		for name, rules := range rulesMap {
@@ -22,20 +22,20 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 
 			// 1. Geosite (Domains)
 			if category != "ip" && category != "asn" {
-				site := &routercommon.GeoSite{
+				site := &router.GeoSite{
 					CountryCode: strings.ToUpper(tag),
 				}
 				for _, d := range rules.DomainSuffix {
-					site.Domain = append(site.Domain, &routercommon.Domain{Type: routercommon.Domain_Subdomain, Value: d})
+					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Subdomain, Value: d})
 				}
 				for _, d := range rules.Domain {
-					site.Domain = append(site.Domain, &routercommon.Domain{Type: routercommon.Domain_Full, Value: d})
+					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Full, Value: d})
 				}
 				for _, d := range rules.DomainKeyword {
-					site.Domain = append(site.Domain, &routercommon.Domain{Type: routercommon.Domain_Keyword, Value: d})
+					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Keyword, Value: d})
 				}
 				for _, d := range rules.DomainRegex {
-					site.Domain = append(site.Domain, &routercommon.Domain{Type: routercommon.Domain_Regex, Value: d})
+					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Regex, Value: d})
 				}
 
 				if len(site.Domain) > 0 {
@@ -45,7 +45,7 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 
 			// 2. GeoIP (IP CIDRs)
 			if (category == "ip" || category == "asn") && len(rules.IPCIDR) > 0 {
-				geoIP := &routercommon.GeoIP{
+				geoIP := &router.GeoIP{
 					CountryCode: strings.ToUpper(tag),
 				}
 				for _, cidr := range rules.IPCIDR {
@@ -64,7 +64,7 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 						ipBytes = ip.To16()
 					}
 
-					geoIP.Cidr = append(geoIP.Cidr, &routercommon.CIDR{
+					geoIP.Cidr = append(geoIP.Cidr, &router.CIDR{
 						Ip:     ipBytes,
 						Prefix: uint32(ones),
 					})
