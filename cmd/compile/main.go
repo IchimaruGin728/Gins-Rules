@@ -87,6 +87,12 @@ func main() {
 		localDir := filepath.Join(root, "source", category)
 		upstreamDir := filepath.Join(root, "source", "upstream", category)
 
+		// Fix: ASN rules are stored in the 'ip' directory but belong to the 'asn' category
+		if category == "asn" {
+			localDir = filepath.Join(root, "source", "ip")
+			upstreamDir = filepath.Join(root, "source", "upstream", "ip")
+		}
+
 		for _, d := range []string{localDir, upstreamDir} {
 			if _, err := os.Stat(d); err == nil {
 				for _, f := range listTxtFiles(d) {
