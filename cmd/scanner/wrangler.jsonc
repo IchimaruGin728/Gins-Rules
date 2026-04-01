@@ -12,9 +12,9 @@
   },
   "routes": [
     {
-      "pattern": "rules.ichimarugin728.dev/*",
-      "zone_name": "ichimarugin728.dev",
-    },
+      "pattern": "rules.ichimarugin728.dev",
+      "custom_domain": true
+    }
   ],
   "ai": {
     "binding": "AI",
