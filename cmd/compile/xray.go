@@ -26,20 +26,20 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 					CountryCode: strings.ToUpper(tag),
 				}
 				for _, d := range rules.DomainSuffix {
-					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Subdomain, Value: d})
+					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Domain, Value: d})
 				}
 				for _, d := range rules.Domain {
 					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Full, Value: d})
 				}
 				for _, d := range rules.DomainKeyword {
-					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Keyword, Value: d})
+					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Plain, Value: d})
 				}
 				for _, d := range rules.DomainRegex {
 					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Regex, Value: d})
 				}
 
 				if len(site.Domain) > 0 {
-					geositeList.Site = append(geositeList.Site, site)
+					geositeList.Entry = append(geositeList.Entry, site)
 				}
 			}
 
@@ -99,6 +99,6 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 		return fmt.Errorf("failed to write geoip.dat: %w", err)
 	}
 
-	fmt.Printf("\n  [Xray] geosite.dat: %d tags, geoip.dat: %d tags\n", len(geositeList.Site), len(geoipList.Entry))
+	fmt.Printf("\n  [Xray] geosite.dat: %d tags, geoip.dat: %d tags\n", len(geositeList.Entry), len(geoipList.Entry))
 	return nil
 }
