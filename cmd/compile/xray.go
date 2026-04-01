@@ -7,9 +7,79 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/maxmind/mmdbwriter"
+	"github.com/maxmind/mmdbwriter/mmdbtype"
 	"github.com/xtls/xray-core/app/router"
 	"google.golang.org/protobuf/proto"
 )
+
+func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
+	// 1. GeoIP MMDB
+	writerIP, _ := mmdbwriter.New(mmdbwriter.Options{
+		DatabaseType: "GeoLite2-Country",
+		RecordSize:   24,
+	})
+
+	// 2. GeoASN MMDB
+	writerASN, _ := mmdbwriter.New(mmdbwriter.Options{
+		DatabaseType: "GeoLite2-ASN",
+		RecordSize:   24,
+	})
+
+	for category, rulesMap := range allRules {
+		for name, rules := range rulesMap {
+			tag := strings.ToUpper(name)
+
+			if category == "ip" {
+				for _, cidr := range rules.IPCIDR {
+					_, network, err := net.ParseCIDR(cidr)
+					if err != nil {
+						continue
+					}
+					writerIP.Insert(network, mmdbtype.Map{
+						"country": mmdbtype.Map{
+							"iso_code": mmdbtype.String(tag),
+						},
+					})
+				}
+			}
+
+			if category == "asn" {
+				// name is "asn-1234"
+				asnStr := strings.TrimPrefix(strings.ToLower(name), "asn-")
+				var asnVal uint32
+				fmt.Sscanf(asnStr, "%d", &asnVal)
+
+				for _, cidr := range rules.IPCIDR {
+					_, network, err := net.ParseCIDR(cidr)
+					if err != nil {
+						continue
+					}
+					writerASN.Insert(network, mmdbtype.Map{
+						"autonomous_system_number": mmdbtype.Uint32(asnVal),
+						"autonomous_system_organization": mmdbtype.String(tag),
+					})
+				}
+			}
+		}
+	}
+
+	// Write files
+	outIP, err := os.Create(filepath.Join(outDir, "geoip.mmdb"))
+	if err == nil {
+		defer outIP.Close()
+		writerIP.WriteTo(outIP)
+	}
+
+	outASN, err := os.Create(filepath.Join(outDir, "geoasn.mmdb"))
+	if err == nil {
+		defer outASN.Close()
+		writerASN.WriteTo(outASN)
+	}
+
+	fmt.Printf("  [MMDB] Created geoip.mmdb, geoasn.mmdb\n")
+	return nil
+}
 
 func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 	geositeList := &router.GeoSiteList{}

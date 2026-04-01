@@ -274,10 +274,13 @@ func main() {
 		fmt.Printf("  ✅ [%-6s] Created full merged rule-set: %s\n", category, name)
 	}
 
-	// Final step: Bundle everything into Xray DAT files
-	fmt.Println("\n  [Xray] Packing binary assets...")
+	// Final step: Bundle everything into Xray DAT files and MMDB
+	fmt.Println("\n  [Assets] Packing binary assets (DAT & MMDB)...")
 	if err := compileXrayDAT(allRules, rulesetDir); err != nil {
 		fmt.Printf("  [Error] Xray packing failed: %v\n", err)
+	}
+	if err := compileMMDB(allRules, rulesetDir); err != nil {
+		fmt.Printf("  [Error] MMDB packing failed: %v\n", err)
 	}
 
 	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket", "surfboard", "exclave", "xray"} {

@@ -29,7 +29,7 @@ export default function DatCard({ name, url }: { name: string; url: string }) {
               {name}
             </div>
             <div class="text-[8px] font-black uppercase tracking-widest text-gray-500 mt-0.5">
-              V2Ray / Xray Binary
+              {name.endsWith(".dat") ? "V2Ray / Xray Binary" : "MaxMind Database / GeoIP"}
             </div>
           </div>
         </div>

@@ -67,11 +67,16 @@ The delivery URLs are backed by high-performance R2 storage with Cloudflare Smar
 ## ⚙️ Development
 
 ```bash
-# Sync upstream rules (Recognizes ASN and AI sources)
+# 1. Sync upstream rules (Recognizes ASN and AI sources)
 go run ./cmd/sync/
 
-# Compile rules locally (Requires Go 1.22+)
+# 2. Compile rules locally (Requires Go 1.24+)
 go run ./cmd/compile
+
+# 3. Dashboard Development (pnpm)
+cd dashboard
+pnpm install
+pnpm dev
 ```
 
 ## 📅 Maintenance Schedule

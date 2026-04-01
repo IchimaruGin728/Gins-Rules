@@ -1,12 +1,17 @@
 {
-  "extends": "astro/tsconfigs/strictest",
+  "extends": "./node_modules/astro/tsconfigs/strictest.json",
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     },
     "jsx": "react-jsx",
-    "jsxImportSource": "preact"
+    "jsxImportSource": "preact",
+    "allowJs": true,
+    "checkJs": true
   }
 }

@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { activeApp, getActiveConfig } from "../store.preact";
+import { activeApp, getActiveConfig, surfboardDomainSet } from "../store.preact";
 
 interface Props {
   name: string;
@@ -18,8 +18,11 @@ export default function ServiceItem({ name, category, lines, apiBase }: Props) {
     e.preventDefault();
     e.stopPropagation();
 
+    // Surfboard Domain Set logic
+    const ext = (activeApp.value === "surfboard" && surfboardDomainSet.value) ? "txt" : config.ext;
+    
     // URL Format: ruleset/:app/:category/:name.ext
-    const url = `${apiBase}/ruleset/${activeApp.value}/${category}/${cleanName}.${config.ext}`;
+    const url = `${apiBase}/ruleset/${activeApp.value}/${category}/${cleanName}.${ext}`;
 
     try {
       await navigator.clipboard.writeText(url);

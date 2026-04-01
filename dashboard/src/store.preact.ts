@@ -10,7 +10,6 @@ export type AppType =
   | "egern"
   | "shadowrocket"
   | "surfboard"
-  | "surfboard_ds"
   | "exclave"
   | "v2ray";
 
@@ -87,29 +86,23 @@ export const APPS: AppConfig[] = [
     color: "#68BBE3",
   },
   {
-    id: "surfboard_ds",
-    label: "Surfboard DS",
-    icon: "/icons/surfboard.png",
-    ext: "txt",
-    color: "#00BCD4",
-  },
-  {
     id: "exclave",
     label: "Exclave",
-    icon: "/icons/exclave.jpg",
+    icon: "/icons/exclave.png",
     ext: "list",
     color: "#E91E63",
   },
   {
     id: "v2ray",
     label: "V2Ray / Xray",
-    icon: "/icons/xray.jpg",
+    icon: "/icons/xray.png",
     ext: "dat",
     color: "#CFD8DC",
   },
 ];
 
 export const activeApp = signal<AppType>("singbox");
+export const surfboardDomainSet = signal<boolean>(false);
 export const getActiveConfig = () => {
   const config = APPS.find((a) => a.id === activeApp.value);
 

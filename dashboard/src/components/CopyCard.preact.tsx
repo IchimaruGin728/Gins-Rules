@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { activeApp, getActiveConfig } from "../store.preact";
+import { activeApp, getActiveConfig, surfboardDomainSet } from "../store.preact";
 import AppLogo from "./AppLogo.preact";
 
 interface Props {
@@ -14,8 +14,11 @@ export default function CopyCard({ label, category, icon, baseUrl }: Props) {
   const config = getActiveConfig();
 
   const handleCopy = async () => {
+    // Surfboard Domain Set logic
+    const ext = (activeApp.value === "surfboard" && surfboardDomainSet.value) ? "txt" : config.ext;
+
     // URL Format: ruleset/:app/:category.ext
-    const url = `${baseUrl}/ruleset/${activeApp.value}/${category}.${config.ext}`;
+    const url = `${baseUrl}/ruleset/${activeApp.value}/${category}.${ext}`;
 
     try {
       await navigator.clipboard.writeText(url);
