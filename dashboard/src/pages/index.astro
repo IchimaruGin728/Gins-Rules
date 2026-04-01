@@ -97,7 +97,10 @@ const totalRules = categories.reduce((sum, category) => {
     );
 }, 0);
 const buildTime =
-    new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
+    new Date(new Date().getTime() + 8 * 60 * 60 * 1000)
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, 19) + " SGT";
 const appCount = 9;
 
 void Layout;
