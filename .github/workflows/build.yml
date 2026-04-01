@@ -102,7 +102,7 @@ jobs:
         id: compile
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
-          go run cmd/compile/main.go
+          go run ./cmd/compile
           cp -r public/* compiled/
 
           # Collect build stats
@@ -159,7 +159,7 @@ jobs:
             -d '{
               "services": ${{ steps.compile.outputs.services || 0 }},
               "rules": ${{ steps.compile.outputs.rules || 0 }},
-              "formats": 8,
+              "formats": 12,
               "ipRules": ${{ steps.compile.outputs.ip_rules || 0 }},
               "asnFiles": ${{ steps.compile.outputs.asn_files || 0 }},
               "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"

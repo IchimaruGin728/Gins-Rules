@@ -62,7 +62,7 @@ pnpm install
 go run ./cmd/sync/
 
 # Compile rules locally (Requires Go Stable)
-go run ./cmd/compile/
+go run ./cmd/compile
 ```
 
 ## 📅 Maintenance Schedule
