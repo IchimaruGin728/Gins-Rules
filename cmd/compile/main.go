@@ -271,6 +271,7 @@ func main() {
 		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category))
 		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category))
 		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
+		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
 
 		fmt.Printf("  ✅ [%-6s] Created full merged rule-set: %s\n", category, name)
 	}
