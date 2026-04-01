@@ -139,15 +139,13 @@ jobs:
             --delete --no-progress
 
       - name: Deploy Worker
-        uses: cloudflare/wrangler-action@v3
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          packageManager: pnpm
-          workingDirectory: cmd/scanner
-          command: deploy --config wrangler.jsonc
-          wranglerVersion: latest
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Use the already installed wrangler for stable deployment
+          npx wrangler deploy --config cmd/scanner/wrangler.jsonc
 
       - name: Notify
         if: always() && (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule')
