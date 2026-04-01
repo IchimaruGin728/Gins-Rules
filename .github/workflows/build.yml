@@ -52,6 +52,8 @@ jobs:
             /usr/local/bin/sing-box
             /usr/local/bin/mihomo
           key: ${{ runner.os }}-binaries-${{ steps.tool-versions.outputs.cache_key }}
+
+      - name: Sync Upstream Rules
         run: go run cmd/sync/main.go
 
       - name: Commit Synced Rules
