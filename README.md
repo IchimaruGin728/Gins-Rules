@@ -1,232 +1,75 @@
 # Gins-Rules
 
-Comprehensive, self-maintained proxy rule list repository with fine-grained per-service categorization.
+Comprehensive, self-maintained proxy rule list repository with high-performance R2-backed distribution.
 
-## Features
+## ✨ Features
+
 - **90+ Services**: Including Apple, Microsoft, Google, OpenAI, TikTok, etc.
-- **GeoIP & ASN**: **Full Globe Coverage** (auto-extracted from MMDB: ipinfo + ip2location via [xream/geoip](https://github.com/xream/geoip))
-- **Fallback Logic**: Specialized `!cn.txt` for all non-China IPs, providing a global fallback for rare regions.
-- **Multi-Format Support**: 
+- **Dynamic R2 Storage**: Powered by **Cloudflare R2** via S3 protocol, removing the 25MB Workers Assets limit. Handles full-scale IP/ASN rulesets (30MB+) with ease.
+- **High-Speed Sync**: GitHub Actions optimized with **AWS CLI S3 Sync (100 Concurrent Requests)** for lightning-fast, differential rule delivery.
+- **Smart Routing**: Deployed on **Cloudflare Workers** with **Smart Routing** and latest compatibility date (2026-04-01) for global low-latency access.
+- **GeoIP & ASN**: Full Globe Coverage (auto-extracted from MMDB: ipinfo + ip2location) with separate, refined categorization.
+- **Multi-Format Support**:
     - **sing-box**: `.srs` (binary), `.json`
     - **Mihomo (Clash Meta) / Stash**: `.mrs` (binary), `.yaml`
-    - **Surge / Loon / Shadowrocket**: `.list` (Surge format)
+    - **Surge / Loon / Shadowrocket**: `.list` (Standard format)
     - **QuantumultX**: `.list` (Native format)
     - **Egern**: `.yaml` (Native format)
-- **High Performance**: Pre-compiled binary rules for modern clients, served via **Cloudflare Workers Smart Routing**.
-- **R2 Storage**: Powered by **Cloudflare R2** for unlimited ruleset sizes (perfect for 30MB+ full IP/ASN lists).
-- **Automated**: Multi-source upstream sync + MMDB extraction + auto compile via GitHub Actions (running on **Node 25 + pnpm 10 + Go stable**).
-- **Global Distribution**: Optimized hybrid delivery via **Workers Assets** (Dashboard) and **R2** (Rulesets) for maximum speed.
+- **Bleeding Edge**: Automated build using the absolute latest **Sing-box (Alpha)** and **Mihomo (Alpha)** compilers for maximum feature support.
 
-## Subscription
+## 🚀 Subscription
 
-### 1. Merged (All services in one link)
-
-| Category | Format | URL |
-|----------|--------|-----|
-| Proxy All | List | `https://rules.ichimarugin728.dev/ruleset/text/proxy/proxy.list` |
-| Direct All | List | `https://rules.ichimarugin728.dev/ruleset/text/direct/direct.list` |
-| Reject All | List | `https://rules.ichimarugin728.dev/ruleset/text/reject/reject.list` |
-| IP All | List | `https://rules.ichimarugin728.dev/ruleset/text/ip/ip.list` |
-
-### 2. Individual Service
+The delivery URLs remain consistent, now backed by high-performance R2 storage.
 
 | Client | Format | URL Pattern |
 |--------|--------|-------------|
 | sing-box | SRS | `https://rules.ichimarugin728.dev/ruleset/singbox/proxy/apple.srs` |
 | Mihomo | MRS | `https://rules.ichimarugin728.dev/ruleset/mihomo/proxy/apple.mrs` |
 | Surge / Loon | List | `https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list` |
-| Surfboard | List | `https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.list` |
 | QuantumultX | List | `https://rules.ichimarugin728.dev/ruleset/quanx/proxy/apple.list` |
-| Egern | YAML | `https://rules.ichimarugin728.dev/ruleset/egern/proxy/apple.yaml` |
 
-## Complete Service List
+## 📊 Analytics & Coverage
 
-### Proxy (61 services)
+| Category | Description | Status |
+|----------|-------------|--------|
+| **Proxy** | 60+ global services merged & deduplicated | ✅ Active |
+| **Direct** | 20+ domestic services and bypass lists | ✅ Active |
+| **Reject** | Privacy tracking, ads, and telemetry | ✅ Active |
+| **IP / GeoIP** | Full country CIDR lists (e.g., `cn`, `us`, `!cn`) | ✅ Full Scale (R2) |
+| **ASN / Network** | Enterprise network ranges (e.g., `asn-cloudflare`, `asn-apple`) | ✅ Refined |
 
-| Service | File | Description |
-|---------|------|-------------|
-| AI Other | `ai-other.txt` | Other AI services |
-| Amazon | `amazon.txt` | Amazon services |
-| Apple | `apple.txt` | Apple services |
-| Apple Music | `apple-music.txt` | Apple Music streaming |
-| Apple TV | `appletv.txt` | Apple TV+ |
-| Blizzard | `blizzard.txt` | Blizzard Entertainment |
-| Claude | `claude.txt` | Anthropic Claude AI |
-| Cloudflare | `cloudflare.txt` | Cloudflare services |
-| Copilot | `copilot.txt` | GitHub/Microsoft Copilot |
-| Discord | `discord.txt` | Discord |
-| Disney+ | `disney.txt` | Disney Plus |
-| Docker | `docker.txt` | Docker Hub & Registry |
-| Dropbox | `dropbox.txt` | Dropbox |
-| DuckDuckGo | `duckduckgo.txt` | DuckDuckGo search |
-| Epic | `epic.txt` | Epic Games |
-| Facebook | `facebook.txt` | Facebook / Meta |
-| Gemini | `gemini.txt` | Google Gemini AI |
-| GFW List | `gfw-list.txt` | GFW blocked domains (merged) |
-| GitHub | `github.txt` | GitHub |
-| GitLab | `gitlab.txt` | GitLab |
-| Google | `google.txt` | Google services |
-| HBO | `hbo.txt` | HBO Max |
-| Instagram | `instagram.txt` | Instagram |
-| LINE | `line.txt` | LINE messaging |
-| LinkedIn | `linkedin.txt` | LinkedIn |
-| Medium | `medium.txt` | Medium publishing |
-| Microsoft | `microsoft.txt` | Microsoft services |
-| miHoYo Intl | `mihoyo-intl.txt` | miHoYo international |
-| Netflix | `netflix.txt` | Netflix |
-| News Intl | `news-intl.txt` | International news |
-| Nintendo | `nintendo.txt` | Nintendo |
-| Notion | `notion.txt` | Notion |
-| NPM | `npm.txt` | NPM registry |
-| OneDrive | `onedrive.txt` | Microsoft OneDrive |
-| OpenAI | `openai.txt` | OpenAI / ChatGPT |
-| PayPal | `paypal.txt` | PayPal |
-| Pinterest | `pinterest.txt` | Pinterest |
-| PlayStation | `playstation.txt` | PlayStation Network |
-| Prime Video | `primevideo.txt` | Amazon Prime Video |
-| ProtonMail | `protonmail.txt` | ProtonMail |
-| Proxy List | `proxy-list.txt` | General proxy domains (merged) |
-| Reddit | `reddit.txt` | Reddit |
-| Riot Games | `riot.txt` | Riot Games |
-| Signal | `signal.txt` | Signal messenger |
-| Slack | `slack.txt` | Slack |
-| Snapchat | `snapchat.txt` | Snapchat |
-| Speedtest | `speedtest.txt` | Speedtest.net |
-| Spotify | `spotify.txt` | Spotify |
-| Stack Overflow | `stackoverflow.txt` | Stack Overflow |
-| Steam | `steam.txt` | Steam |
-| Telegram | `telegram.txt` | Telegram |
-| Threads | `threads.txt` | Meta Threads |
-| TikTok | `tiktok.txt` | TikTok |
-| Twitch | `twitch.txt` | Twitch |
-| Twitter/X | `twitter.txt` | Twitter / X |
-| Vercel | `vercel.txt` | Vercel |
-| WhatsApp | `whatsapp.txt` | WhatsApp |
-| Wikipedia | `wikipedia.txt` | Wikipedia |
-| Xbox | `xbox.txt` | Xbox Live |
-| YouTube | `youtube.txt` | YouTube |
-| Zoom | `zoom.txt` | Zoom |
+## 🛠️ Repository Structure
 
-### Direct (24 services)
-
-| Service | File | Description |
-|---------|------|-------------|
-| Alibaba | `alibaba.txt` | Alibaba Group |
-| Apple CDN | `apple-cdn.txt` | Apple CDN endpoints |
-| Baidu | `baidu.txt` | Baidu |
-| Bilibili | `bilibili.txt` | Bilibili |
-| Bypass Domain | `bypass-domain.txt` | Bypass domains |
-| Bypass IP | `bypass-ip.txt` | Bypass IPs |
-| ByteDance | `bytedance.txt` | ByteDance / Douyin |
-| CN CDN | `cn-cdn.txt` | China CDN providers |
-| CN Other | `cn-other.txt` | Other China domains |
-| DiDi | `didi.txt` | DiDi |
-| Direct List | `direct-list.txt` | General direct domains (merged) |
-| Douyu/Huya | `douyu-huya.txt` | Douyu & Huya live streaming |
-| JD | `jd.txt` | JD.com |
-| Kuaishou | `kuaishou.txt` | Kuaishou |
-| Meituan | `meituan.txt` | Meituan |
-| Microsoft CDN | `microsoft-cdn.txt` | Microsoft CDN endpoints |
-| miHoYo | `mihoyo.txt` | miHoYo China |
-| NetEase | `netease.txt` | NetEase |
-| Pinduoduo | `pinduoduo.txt` | Pinduoduo |
-| Steam CDN | `steam-cdn.txt` | Steam CDN (direct) |
-| Tencent | `tencent.txt` | Tencent services |
-| Weibo | `weibo.txt` | Weibo |
-| Xiaomi | `xiaomi.txt` | Xiaomi |
-| Zhihu | `zhihu.txt` | Zhihu |
-
-### Reject (4 lists)
-
-| Service | File | Description |
-|---------|------|-------------|
-| Ads | `ads.txt` | Ad domains |
-| Privacy | `privacy.txt` | Privacy-invasive trackers |
-| Reject List | `reject-list.txt` | General reject domains (merged) |
-| Tracking | `tracking.txt` | Tracking domains |
-
-### IP / GeoIP / ASN (Refined)
-
-> Auto-extracted from MMDB via `cmd/mmdb` (multi-source: ipinfo + ip2location merged)
-
-| List | File | Source | Description |
-|------|------|--------|-------------|
-| China IP | `cn.txt` | GeoIP MMDB | Primary China CIDRs |
-| Non-China IP | `!cn.txt` | GeoIP MMDB | **Complete Global Fallback** (All non-CN IPs) |
-| SG IP | `sg.txt` | GeoIP MMDB | Singapore |
-| TW IP | `tw.txt` | GeoIP MMDB | Taiwan |
-| JP IP | `jp.txt` | GeoIP MMDB | Japan |
-| US IP | `us.txt` | GeoIP MMDB | USA |
-| Private IP | `private.txt` | GeoIP MMDB | RFC1918 private ranges |
-| Telegram IP | `telegram.txt` | Manual | Telegram IP CIDRs |
-| ASN Cloudflare | `asn-cloudflare.txt` | ASN MMDB | AS13335 |
-| ASN Google | `asn-google.txt` | ASN MMDB | AS15169, AS396982 |
-| ASN Microsoft | `asn-microsoft.txt` | ASN MMDB | AS8075 |
-| ASN Amazon | `asn-amazon.txt` | ASN MMDB | AS16509, AS14618 |
-| ASN Meta | `asn-facebook.txt` | ASN MMDB | AS32934 |
-| ASN Telegram | `asn-telegram.txt` | ASN MMDB | AS62041, AS62014, AS59930, AS44907 |
-| ASN Netflix | `asn-netflix.txt` | ASN MMDB | AS2906 |
-| ASN GitHub | `asn-github.txt` | ASN MMDB | AS36459 |
-| ASN Twitter/X | `asn-twitter.txt` | ASN MMDB | AS13414 |
-| ASN Apple | `asn-apple.txt` | ASN MMDB | AS714, AS6185 |
-| ASN Discord | `asn-discord.txt` | ASN MMDB | AS49544 |
-| ASN Spotify | `asn-spotify.txt` | ASN MMDB | AS8403 |
-| ASN Steam/Valve | `asn-steam.txt` | ASN MMDB | AS32590 |
-| ASN Disney+ | `asn-disney.txt` | ASN MMDB | AS19679 |
-| ASN Oracle | `asn-oracle.txt` | ASN MMDB | AS31898 |
-| ASN Akamai | `asn-akamai.txt` | ASN MMDB | AS16625, AS20940, AS3131... |
-| ASN Alibaba | `asn-alibaba.txt` | ASN MMDB | AS37963, AS45102, AS132335 |
-| ASN Tencent | `asn-tencent.txt` | ASN MMDB | AS132203, AS132591, AS133478, AS133543 |
-| ASN ByteDance | `asn-bytedance.txt` | ASN MMDB | AS138690 |
-| ASN Baidu | `asn-baidu.txt` | ASN MMDB | AS55967, AS134177 |
-
-## Upstream Sources
-
-| Name | Source | Category | Notes |
-|------|--------|----------|-------|
-| Loyalsoldier proxy-list | [v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) | proxy | Domain list |
-| MetaCubeX proxy | [meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) | proxy | Domain list |
-| Loyalsoldier direct-list | [v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) | direct | Domain list |
-| MetaCubeX cn | [meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) | direct | China domains |
-| Loyalsoldier reject-list | [v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) | reject | Ad/tracker list |
-| MetaCubeX category-ads-all | [meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) | reject | Ad list |
-| Loyalsoldier GFW | [v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) | proxy | GFW list |
-| MetaCubeX GFW | [meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) | proxy | GFW list |
-| Blackmatrix7 | [ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) | proxy | YouTube, Netflix, Disney+, Discord, Telegram, TikTok |
-| **ipinfo MMDB** | [xream/geoip](https://github.com/xream/geoip) | ip | Country + ASN (MMDB) |
-| **ip2location MMDB** | [xream/geoip](https://github.com/xream/geoip) | ip | Country + ASN (MMDB) |
-
-> All upstream sources are **multi-source merged & deduplicated** — same-target rules from different providers are combined and deduped automatically.
-
-## Repository Structure
 - `source/`: Plain text core rule lists (no comments).
-  - `source/proxy/`: 61 proxy service rule files
-  - `source/direct/`: 24 direct service rule files
-  - `source/reject/`: 4 reject rule files
-  - `source/ip/`: 15 IP/GeoIP/ASN rule files (auto-generated from MMDB)
-  - `source/upstream/`: Auto-synced upstream rule files
-  - `source/sources.json`: Upstream source configuration
+  - `source/proxy/`, `source/direct/`, `source/reject/`: Domain lists.
+  - `source/ip/`: Combined directory for both **IP CIDR** and **ASN** source files.
 - `cmd/sync/`: Go upstream rule fetcher (multi-source merge).
-- `cmd/mmdb/`: Go MMDB parser (downloads ipinfo + ip2location MMDB → extracts GeoIP/ASN → txt).
-- `cmd/compile/: Go compiler for multi-format output (8 formats + manifests).
-- `cmd/scanner/: High-performance CF Worker (Smart Routing enabled) for rule delivery and notifications.
-- `compiled/: Auto-generated assets and rules, synced to **Cloudflare R2** for distribution.
+- `cmd/compile/`: Go compiler for multi-format output. Smartly categorizes files into `ip` or `asn` directories based on prefixes.
+- `cmd/scanner/`: High-performance CF Worker serving the dashboard and R2 gateway.
+- `dashboard/`: Astro-based web UI, served via Workers Assets (Assets isolated from large rulesets).
+- `compiled/`: Ruleset sync source for Cloudflare R2.
 
-## Development
+## ⚙️ Development
+
 ```bash
+# Install dependencies (Node 25 + pnpm 10)
+pnpm install
+
 # Sync upstream rules
 go run ./cmd/sync/
 
-# Extract GeoIP & ASN from MMDB
-go run ./cmd/mmdb/
-
-# Compile rules locally
+# Compile rules locally (Requires Go Stable)
 go run ./cmd/compile/
 ```
 
-## Credits
-- [xream/geoip](https://github.com/xream/geoip) — GeoIP & ASN MMDB (ipinfo + ip2location)
-- [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) — Domain rule lists
-- [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) — Domain rule lists
-- [Blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) — Service-specific rules
-- Official Enterprise Documentation (Apple, Microsoft, Docker, etc.)
+## 📅 Maintenance Schedule
+
+- **Automated Sync**: Every day at **07:28 SGT** and **17:16 SGT**.
+- **Smart Update**: Build/Deploy process only triggers when upstream rules or MMDB data have changed.
+
+## 🤝 Credits
+
+- [xream/geoip](https://github.com/xream/geoip) — GeoIP & ASN source.
+- [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) & [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat).
+- [Blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script).
+- Powered by **Cloudflare Workers** & **R2 Storage**.
