@@ -37,8 +37,11 @@ jobs:
       - name: Fetch Latest Tool Versions
         id: tool-versions
         run: |
-          SINGBOX_URL=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases | jq -r '.[].assets[] | select(.name | contains("linux-amd64") and endswith(".tar.gz")) | .browser_download_url' | head -n 1)
-          MIHOMO_URL=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '.[].assets[] | select(.name | contains("linux-amd64") and (contains("alpha") or contains("beta") or contains("rc") or (endswith(".gz") and contains("mihomo-linux-amd64")))) | .browser_download_url' | head -n 1)
+          # Fetch Absolute Latest sing-box Pre-release
+          SINGBOX_URL=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases | jq -r 'map(select(.prerelease == true)) | .[0].assets[] | select(.name | contains("linux-amd64") and endswith(".tar.gz")) | .browser_download_url' | head -n 1)
+          
+          # Fetch Absolute Latest mihomo Alpha (Rolling Tag)
+          MIHOMO_URL=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r 'map(select(.tag_name == "alpha")) | .[0].assets[] | select(.name | contains("linux-amd64") and endswith(".gz")) | .browser_download_url' | head -n 1)
           echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
           echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
           # Use hash of URLs as cache key
