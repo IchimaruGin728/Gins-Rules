@@ -101,7 +101,7 @@ jobs:
         id: compile
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
-          go get github.com/xtls/xray-core@latest
+          go get github.com/xtls/xray-core@main
           go get google.golang.org/protobuf@latest
           go mod tidy
           go run ./cmd/compile
