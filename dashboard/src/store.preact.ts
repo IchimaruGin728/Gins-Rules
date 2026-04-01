@@ -9,7 +9,9 @@ export type AppType =
   | "loon"
   | "egern"
   | "shadowrocket"
-  | "surfboard";
+  | "surfboard"
+  | "surfboard_ds"
+  | "exclave";
 
 export interface AppConfig {
   id: AppType;
@@ -82,6 +84,20 @@ export const APPS: AppConfig[] = [
     icon: "/icons/surfboard.png",
     ext: "list",
     color: "#68BBE3",
+  },
+  {
+    id: "surfboard_ds",
+    label: "Surfboard DS",
+    icon: "/icons/surfboard.png",
+    ext: "txt",
+    color: "#00BCD4",
+  },
+  {
+    id: "exclave",
+    label: "Exclave",
+    icon: "/icons/exclave.jpg",
+    ext: "list",
+    color: "#E91E63",
   },
 ];
 

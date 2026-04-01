@@ -52,6 +52,7 @@ func main() {
 	stashDir := filepath.Join(rulesetDir, "stash")
 	shadowrocketDir := filepath.Join(rulesetDir, "shadowrocket")
 	surfboardDir := filepath.Join(rulesetDir, "surfboard")
+	exclaveDir := filepath.Join(rulesetDir, "exclave")
 
 	fmt.Println("============================================================")
 	fmt.Println("  Gins-Rules Compiler (Go)")
@@ -67,7 +68,7 @@ func main() {
 	hasSingBox := singboxPath != ""
 	hasMihomo := mihomoPath != ""
 
-	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir} {
+	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
 		for _, cat := range []string{"proxy", "direct", "reject", "ip", "asn"} {
@@ -177,12 +178,14 @@ func main() {
 				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), behavior, mihomoPath)
 			}
 
-			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
+			compileTextList(name, rules, filepath.Join(textDir, category), isIP)
 			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP, category)
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category))
 			compileLoonList(name, rules, filepath.Join(loonDir, category))
 			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
 			compileLoonList(name, rules, filepath.Join(surfboardDir, category))
+			compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
+			compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
 
 			srsIcon := "·"
 			if srsOK {
@@ -659,4 +662,47 @@ func compileLoonList(name string, rules Rules, outDir string) {
 	content := strings.Join(lines, "\n") + "\n"
 	listPath := filepath.Join(outDir, name+suffix)
 	os.WriteFile(listPath, []byte(content), 0o644)
+}
+
+func compileSurfboardDomainset(name string, rules Rules, outDir string) {
+	var lines []string
+
+	// Domain Suffix -> .example.com
+	for _, d := range rules.DomainSuffix {
+		lines = append(lines, "."+d)
+	}
+	// Domain (Exact) -> example.com
+	for _, d := range rules.Domain {
+		lines = append(lines, d)
+	}
+
+	if len(lines) == 0 {
+		return
+	}
+
+	content := strings.Join(lines, "\n") + "\n"
+	os.WriteFile(filepath.Join(outDir, name+".txt"), []byte(content), 0o644)
+}
+
+func compileExclaveRoute(name string, rules Rules, outDir string) {
+	var lines []string
+
+	for _, d := range rules.DomainSuffix {
+		lines = append(lines, "domain:"+d)
+	}
+	for _, d := range rules.Domain {
+		lines = append(lines, "full:"+d)
+	}
+	for _, d := range rules.DomainKeyword {
+		lines = append(lines, "keyword:"+d)
+	}
+	for _, d := range rules.DomainRegex {
+		lines = append(lines, "regexp:"+d)
+	}
+	for _, c := range rules.IPCIDR {
+		lines = append(lines, "ip:"+c)
+	}
+
+	content := strings.Join(lines, "\n") + "\n"
+	os.WriteFile(filepath.Join(outDir, name+".list"), []byte(content), 0o644)
 }

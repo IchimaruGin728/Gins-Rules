@@ -209,6 +209,9 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     'loon': 'loon',
     'egern': 'egern',
     'shadowrocket': 'shadowrocket',
+    'surfboard': 'surfboard',
+    'surfboard_ds': 'surfboard',
+    'exclave': 'exclave',
   };
 
   // Extension Mapping

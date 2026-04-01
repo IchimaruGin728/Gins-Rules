@@ -101,7 +101,8 @@ const buildTime =
         .toISOString()
         .replace("T", " ")
         .slice(0, 19) + " SGT";
-const appCount = 9;
+import { APPS } from "../store.preact";
+const appCount = APPS.length;
 
 void Layout;
 void AppSwitcher;
@@ -407,7 +408,7 @@ void appCount;
                     >
                         <div class="w-1 h-1 rounded-full bg-brand-primary">
                         </div>
-                        All sources auto-merged and distributed across 8 formats.
+                        All sources auto-merged and distributed across {appCount} formats.
                     </div>
                 </div>
             </div>
