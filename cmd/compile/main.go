@@ -744,12 +744,11 @@ func compileSurgeDomainset(name string, rules Rules, outDir string) {
 func compileShadowrocketDomainset(name string, rules Rules, outDir string) {
 	var lines []string
 
-	// For SR optimized domain list: domain,domain2,... (or one per line)
-	// We'll use one per line for better readability
+	// Suffixes: .example.com (Shadowrocket Domain Set follows Surge convention)
 	for _, d := range rules.DomainSuffix {
-		// In Shadowrocket, its DOMAIN-SET like list is often just a text file
-		lines = append(lines, d)
+		lines = append(lines, "."+d)
 	}
+	// Exact: example.com
 	for _, d := range rules.Domain {
 		lines = append(lines, d)
 	}
