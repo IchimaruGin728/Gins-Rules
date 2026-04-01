@@ -57,7 +57,9 @@ jobs:
           key: ${{ runner.os }}-binaries-${{ steps.tool-versions.outputs.cache_key }}
 
       - name: Sync Upstream Rules
-        run: go run cmd/sync/main.go
+        run: |
+          go mod tidy
+          go run cmd/sync/main.go
 
       - name: Commit Synced Rules
         id: sync
@@ -103,6 +105,7 @@ jobs:
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           go get github.com/xtls/xray-core@latest
+          go get google.golang.org/protobuf@latest
           go mod tidy
           go run ./cmd/compile
           cp -r public/* compiled/
