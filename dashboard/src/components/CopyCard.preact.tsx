@@ -14,8 +14,9 @@ export default function CopyCard({ label, category, icon, baseUrl }: Props) {
   const config = getActiveConfig();
 
   const handleCopy = async () => {
-    // Surfboard Domain Set logic
-    const ext = (activeApp.value === "surfboard" && surfboardDomainSet.value) ? "txt" : config.ext;
+    // Surfboard Domain Set logic - ONLY for non-IP categories
+    const isIPCategory = category === "ip" || category === "asn";
+    const ext = (activeApp.value === "surfboard" && surfboardDomainSet.value && !isIPCategory) ? "txt" : config.ext;
 
     // URL Format: ruleset/:app/:category.ext
     const url = `${baseUrl}/ruleset/${activeApp.value}/${category}.${ext}`;

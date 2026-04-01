@@ -18,8 +18,9 @@ export default function ServiceItem({ name, category, lines, apiBase }: Props) {
     e.preventDefault();
     e.stopPropagation();
 
-    // Surfboard Domain Set logic
-    const ext = (activeApp.value === "surfboard" && surfboardDomainSet.value) ? "txt" : config.ext;
+    // Surfboard Domain Set logic - ONLY for non-IP categories
+    const isIPCategory = category === "ip" || category === "asn";
+    const ext = (activeApp.value === "surfboard" && surfboardDomainSet.value && !isIPCategory) ? "txt" : config.ext;
     
     // URL Format: ruleset/:app/:category/:name.ext
     const url = `${apiBase}/ruleset/${activeApp.value}/${category}/${cleanName}.${ext}`;

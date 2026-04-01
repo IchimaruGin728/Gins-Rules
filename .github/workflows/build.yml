@@ -150,8 +150,8 @@ jobs:
           # Increase concurrency for maximum speed with 1000+ small files
           aws configure set default.s3.max_concurrent_requests 100
           
-          # High-speed differential sync
-          aws s3 sync compiled/ruleset s3://gins-rules-storage/ruleset \
+           # High-speed differential sync
+          aws s3 sync compiled/ s3://gins-rules-storage/ \
             --endpoint-url https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com \
             --delete --no-progress
 
