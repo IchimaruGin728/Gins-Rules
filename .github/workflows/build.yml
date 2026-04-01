@@ -27,7 +27,7 @@ jobs:
         run: corepack enable && corepack prepare pnpm@9.15.4 --activate
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: "pnpm"
           cache-dependency-path: dashboard/pnpm-lock.yaml
 
