@@ -9,6 +9,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
+      "pattern": "rules.ichimarugin728.dev/ruleset/*",
+      "zone_name": "ichimarugin728.dev",
+    },
+    {
       "pattern": "rules.ichimarugin728.dev/workflow/*",
       "zone_name": "ichimarugin728.dev",
     },
