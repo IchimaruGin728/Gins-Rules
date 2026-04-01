@@ -11,33 +11,42 @@ try {
   }
 
   var flag = getFlagEmoji(obj.countryCode);
-  var code = obj.countryCode || "??";
   var city = obj.city || "Unknown";
   var region = obj.regionCode || obj.region || "";
+  var postal = obj.postalCode || "";
   var ip = obj.ip || "N/A";
   var asn = obj.asn ? "AS" + obj.asn : "";
   var org = (obj.asOrganization || "Unknown ISP").replace(/,?\s*(Inc\.|LLC|Corp\.|LTD|Ltd\.|S\.A\.|GmbH)/ig, "").trim();
 
   var score = obj.fraudScore !== undefined ? obj.fraudScore : -1;
-  var riskBar = "";
-  if (score < 0) {
-    riskBar = "N/A";
+  var riskBar = score < 0 ? "N/A" : (function() {
+    var f = Math.round(score / 10);
+    var bar = "";
+    for (var i = 0; i < 10; i++) bar += i < f ? "▓" : "░";
+    return bar + " " + score;
+  })();
+
+  // Quality verdict: isResidential + isBroadcast + fraudScore
+  var typeIcon, typeLabel, verdict;
+  if (obj.isBroadcast) {
+    typeIcon = "📡"; typeLabel = "Broadcast";
+  } else if (obj.isResidential) {
+    typeIcon = "🏠"; typeLabel = "Native";
   } else {
-    var filled = Math.round(score / 10);
-    var empty = 10 - filled;
-    riskBar = "";
-    for (var i = 0; i < filled; i++) riskBar += "▓";
-    for (var j = 0; j < empty; j++) riskBar += "░";
-    riskBar += " " + score;
+    typeIcon = "🏢"; typeLabel = "DC";
   }
 
-  var netType = obj.isResidential ? "🏠" : "🏢";
+  if (score < 0 || score <= 33) {
+    verdict = "Clean";
+  } else if (score <= 66) {
+    verdict = "Caution";
+  } else {
+    verdict = "Risky";
+  }
 
-  // Title:  🇺🇸 Los Angeles, CA ║ 🏢 Cloudflare
-  // Subtitle: ⚡ AS13335 · 104.28.123.123 · ▓▓▓▓▓▓▓░░░ 75
-  var loc = city + (region ? ", " + region : "");
-  var title = flag + " " + loc + " ║ " + netType + " " + org;
-  var subtitle = "⚡ " + (asn ? asn + " · " : "") + ip + " · " + riskBar;
+  var loc = city + (region ? ", " + region : "") + (postal ? " " + postal : "");
+  var title = flag + " " + loc + " ║ " + typeIcon + " " + typeLabel + " · " + verdict;
+  var subtitle = "⚡ " + org + (asn ? " (" + asn + ")" : "") + " · " + ip + " · " + riskBar;
 
   $done({ title: title, subtitle: subtitle });
 
