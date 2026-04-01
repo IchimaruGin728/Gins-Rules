@@ -16,11 +16,11 @@ infra/aggregator/Cargo.lock
 # Node / Bun
 bun.lockb
 
-# Rules Source Upstream
-source/upstream/proxy/
-source/upstream/direct/
-source/upstream/reject/
-source/ip/
+# Rules Source Upstream (TXT Whitelist)
+source/upstream/*
+!source/upstream/**/*.txt
+source/ip/*
+!source/ip/*.txt
 
 # Logs
 npm-debug.log*
