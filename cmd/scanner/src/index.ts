@@ -9,6 +9,8 @@
 // ============================================================
 
 interface Env {
+  // Workers Assets
+  ASSETS: Fetcher;
   // Workflow
   BUILD_WORKFLOW: Workflow;
   // Queue
@@ -20,8 +22,6 @@ interface Env {
   TELEGRAM_CHAT_ID: string;
   DISCORD_WEBHOOK_URL: string;
   WORKFLOW_SECRET: string;
-  // Config
-  PAGES_DOMAIN: string; // e.g. "rules.ichimarugin728.dev"
 }
 
 interface NotifyMessage {
@@ -56,19 +56,20 @@ export default {
     }
 
     // Routes
-    if (path === '/' || path === '/health' || path === '/api/health') {
+    if (path === '/health' || path === '/api/health') {
       return json({ status: 'ok', service: 'gins-rules', timestamp: Date.now() });
     }
 
     if (path.startsWith('/ruleset/')) {
-      return handleFeed(path, url, env);
+      return handleFeed(request, path, url, env);
     }
 
     if (path === '/workflow/build-complete' && request.method === 'POST') {
       return handleBuildComplete(request, env);
     }
 
-    return new Response('Not Found', { status: 404 });
+    // Fall through to static assets (dashboard, icons, etc.)
+    return env.ASSETS.fetch(request);
   },
 
   // ============================================================
@@ -129,7 +130,7 @@ export class BuildWorkflow extends WorkflowEntrypoint<Env, BuildStats> {
 // /ruleset/:file — Merged subscription
 // ============================================================
 
-async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
+async function handleFeed(request: Request, path: string, url: URL, env: Env): Promise<Response> {
   const parts = path.replace('/ruleset/', '').split('/');
   
   let app: string | null = null;
@@ -181,8 +182,6 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
     return new Response('Not Found', { status: 404 });
   }
 
-  const pagesDomain = url.searchParams.get('domain') ?? env.PAGES_DOMAIN ?? 'rules.ichimarugin728.dev';
-
   if (!['proxy', 'direct', 'reject', 'ip'].includes(category)) {
     return new Response('Invalid category', { status: 400 });
   }
@@ -209,7 +208,7 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
   };
 
   const dir = app ? appToDir[app] : (extMap[ext] ?? ext);
-  
+
   if (!dir) return new Response('Invalid app or extension', { status: 400 });
 
   let targetFile = `${name}.${ext}`;
@@ -217,10 +216,18 @@ async function handleFeed(path: string, url: URL, env: Env): Promise<Response> {
   if (dir === 'text' && category === 'ip' && ext === 'list' && !targetFile.includes('.ip.')) {
     targetFile = targetFile.replace('.list', '.ip.list');
   }
-  
-  const targetUrl = `https://${pagesDomain}/ruleset/${dir}/${category}/${targetFile}`;
 
-  return Response.redirect(targetUrl, 302);
+  // Serve directly from Workers Assets — no redirect round-trip
+  const assetPath = `/ruleset/${dir}/${category}/${targetFile}`;
+  const assetRequest = new Request(new URL(assetPath, url.origin).toString(), {
+    method: 'GET',
+    headers: request.headers,
+  });
+  const response = await env.ASSETS.fetch(assetRequest);
+  if (response.status === 404) {
+    return new Response('Rule file not found', { status: 404 });
+  }
+  return response;
 }
 
 // ============================================================

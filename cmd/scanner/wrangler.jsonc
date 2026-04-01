@@ -3,21 +3,16 @@
   "name": "gins-rules",
   "main": "src/index.ts",
   "compatibility_date": "2026-02-24",
-  "placement": {
-    "mode": "smart"
-  },
+  "placement": { "mode": "smart" },
   "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../../compiled",
+    "binding": "ASSETS",
+    "not_found_handling": "none"
+  },
   "routes": [
     {
-      "pattern": "rules.ichimarugin728.dev/ruleset/*",
-      "zone_name": "ichimarugin728.dev",
-    },
-    {
-      "pattern": "rules.ichimarugin728.dev/workflow/*",
-      "zone_name": "ichimarugin728.dev",
-    },
-    {
-      "pattern": "rules.ichimarugin728.dev/api/*",
+      "pattern": "rules.ichimarugin728.dev/*",
       "zone_name": "ichimarugin728.dev",
     },
   ],
@@ -47,9 +42,6 @@
       "class_name": "BuildWorkflow",
     },
   ],
-  "vars": {
-    "PAGES_DOMAIN": "rules.ichimarugin728.dev",
-  },
   "observability": {
     "enabled": true,
   },

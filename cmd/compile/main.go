@@ -218,7 +218,10 @@ func main() {
 
 		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
 		compileQuanXList(name, fullRules, filepath.Join(quanxDir, category), isIP, category)
-		compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
+		// Skip egern merged IP file — all-IP YAML exceeds CF Pages 25 MiB limit
+		if !isIP {
+			compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
+		}
 		compileLoonList(name, fullRules, filepath.Join(loonDir, category))
 		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category))
 		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category))

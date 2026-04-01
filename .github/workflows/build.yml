@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
   id-token: write
 
 env:
@@ -100,17 +99,7 @@ jobs:
           cp -r dist/* ../compiled/
 
 
-      - name: Deploy to Pages
-        uses: cloudflare/wrangler-action@v3
-        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          packageManager: pnpm
-          workingDirectory: dashboard
-          command: pages deploy ../compiled --project-name=gins-rules --branch=main --commit-dirty=true
-
-      - name: Deploy Worker
+      - name: Deploy Worker with Assets
         uses: cloudflare/wrangler-action@v3
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         with:
@@ -118,7 +107,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: pnpm
           workingDirectory: cmd/scanner
-          command: deploy src/index.ts --config wrangler.jsonc
+          command: deploy --config wrangler.jsonc
           wranglerVersion: latest
 
       - name: Notify
