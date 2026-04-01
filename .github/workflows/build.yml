@@ -134,7 +134,7 @@ jobs:
         run: |
           # Use AWS CLI (built-in on runners) for high-speed differential sync
           # This automatically handles parallelism and only uploads changes
-          aws s3 sync compiled/ruleset s3://gins-rules/ruleset \
+          aws s3 sync compiled/ruleset s3://gins-rules-storage/ruleset \
             --endpoint-url https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com \
             --delete --no-progress
 
