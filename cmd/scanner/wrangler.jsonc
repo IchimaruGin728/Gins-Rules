@@ -6,7 +6,7 @@
   "placement": { "mode": "smart" },
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
-    "directory": "../../compiled",
+    "directory": "../../dashboard/dist",
     "binding": "ASSETS",
     "not_found_handling": "none"
   },

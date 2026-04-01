@@ -123,7 +123,8 @@ jobs:
           cd dashboard
           pnpm install
           pnpm build
-          cp -r dist/* ../compiled/
+          # No longer copying to compiled/ as assets directory in wrangler.jsonc 
+          # now points directly to dashboard/dist for stability.
 
       - name: Sync Rules to R2 (S3 Speed Sync)
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
