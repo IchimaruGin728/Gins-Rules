@@ -125,15 +125,18 @@ jobs:
           pnpm build
           cp -r dist/* ../compiled/
 
-      - name: Sync Rules to R2
+      - name: Sync Rules to R2 (S3 Speed Sync)
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
-          # Sync ruleset directory to R2 with parallel uploads
-          cd compiled
-          find ruleset -type f | xargs -I {} -P 8 npx wrangler r2 object put "gins-rules/{}" --file "{}"
+          # Use AWS CLI (built-in on runners) for high-speed differential sync
+          # This automatically handles parallelism and only uploads changes
+          aws s3 sync compiled/ruleset s3://gins-rules/ruleset \
+            --endpoint-url https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com \
+            --delete --no-progress
 
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
