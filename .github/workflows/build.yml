@@ -102,15 +102,16 @@ jobs:
         id: compile
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
+          go mod tidy
           go run ./cmd/compile
           cp -r public/* compiled/
 
           # Collect build stats
-          SERVICES=$(find source/proxy source/direct source/reject source/ip -name '*.txt' 2>/dev/null | wc -l | tr -d ' ')
+          SERVICES=$(find source/proxy source/direct source/reject source/ip source/upstream -name '*.txt' 2>/dev/null | wc -l | tr -d ' ')
           # Rules count: Domain rules + IP rules
-          ALL_TEXT_RULES=$(cat source/proxy/*.txt source/direct/*.txt source/reject/*.txt source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          IP_RULES_COUNT=$(cat source/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
-          ASN_FILES_COUNT=$(ls source/ip/asn-*.txt 2>/dev/null | wc -l | tr -d ' ')
+          ALL_TEXT_RULES=$(cat source/proxy/*.txt source/direct/*.txt source/reject/*.txt source/ip/*.txt source/upstream/proxy/*.txt source/upstream/direct/*.txt source/upstream/reject/*.txt source/upstream/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          IP_RULES_COUNT=$(cat source/ip/*.txt source/upstream/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
+          ASN_FILES_COUNT=$(ls source/ip/asn-*.txt source/upstream/ip/asn-*.txt 2>/dev/null | wc -l | tr -d ' ')
           
           echo "services=$SERVICES" >> $GITHUB_OUTPUT
           echo "rules=$ALL_TEXT_RULES" >> $GITHUB_OUTPUT
