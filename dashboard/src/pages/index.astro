@@ -13,11 +13,19 @@ const sourceDir = path.resolve("..", "source");
 const apiBase = "https://rules.ichimarugin728.dev";
 
 function getServices(category: string): { name: string; lines: number }[] {
-    const dir = path.join(sourceDir, category);
+    // ASN rules are stored in /source/ip/ with "asn-" prefix, not in /source/asn/
+    const dir = category === "asn" ? path.join(sourceDir, "ip") : path.join(sourceDir, category);
     if (!fs.existsSync(dir)) return [];
     return fs
         .readdirSync(dir)
-        .filter((file: string) => file.endsWith(".txt"))
+        .filter((file: string) => {
+            if (!file.endsWith(".txt")) return false;
+            // IP category: exclude asn-* files
+            if (category === "ip") return !file.startsWith("asn-");
+            // ASN category: only include asn-* files
+            if (category === "asn") return file.startsWith("asn-");
+            return true;
+        })
         .map((file: string) => {
             const content = fs.readFileSync(path.join(dir, file), "utf-8");
             const lines = content
