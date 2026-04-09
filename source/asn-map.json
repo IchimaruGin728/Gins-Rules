@@ -1,0 +1,88 @@
+{
+  "services": {
+    "telegram": {
+      "asns": [62041, 62014, 59930, 44907, 211157],
+      "org": "Telegram Messenger Inc"
+    },
+    "cloudflare": {
+      "asns": [13335, 209242, 395747, 133877],
+      "org": "Cloudflare Inc"
+    },
+    "google": {
+      "asns": [15169, 36040, 43515, 16591, 19527],
+      "org": "Google LLC"
+    },
+    "amazon": {
+      "asns": [16509, 14618, 8987, 7224],
+      "org": "Amazon.com Inc"
+    },
+    "apple": {
+      "asns": [714, 6185, 2709],
+      "org": "Apple Inc"
+    },
+    "microsoft": {
+      "asns": [8075, 8068, 8069, 8070, 8071, 8072, 8073, 8074],
+      "org": "Microsoft Corporation"
+    },
+    "github": {
+      "asns": [36459, 54113],
+      "org": "GitHub Inc"
+    },
+    "discord": {
+      "asns": [393577, 836785],
+      "org": "Discord Inc"
+    },
+    "twitter": {
+      "asns": [13414, 35995],
+      "org": "Twitter Inc"
+    },
+    "netflix": {
+      "asns": [2906, 40027, 55095],
+      "org": "Netflix Inc"
+    },
+    "facebook": {
+      "asns": [32934, 54115, 63293],
+      "org": "Meta Platforms Inc"
+    },
+    "steam": {
+      "asns": [32590, 17012],
+      "org": "Valve Corporation"
+    },
+    "spotify": {
+      "asns": [8403],
+      "org": "Spotify AB"
+    },
+    "disney": {
+      "asns": [19679],
+      "org": "Disney Streaming Services"
+    },
+    "oracle": {
+      "asns": [31898],
+      "org": "Oracle Corporation"
+    },
+    "akamai": {
+      "asns": [16625, 20940, 3131, 33905, 34164, 34850, 43639, 53235, 54104],
+      "org": "Akamai Technologies"
+    },
+    "twitch": {
+      "asns": [46489],
+      "org": "Twitch Interactive Inc"
+    },
+    "alibaba": {
+      "asns": [37963, 45102, 132335],
+      "org": "Alibaba Group"
+    },
+    "tencent": {
+      "asns": [132203, 132591, 133478, 133543],
+      "org": "Tencent Cloud Computing"
+    },
+    "bytedance": {
+      "asns": [138690],
+      "org": "ByteDance Ltd"
+    },
+    "baidu": {
+      "asns": [55967, 134177],
+      "org": "Baidu Inc"
+    }
+  }
+}

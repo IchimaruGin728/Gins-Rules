@@ -131,5 +131,12 @@
     "category": "proxy",
     "target": "ai-other",
     "enabled": true
+  },
+  {
+    "name": "Telegram Official CIDR",
+    "url": "https://core.telegram.org/resources/cidr.txt",
+    "category": "ip",
+    "target": "asn-telegram",
+    "enabled": true
   }
 ]

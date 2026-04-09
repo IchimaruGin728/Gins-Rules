@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -13,7 +14,29 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// ASNMap mirrors source/asn-map.json for MMDB generation
+type ASNMapDef struct {
+	Services map[string]struct {
+		ASNs []int  `json:"asns"`
+		Org  string `json:"org"`
+	} `json:"services"`
+}
+
+func loadASNMap(root string) ASNMapDef {
+	var m ASNMapDef
+	data, err := os.ReadFile(filepath.Join(root, "source", "asn-map.json"))
+	if err != nil {
+		fmt.Printf("  [WARN] asn-map.json not found, ASN MMDB will have no ASN numbers\n")
+		return m
+	}
+	_ = json.Unmarshal(data, &m)
+	return m
+}
+
 func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
+	root := findRoot()
+	asnMapDef := loadASNMap(root)
+
 	// 1. GeoIP MMDB
 	writerIP, _ := mmdbwriter.New(mmdbwriter.Options{
 		DatabaseType: "GeoLite2-Country",
@@ -45,20 +68,41 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 			}
 
 			if category == "asn" {
-				// name is "asn-1234"
-				asnStr := strings.TrimPrefix(strings.ToLower(name), "asn-")
-				var asnVal uint32
-				fmt.Sscanf(asnStr, "%d", &asnVal)
+				// name is e.g. "asn-telegram" — strip prefix to get service name
+				svcName := strings.TrimPrefix(strings.ToLower(name), "asn-")
+
+				// Look up ASN numbers from asn-map.json
+				svcDef, hasDef := asnMapDef.Services[svcName]
 
 				for _, cidr := range rules.IPCIDR {
 					_, network, err := net.ParseCIDR(cidr)
 					if err != nil {
 						continue
 					}
-					writerASN.Insert(network, mmdbtype.Map{
-						"autonomous_system_number": mmdbtype.Uint32(asnVal),
-						"autonomous_system_organization": mmdbtype.String(tag),
+
+					// Write GeoIP entry (tag-based, for geoip:asn-telegram usage)
+					writerIP.Insert(network, mmdbtype.Map{
+						"country": mmdbtype.Map{
+							"iso_code": mmdbtype.String(tag),
+						},
 					})
+
+					// Write ASN entries — one per ASN number in the map
+					if hasDef && len(svcDef.ASNs) > 0 {
+						for _, asnNum := range svcDef.ASNs {
+							writerASN.Insert(network, mmdbtype.Map{
+								"autonomous_system_number":       mmdbtype.Uint32(uint32(asnNum)),
+								"autonomous_system_organization": mmdbtype.String(svcDef.Org),
+							})
+						}
+					} else {
+						// Fallback: write with org name only, ASN = 0
+						fmt.Printf("  [WARN] No ASN mapping for service '%s', writing org-only entry\n", svcName)
+						writerASN.Insert(network, mmdbtype.Map{
+							"autonomous_system_number":       mmdbtype.Uint32(0),
+							"autonomous_system_organization": mmdbtype.String(tag),
+						})
+					}
 				}
 			}
 		}
@@ -80,6 +124,7 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 	fmt.Printf("  [MMDB] Created geoip.mmdb, geoasn.mmdb\n")
 	return nil
 }
+
 
 func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 	geositeList := &router.GeoSiteList{}

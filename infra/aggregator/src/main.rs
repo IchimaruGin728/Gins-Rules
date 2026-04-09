@@ -42,19 +42,19 @@ struct AsnTarget {
 }
 
 const ASN_TARGETS: &[AsnTarget] = &[
-    AsnTarget { name: "asn-cloudflare", asns: &[13335] },
-    AsnTarget { name: "asn-google", asns: &[15169, 396982] },
-    AsnTarget { name: "asn-microsoft", asns: &[8075] },
-    AsnTarget { name: "asn-amazon", asns: &[16509, 14618] },
-    AsnTarget { name: "asn-facebook", asns: &[32934] },
-    AsnTarget { name: "asn-telegram", asns: &[62041, 62014, 59930, 44907] },
-    AsnTarget { name: "asn-netflix", asns: &[2906] },
-    AsnTarget { name: "asn-github", asns: &[36459] },
-    AsnTarget { name: "asn-twitter", asns: &[13414] },
-    AsnTarget { name: "asn-apple", asns: &[714, 6185] },
-    AsnTarget { name: "asn-discord", asns: &[49544] },
+    AsnTarget { name: "asn-cloudflare", asns: &[13335, 209242, 395747, 133877] },
+    AsnTarget { name: "asn-google", asns: &[15169, 396982, 36040, 43515, 16591, 19527] },
+    AsnTarget { name: "asn-microsoft", asns: &[8075, 8068, 8069, 8070, 8071, 8072, 8073, 8074] },
+    AsnTarget { name: "asn-amazon", asns: &[16509, 14618, 8987, 7224] },
+    AsnTarget { name: "asn-facebook", asns: &[32934, 54115, 63293] },
+    AsnTarget { name: "asn-telegram", asns: &[62041, 62014, 59930, 44907, 211157] },
+    AsnTarget { name: "asn-netflix", asns: &[2906, 40027, 55095] },
+    AsnTarget { name: "asn-github", asns: &[36459, 54113] },
+    AsnTarget { name: "asn-twitter", asns: &[13414, 35995] },
+    AsnTarget { name: "asn-apple", asns: &[714, 6185, 2709] },
+    AsnTarget { name: "asn-discord", asns: &[393577, 836785] },
     AsnTarget { name: "asn-spotify", asns: &[8403] },
-    AsnTarget { name: "asn-steam", asns: &[32590] },
+    AsnTarget { name: "asn-steam", asns: &[32590, 17012] },
     AsnTarget { name: "asn-disney", asns: &[19679] },
     AsnTarget { name: "asn-oracle", asns: &[31898] },
     AsnTarget { name: "asn-akamai", asns: &[16625, 20940, 3131, 33905, 34164, 34850, 43639, 53235, 54104] },
@@ -68,7 +68,7 @@ const ASN_TARGETS: &[AsnTarget] = &[
 #[tokio::main]
 async fn main() -> Result<()> {
     let root = find_root();
-    let ip_dir = root.join("source").join("ip");
+    let ip_dir = root.join("source").join("upstream").join("ip");
     let tmp_dir = root.join(".mmdb-cache");
 
     fs::create_dir_all(&ip_dir)?;

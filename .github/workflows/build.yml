@@ -59,6 +59,9 @@ jobs:
           go mod tidy
           go run cmd/sync/main.go
 
+      - name: Sync HE/RIPE BGP + Official CIDR (ASN Prefixes)
+        run: go run cmd/he/main.go
+
       - name: Commit Synced Rules
         id: sync
         run: |

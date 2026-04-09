@@ -8,7 +8,7 @@
   "assets": {
     "directory": "../../dashboard/dist",
     "binding": "ASSETS",
-    "not_found_handling": "none"
+    "not_found_handling": "404-page"
   },
   "routes": [
     {

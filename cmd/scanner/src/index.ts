@@ -183,7 +183,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     // Format A: ruleset/proxy/google.srs (Merged Default)
     // Format B: ruleset/shadowrocket/proxy.list (New App-specific Merged)
     // We check if parts[0] is a known app or a known category
-    const apps = ['singbox', 'mihomo', 'stash', 'surge', 'quanx', 'loon', 'egern', 'shadowrocket', 'surfboard'];
+    const apps = ['singbox', 'mihomo', 'stash', 'surge', 'quanx', 'loon', 'egern', 'shadowrocket', 'surfboard', 'exclave'];
     const categories = ['proxy', 'direct', 'reject', 'ip', 'asn'];
     
     if (apps.includes(parts[0])) {
@@ -225,7 +225,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     'mihomo': 'mihomo',
     'clash': 'mihomo',
     'stash': 'stash',
-    'surge': 'text',
+    'surge': 'surge',
     'quanx': 'quanx',
     'loon': 'loon',
     'egern': 'egern',
