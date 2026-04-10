@@ -118,6 +118,7 @@ jobs:
           go mod edit -replace github.com/xtls/xray-core=github.com/xtls/xray-core@$XRAY_SHA
           
           go get google.golang.org/protobuf@latest
+          go get github.com/maxmind/mmdbwriter@latest
           go mod tidy
           go run ./cmd/compile
           cp -r public/* compiled/
