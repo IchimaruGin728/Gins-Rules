@@ -35,9 +35,12 @@ interface NotifyMessage {
 interface BuildStats {
   services: number;
   rules: number;
-  formats: number;
   ipRules: number;
   asnFiles: number;
+  srs: number;
+  mrs: number;
+  categoryCounts: Record<string, number>;
+  formats: number;
   timestamp: string;
 }
 
@@ -329,21 +332,24 @@ async function generateDailySummary(env: Env, stats: BuildStats): Promise<string
   });
 
   const domainRules = stats.rules - (stats.ipRules || 0);
+  const srsRate = ((stats.srs / stats.services) * 100).toFixed(0);
+  const mrsRate = ((stats.mrs / stats.services) * 100).toFixed(0);
+
   const prompt = `你是一个网络基础设施与路由专家。请按照以下严格格式撰写双语构建报告。
 
 要求：
 - 必须输出两段文字，中间用 "---SPLIT---" 分隔。
-- 第一段（中文）：标题使用 *加粗*，核心数据使用 \`行内代码\`。必须包含 "${stats.services} 服务运行平稳"、"${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录已更新"。
+- 第一段（中文）：标题使用 *加粗*，核心数据使用 \`行内代码\`。必须包含 "🛡️ Gins-Rules 报告"、"\`${stats.services}\` 个分流服务活跃中"、"已更新 \`${domainRules}\` 条域名规则及 \`${stats.ipRules}\` 条 IP 记录"、"二进制编译率：\`SRS ${srsRate}% / MRS ${mrsRate}%\`"。
 - 第二段（英文）：对应中文的技术化翻译，保持极客感，使用相应的 Markdown 格式。
 - 每段结尾：必须加上 (Updated ${date})。
 - 拒绝任何其他多余的解释、前言或总结词。
 
 示例输出：
-*🛡️ Gins-Rules 每日报告*
-✅ \`${stats.services}\` 服务运行平稳，\`${domainRules}\` 条域名规则及 \`${stats.ipRules}\` 条 IP 记录已更新，一切尽在掌握 🛠️。 (Updated ${date})
+*🛡️ Gins-Rules 报告*
+✅ \`${stats.services}\` 个分流服务活跃中，已更新 \`${domainRules}\` 条域名规则及 \`${stats.ipRules}\` 条 IP 记录。二进制编译率：\`SRS ${srsRate}% / MRS ${mrsRate}%\`。 (Updated ${date})
 ---SPLIT---
-*🛡️ Gins-Rules Daily Report*
-✅ \`${stats.services}\` services online, \`${domainRules}\` domain rules and \`${stats.ipRules}\` IP records synchronization complete. Engineering status: OK 🛠️. (Updated ${date})
+*🛡️ Gins-Rules Report*
+✅ \`${stats.services}\` routing services active. Synchronized \`${domainRules}\` domain rules and \`${stats.ipRules}\` IP records. Binary compilation: \`SRS ${srsRate}% / MRS ${mrsRate}%\`. (Updated ${date})
 
 直接输出消息内容。`;
 

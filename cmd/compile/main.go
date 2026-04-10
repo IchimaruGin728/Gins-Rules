@@ -32,11 +32,13 @@ type SingBoxRule struct {
 }
 
 type Stats struct {
-	Files          int            `json:"files"`
+	Services       int            `json:"services"`
 	Rules          int            `json:"rules"`
+	IPRules        int            `json:"ipRules"`
+	ASNFiles       int            `json:"asnFiles"`
 	SRS            int            `json:"srs"`
 	MRS            int            `json:"mrs"`
-	CategoryCounts map[string]int `json:"category_counts"`
+	CategoryCounts map[string]int `json:"categoryCounts"`
 	Formats        int            `json:"formats"`
 }
 
@@ -223,8 +225,14 @@ func main() {
 			fmt.Printf("  [%-6s] %-20s %3d rules  srs:%s  mrs:%s\n",
 				category, name, count, srsIcon, mrsIcon)
 
-			stats.Files++
+			stats.Services++
 			stats.Rules += count
+			if isIP {
+				stats.IPRules += count
+			}
+			if strings.HasPrefix(name, "asn-") {
+				stats.ASNFiles++
+			}
 			stats.CategoryCounts[category] += count
 
 			// Add to big merge
