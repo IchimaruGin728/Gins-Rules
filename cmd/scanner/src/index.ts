@@ -148,13 +148,21 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     path === '/ruleset/xray/geosite.dat' || 
     path === '/ruleset/xray/geoip.dat' ||
     path === '/ruleset/v2ray/geosite.dat' ||
-    path === '/ruleset/v2ray/geoip.dat'
+    path === '/ruleset/v2ray/geoip.dat' ||
+    path === '/ruleset/geoip.mmdb' ||
+    path === '/ruleset/geoasn.mmdb'
   ) {
     // Map both /xray/ and /v2ray/ to the same R2 directory 'ruleset/xray/'
-    const key = path.replace(/^\/(ruleset)\/(v2ray|xray)\//, '$1/xray/').replace(/^\//, '');
+    // BUT for mmdb files at the root of /ruleset/, keep the path as is (removing leading slash)
+    let key: string;
+    if (path.endsWith('.mmdb')) {
+        key = path.replace(/^\//, '');
+    } else {
+        key = path.replace(/^\/(ruleset)\/(v2ray|xray)\//, '$1/xray/').replace(/^\//, '');
+    }
     
     const r2Object = await env.RULES_BUCKET.get(key);
-    if (!r2Object) return new Response('V2Ray/Xray DAT Asset Not Found', { status: 404 });
+    if (!r2Object) return new Response('Binary Asset Not Found in R2: ' + key, { status: 404 });
     const headers = new Headers();
     r2Object.writeHttpMetadata(headers);
     headers.set('etag', r2Object.httpEtag);
