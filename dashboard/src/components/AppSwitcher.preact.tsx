@@ -44,6 +44,20 @@ export default function AppSwitcher() {
             )}
           </button>
         ))}
+        
+        {/* Divider */}
+        <div class="w-px h-6 bg-white/10 mx-2 hidden sm:block"></div>
+
+        {/* Icon Hub Link */}
+        <a
+          href="/icons"
+          class="flex items-center gap-2 px-3 py-2 rounded-xl border border-transparent text-brand-primary hover:text-white hover:bg-brand-primary/20 transition-all duration-300 group"
+        >
+          <div class="i-ph-shapes-duotone text-lg group-hover:rotate-12 transition-transform"></div>
+          <span class="text-[11px] font-black uppercase tracking-widest">
+            Icon Hub
+          </span>
+        </a>
       </div>
 
       {showOptimizedToggle && (

@@ -59,6 +59,10 @@ jobs:
           go mod tidy
           go run cmd/sync/main.go
 
+      - name: Sync Icon Libraries (Gins-Icons)
+        run: |
+          go run cmd/icons/main.go
+
       - name: Sync HE/RIPE BGP + Official CIDR (ASN Prefixes)
         run: go run cmd/he/main.go
 
