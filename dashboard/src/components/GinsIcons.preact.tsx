@@ -10,6 +10,7 @@ interface Icon {
 export default function GinsIcons({ initialIcons }: { initialIcons: Icon[] }) {
   const [search, setSearch] = useState("");
   const [activeSource, setActiveSource] = useState("All");
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const sources = useMemo(() => {
     const s = new Set(initialIcons.map((i) => i.source));
@@ -26,7 +27,8 @@ export default function GinsIcons({ initialIcons }: { initialIcons: Icon[] }) {
 
   const copyToClipboard = (url: string) => {
     navigator.clipboard.writeText(url);
-    // Simple toast could be added here
+    setCopiedUrl(url);
+    setTimeout(() => setCopiedUrl(null), 2000);
   };
 
   return (
@@ -96,8 +98,15 @@ export default function GinsIcons({ initialIcons }: { initialIcons: Icon[] }) {
               </p>
             </div>
 
-            {/* Copy Badge */}
-            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Copy Badge / Feedback */}
+            <div class={`absolute inset-0 flex items-center justify-center bg-brand-primary/90 transition-all duration-300 ${copiedUrl === icon.url ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              <div class="flex flex-col items-center gap-2">
+                <div class="i-ph-check-circle-fill text-3xl text-white"></div>
+                <span class="text-[10px] font-black text-white uppercase tracking-widest">COPIED!</span>
+              </div>
+            </div>
+
+            <div class={`absolute top-2 right-2 transition-opacity ${copiedUrl === icon.url ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
               <div class="i-ph-copy-simple-bold text-brand-primary text-xs"></div>
             </div>
           </div>

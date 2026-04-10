@@ -65,9 +65,15 @@ func main() {
 
 	binDir := filepath.Join(root, "bin")
 	mihomoPath := findBinary("mihomo", binDir)
+	if mihomoPath == "" {
+		// Fallback for raw downloads without rename
+		mihomoPath = findBinary("mihomo-linux-amd64", binDir)
+	}
 	singboxPath := findBinary("sing-box", binDir)
 
-	fmt.Printf("\n  sing-box: %s (%s)\n", boolIcon(singboxPath != ""), singboxPath)
+	fmt.Printf("\n  [Diagnostic] Root: %s\n", root)
+	fmt.Printf("  [Diagnostic] BinDir: %s\n", binDir)
+	fmt.Printf("  sing-box: %s (%s)\n", boolIcon(singboxPath != ""), singboxPath)
 	fmt.Printf("  mihomo:   %s (%s)\n\n", boolIcon(mihomoPath != ""), mihomoPath)
 
 	hasSingBox := singboxPath != ""
