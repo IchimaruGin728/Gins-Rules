@@ -96,6 +96,7 @@ pnpm dev
 ## 🤝 Credits
 
 - [xream/geoip](https://github.com/xream/geoip) — Primary GeoIP & ASN source.
-- [Blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) — High-quality AI rule sources.
+- [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) — High-quality service rule sources.
+- [fmz200/wool_scripts](https://github.com/fmz200/wool_scripts) — Comprehensive Loon/Surge rule collections.
 - [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat).
 - Powered by **Cloudflare Workers** & **R2 Storage**.
