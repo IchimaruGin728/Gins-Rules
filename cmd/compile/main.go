@@ -319,8 +319,8 @@ func main() {
 	}
 
 	fmt.Printf("\n============================================================\n")
-	fmt.Printf("  Done! %d files, %d total rules\n", stats.Files, stats.Rules)
-	fmt.Printf("  SRS: %d/%d  MRS: %d/%d\n", stats.SRS, stats.Files, stats.MRS, stats.Files)
+	fmt.Printf("  Done! %d files, %d total rules\n", stats.Services, stats.Rules)
+	fmt.Printf("  SRS: %d/%d  MRS: %d/%d\n", stats.SRS, stats.Services, stats.MRS, stats.Services)
 	fmt.Printf("  Output: %s\n", compiledDir)
 	fmt.Println("============================================================")
 
