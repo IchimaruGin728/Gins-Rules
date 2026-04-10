@@ -29,3 +29,17 @@ trae.ai
 ttwebview.com
 keyword:musical.ly
 keyword:tiktok
+full:p16-tiktokcdn-com.akamaized.net
+byteoversea.com
+ibytedtos.com
+ibyteimg.com
+ipstatp.com
+muscdn.com
+musical.ly
+sgpstatp.com
+snssdk.com
+tik-tokapi.com
+tiktok.com
+tiktokv.com
+ttwstatic.com
+keyword:tiktokcdn
