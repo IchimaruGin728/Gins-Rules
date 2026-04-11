@@ -70,6 +70,10 @@ export default {
       return handleFeed(request, path, url, env);
     }
 
+    if (path === '/Gins-Icons.json') {
+      return handleIconsCatalog(request, env);
+    }
+
     // 2. Static Assets (Dashboard components & Canonical Rules)
     // We try to serve the exact file or a matching directory index first.
     try {
@@ -285,6 +289,24 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
   return new Response(r2Object.body, { headers });
 }
 
+async function handleIconsCatalog(request: Request, env: Env): Promise<Response> {
+  const assetResp = await (env.ASSETS as any).fetch(
+    new Request(new URL('/icons-catalog.json', request.url).toString(), request),
+  );
+
+  if (assetResp.status === 404) {
+    return new Response('Icons catalog not found', { status: 404 });
+  }
+
+  const headers = new Headers(assetResp.headers);
+  headers.set('Content-Type', 'application/json; charset=utf-8');
+  headers.set('Access-Control-Allow-Origin', '*');
+  return new Response(assetResp.body, {
+    status: assetResp.status,
+    headers,
+  });
+}
+
 // ============================================================
 // /workflow/build-complete — GitHub Actions trigger
 // ============================================================
@@ -443,7 +465,11 @@ function corsHeaders(): Record<string, string> {
 }
 
 function normalizeBuildStats(payload: BuildStats | BuildCompletePayload): BuildStats {
-  const source = 'metrics' in payload && payload.metrics ? payload.metrics : payload;
+  const source: Partial<BuildStats> & { icons_total?: number } =
+    'metrics' in payload && payload.metrics
+      ? payload.metrics
+      : (payload as Partial<BuildStats> & { icons_total?: number });
+
   return {
     services: Number(source.services ?? 0),
     rules: Number(source.rules ?? 0),
