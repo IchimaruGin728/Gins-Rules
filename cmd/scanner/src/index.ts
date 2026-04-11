@@ -44,6 +44,11 @@ interface BuildStats {
   timestamp: string;
 }
 
+interface BuildCompletePayload {
+  metrics?: Partial<BuildStats> & { icons_total?: number };
+  timestamp?: string;
+}
+
 // ============================================================
 // HTTP Handler
 // ============================================================
@@ -291,7 +296,8 @@ async function handleBuildComplete(request: Request, env: Env): Promise<Response
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const stats: BuildStats = await request.json();
+  const payload = await request.json() as BuildStats | BuildCompletePayload;
+  const stats = normalizeBuildStats(payload);
 
   // Use build timestamp as ID to deduplicate (GitHub Actions 'on push' might trigger twice)
   // Format: 20260311T120000Z
@@ -331,9 +337,9 @@ async function generateDailySummary(env: Env, stats: BuildStats): Promise<string
     timeZone: 'Asia/Singapore',
   });
 
-  const domainRules = stats.rules - (stats.ipRules || 0);
-  const srsRate = ((stats.srs / stats.services) * 100).toFixed(0);
-  const mrsRate = ((stats.mrs / stats.services) * 100).toFixed(0);
+  const domainRules = Math.max(0, stats.rules - (stats.ipRules || 0));
+  const srsRate = stats.services > 0 ? ((stats.srs / stats.services) * 100).toFixed(0) : '0';
+  const mrsRate = stats.services > 0 ? ((stats.mrs / stats.services) * 100).toFixed(0) : '0';
 
   const prompt = `你是一个网络基础设施与路由专家。请按照以下严格格式撰写双语构建报告。
 
@@ -433,5 +439,20 @@ function corsHeaders(): Record<string, string> {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
+  };
+}
+
+function normalizeBuildStats(payload: BuildStats | BuildCompletePayload): BuildStats {
+  const source = 'metrics' in payload && payload.metrics ? payload.metrics : payload;
+  return {
+    services: Number(source.services ?? 0),
+    rules: Number(source.rules ?? 0),
+    ipRules: Number(source.ipRules ?? 0),
+    asnFiles: Number(source.asnFiles ?? 0),
+    srs: Number(source.srs ?? 0),
+    mrs: Number(source.mrs ?? 0),
+    categoryCounts: source.categoryCounts ?? {},
+    formats: Number(source.formats ?? 0),
+    timestamp: String(source.timestamp ?? ('timestamp' in payload ? payload.timestamp : '') ?? ''),
   };
 }
