@@ -188,6 +188,8 @@ jobs:
         run: |
           # Read categories and metrics from the compiler summary
           SUMMARY=$(cat compiled/ruleset/build-summary.json 2>/dev/null || echo "{}")
+          ICONS_HASH=$(cat source/icons-hash.json 2>/dev/null || echo "{}")
+          ICONS_TOTAL=$(jq 'length' dashboard/public/icons-catalog.json 2>/dev/null || echo "0")
           
           # Construct the refined JSON payload
           PAYLOAD=$(jq -n \
@@ -196,6 +198,8 @@ jobs:
             --arg sha "${{ github.sha }}" \
             --arg trigger "${{ github.event_name }}" \
             --argjson stats "$SUMMARY" \
+            --argjson icons_hash "$ICONS_HASH" \
+            --argjson icons_total "$ICONS_TOTAL" \
             --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '{
               project: $project,
@@ -204,7 +208,12 @@ jobs:
                 sha: $sha,
                 trigger: $trigger
               },
-              metrics: $stats,
+              metrics: ($stats + {
+                icons_total: $icons_total
+              }),
+              artifacts: {
+                icons: $icons_hash
+              },
               timestamp: $time
             }')
 
