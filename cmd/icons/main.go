@@ -34,6 +34,11 @@ type RawIcon struct {
 	Tag  string `json:"tag"` // Some sources use tag instead of name
 }
 
+type iconNameKey struct {
+	name string
+	url  string
+}
+
 func main() {
 	root := findRoot()
 	configPath := filepath.Join(root, "source", "icons.json")
@@ -91,8 +96,13 @@ func main() {
 		if allIcons[i].Source != allIcons[j].Source {
 			return allIcons[i].Source < allIcons[j].Source
 		}
-		return strings.ToLower(allIcons[i].Name) < strings.ToLower(allIcons[j].Name)
+		if strings.ToLower(allIcons[i].Name) != strings.ToLower(allIcons[j].Name) {
+			return strings.ToLower(allIcons[i].Name) < strings.ToLower(allIcons[j].Name)
+		}
+		return allIcons[i].URL < allIcons[j].URL
 	})
+
+	allIcons = assignStableIconNames(allIcons)
 
 	finalData, _ := json.MarshalIndent(allIcons, "", "  ")
 
@@ -103,7 +113,7 @@ func main() {
 	// 2. Generate Change Fingerprint (SHA256)
 	hash := sha256.Sum256(finalData)
 	hashStr := hex.EncodeToString(hash[:])
-	
+
 	hashJSON, _ := json.Marshal(map[string]string{
 		"sha256":    hashStr,
 		"total":     fmt.Sprintf("%d", len(allIcons)),
@@ -149,12 +159,9 @@ func fetchAndNormalize(src IconSource) ([]NormalizedIcon, error) {
 		if name == "" {
 			// Extract name from URL if missing
 			parts := strings.Split(icon.URL, "/")
-			name = strings.TrimSuffix(parts[len(parts)-1], ".png")
+			name = parts[len(parts)-1]
 		}
-
-		// Cleanup common name noise
-		name = strings.ReplaceAll(name, "_", " ")
-		name = strings.ReplaceAll(name, "-", " ")
+		name = strings.TrimSpace(name)
 
 		id := icon.URL
 		if seen[id] {
@@ -173,13 +180,58 @@ func fetchAndNormalize(src IconSource) ([]NormalizedIcon, error) {
 	return results, nil
 }
 
+func assignStableIconNames(icons []NormalizedIcon) []NormalizedIcon {
+	seenByNameURL := make(map[iconNameKey]string)
+	seenByBaseName := make(map[string]int)
+
+	for i := range icons {
+		baseName := strings.TrimSpace(icons[i].Name)
+		if baseName == "" {
+			baseName = icons[i].URL
+		}
+
+		key := iconNameKey{
+			name: strings.ToLower(baseName),
+			url:  icons[i].URL,
+		}
+		if assigned, ok := seenByNameURL[key]; ok {
+			icons[i].Name = assigned
+			continue
+		}
+
+		baseKey := strings.ToLower(baseName)
+		index := seenByBaseName[baseKey]
+		assigned := baseName
+		if index > 0 {
+			assigned = appendNameSuffix(baseName, index)
+		}
+
+		seenByBaseName[baseKey] = index + 1
+		seenByNameURL[key] = assigned
+		icons[i].Name = assigned
+	}
+
+	return icons
+}
+
+func appendNameSuffix(name string, index int) string {
+	ext := filepath.Ext(name)
+	base := strings.TrimSuffix(name, ext)
+	if ext == "" {
+		return fmt.Sprintf("%s(%d)", name, index)
+	}
+	return fmt.Sprintf("%s(%d)%s", base, index, ext)
+}
+
 // extractIcons attempts to find icon arrays in various nested structures
 func extractIcons(data []byte) []RawIcon {
 	var result []RawIcon
 
 	// 1. Try if it's a direct array
 	if err := json.Unmarshal(data, &result); err == nil && len(result) > 0 {
-		if result[0].URL != "" { return result }
+		if result[0].URL != "" {
+			return result
+		}
 	}
 
 	// 2. Try generic map search
@@ -197,7 +249,7 @@ func extractIcons(data []byte) []RawIcon {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
