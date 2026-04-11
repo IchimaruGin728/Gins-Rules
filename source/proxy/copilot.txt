@@ -1,5 +1,8 @@
+api.githubcopilot.com
 copilot-proxy.githubusercontent.com
 copilot-telemetry.githubusercontent.com
 copilot.github.com
+copilot.microsoft.com
 default.exp-tas.com
+full:sydney.bing.com
 githubcopilot.com

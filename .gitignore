@@ -18,6 +18,7 @@ bun.lockb
 
 # Rules Source Upstream (TXT Whitelist)
 source/upstream/*
+!source/upstream/*/
 !source/upstream/**/*.txt
 source/ip/*
 !source/ip/*.txt

@@ -1,6 +1,7 @@
 ai.com
 api.openai.com
 auth0.openai.com
+chat.com
 chat.openai.com
 chatgpt.com
 chatgpt.livekit.cloud
@@ -23,4 +24,5 @@ openai.com
 openaiapi-site.azureedge.net
 openaicom.imgix.net
 platform.openai.com
+sora.com
 turn.livekit.cloud

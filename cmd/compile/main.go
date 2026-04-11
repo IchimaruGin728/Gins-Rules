@@ -42,6 +42,15 @@ type Stats struct {
 	Formats        int            `json:"formats"`
 }
 
+var aiRuleNames = []string{
+	"ai-other",
+	"apple-intelligence",
+	"claude",
+	"copilot",
+	"gemini",
+	"openai",
+}
+
 func main() {
 	root := findRoot()
 	compiledDir := filepath.Join(root, "compiled")
@@ -79,10 +88,12 @@ func main() {
 	hasSingBox := singboxPath != ""
 	hasMihomo := mihomoPath != ""
 
+	outputCategories := []string{"proxy", "direct", "reject", "ip", "asn", "ai"}
+
 	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir, surgeDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
-		for _, cat := range []string{"proxy", "direct", "reject", "ip", "asn"} {
+		for _, cat := range outputCategories {
 			os.MkdirAll(filepath.Join(dir, cat), 0o755)
 		}
 	}
@@ -104,6 +115,7 @@ func main() {
 	for _, cat := range categories {
 		categoryMergedRules[cat] = Rules{}
 	}
+	categoryMergedRules["ai"] = Rules{}
 
 	for _, category := range categories {
 		ruleNames := make(map[string]bool)
@@ -245,19 +257,26 @@ func main() {
 			catRules := categoryMergedRules[category]
 			catRules = mergeRules(catRules, rules)
 			categoryMergedRules[category] = catRules
+
+			if isAIRuleName(name) {
+				aiRules := categoryMergedRules["ai"]
+				aiRules = mergeRules(aiRules, rules)
+				categoryMergedRules["ai"] = aiRules
+				compileDerivedCategoryRule(name, rules, singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir, surgeDir, hasSingBox, hasMihomo, singboxPath, mihomoPath)
+			}
 		}
 	}
 
 	// Final step: Compile merged rules for each category
 	fmt.Println("\n  [Finalizing] Generating merged rule-sets...")
-	for _, category := range categories {
+	for _, category := range outputCategories {
 		fullRules := categoryMergedRules[category]
 		if len(fullRules.DomainSuffix)+len(fullRules.Domain)+len(fullRules.DomainKeyword)+len(fullRules.IPCIDR) == 0 {
 			continue
 		}
 
 		name := category
-		isIP := category == "ip"
+		isIP := category == "ip" || category == "asn"
 
 		// Compile to all formats
 		jsonPath := compileSingBoxJSON(name, fullRules, filepath.Join(singboxDir, category))
@@ -308,7 +327,7 @@ func main() {
 	}
 
 	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket", "surfboard", "exclave", "xray"} {
-		for _, cat := range categories {
+		for _, cat := range outputCategories {
 			dir := filepath.Join(rulesetDir, formatDir, cat)
 			entries, _ := os.ReadDir(dir)
 			var fileList []string
@@ -354,6 +373,64 @@ func copyParsersJS(root string, compiledDir string) {
 			fmt.Printf("  [SUCCESS] Distributed %s to compiled/ and dashboard/public/\n", p)
 		}
 	}
+}
+
+func isAIRuleName(name string) bool {
+	for _, candidate := range aiRuleNames {
+		if name == candidate {
+			return true
+		}
+	}
+	return false
+}
+
+func compileDerivedCategoryRule(
+	name string,
+	rules Rules,
+	singboxDir string,
+	mihomoDir string,
+	textDir string,
+	quanxDir string,
+	egernDir string,
+	loonDir string,
+	stashDir string,
+	shadowrocketDir string,
+	surfboardDir string,
+	exclaveDir string,
+	surgeDir string,
+	hasSingBox bool,
+	hasMihomo bool,
+	singboxPath string,
+	mihomoPath string,
+) {
+	const category = "ai"
+
+	jsonPath := compileSingBoxJSON(name, rules, filepath.Join(singboxDir, category))
+	if hasSingBox {
+		compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
+	}
+
+	yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), false)
+	if hasMihomo && len(rules.Domain)+len(rules.DomainSuffix) > 0 {
+		compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), "domain", mihomoPath)
+	}
+
+	stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), false)
+	if hasMihomo && len(rules.Domain)+len(rules.DomainSuffix) > 0 {
+		compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), "domain", mihomoPath)
+	}
+
+	compileTextList(name, rules, filepath.Join(textDir, category), false)
+	compileQuanXList(name, rules, filepath.Join(quanxDir, category), false, category)
+	compileEgernYAML(name, rules, filepath.Join(egernDir, category))
+	compileLoonList(name, rules, filepath.Join(loonDir, category))
+	compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
+	compileShadowrocketDomainset(name, rules, filepath.Join(shadowrocketDir, category))
+	compileLoonList(name, rules, filepath.Join(surgeDir, category))
+	compileSurgeDomainset(name, rules, filepath.Join(surgeDir, category))
+	compileLoonList(name, rules, filepath.Join(surfboardDir, category))
+	compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
+	compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
 }
 
 func sanitizeRules(rules Rules) Rules {

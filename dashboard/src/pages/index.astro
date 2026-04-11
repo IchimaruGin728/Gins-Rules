@@ -11,10 +11,15 @@ import GlobalAssets from "../components/GlobalAssets.preact";
 
 const sourceDir = path.resolve("..", "source");
 const apiBase = "https://rules.ichimarugin728.dev";
+const aiRuleNames = new Set(["ai-other", "apple-intelligence", "claude", "copilot", "gemini", "openai"]);
 
 function getServices(category: string): { name: string; lines: number }[] {
     // ASN rules are stored in /source/ip/ with "asn-" prefix, not in /source/asn/
-    const dir = category === "asn" ? path.join(sourceDir, "ip") : path.join(sourceDir, category);
+    const dir = category === "asn"
+        ? path.join(sourceDir, "ip")
+        : category === "ai"
+            ? path.join(sourceDir, "proxy")
+            : path.join(sourceDir, category);
     if (!fs.existsSync(dir)) return [];
     return fs
         .readdirSync(dir)
@@ -24,6 +29,7 @@ function getServices(category: string): { name: string; lines: number }[] {
             if (category === "ip") return !file.startsWith("asn-");
             // ASN category: only include asn-* files
             if (category === "asn") return file.startsWith("asn-");
+            if (category === "ai") return aiRuleNames.has(path.basename(file, ".txt"));
             return true;
         })
         .map((file: string) => {
@@ -40,7 +46,7 @@ function getServices(category: string): { name: string; lines: number }[] {
         );
 }
 
-const categories = [
+const baseCategories = [
     {
         id: "proxy",
         label: "Proxy",
@@ -73,6 +79,15 @@ const categories = [
     },
 ];
 
+const aiCategory = {
+    id: "ai",
+    label: "AI",
+    icon: "i-ph-sparkle-bold",
+    services: getServices("ai"),
+};
+
+const categories = [...baseCategories, aiCategory];
+
 const resourceParsers = [
     {
         name: "Quantumult X",
@@ -104,10 +119,10 @@ const sourceProviders = [
     "GitHub meta API",
 ];
 
-const totalServices = categories.reduce((sum, category) => {
+const totalServices = baseCategories.reduce((sum, category) => {
     return sum + category.services.length;
 }, 0);
-const totalRules = categories.reduce((sum, category) => {
+const totalRules = baseCategories.reduce((sum, category) => {
     return (
         sum +
         category.services.reduce((nested, service) => nested + service.lines, 0)

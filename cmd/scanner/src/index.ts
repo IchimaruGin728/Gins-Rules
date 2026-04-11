@@ -195,7 +195,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     // Format B: ruleset/shadowrocket/proxy.list (New App-specific Merged)
     // We check if parts[0] is a known app or a known category
     const apps = ['singbox', 'mihomo', 'stash', 'surge', 'quanx', 'loon', 'egern', 'shadowrocket', 'surfboard', 'exclave'];
-    const categories = ['proxy', 'direct', 'reject', 'ip', 'asn'];
+    const categories = ['proxy', 'direct', 'reject', 'ip', 'asn', 'ai'];
     
     if (apps.includes(parts[0])) {
       app = parts[0];
@@ -226,7 +226,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     return new Response('Not Found', { status: 404 });
   }
 
-  if (!['proxy', 'direct', 'reject', 'ip', 'asn'].includes(category)) {
+  if (!['proxy', 'direct', 'reject', 'ip', 'asn', 'ai'].includes(category)) {
     return new Response('Invalid category', { status: 400 });
   }
 
