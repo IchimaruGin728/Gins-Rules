@@ -42,6 +42,12 @@ type Stats struct {
 	Formats        int            `json:"formats"`
 }
 
+type mihomoRuleMode struct {
+	isIP     bool
+	behavior string
+	isEmpty  bool
+}
+
 var aiRuleNames = []string{
 	"ai-other",
 	"apple-intelligence",
@@ -188,29 +194,18 @@ func main() {
 				srsOK = compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 			}
 
-			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), isIP)
-			behavior := "domain"
-			if isIP {
-				behavior = "ipcidr"
-			}
+			mihomoMode := detectMihomoRuleMode(rules, isIP)
+			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), mihomoMode.isIP)
 			mrsOK := false
 			if hasMihomo {
-				// Safety check: Mihomo converter panics on empty payloads
-				isEmpty := false
-				if isIP && len(rules.IPCIDR) == 0 {
-					isEmpty = true
-				} else if !isIP && len(rules.Domain) == 0 && len(rules.DomainSuffix) == 0 {
-					isEmpty = true
-				}
-
-				if !isEmpty {
-					mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
+				if !mihomoMode.isEmpty {
+					mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), mihomoMode.behavior, mihomoPath)
 				}
 			}
 
-			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), isIP)
+			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), mihomoMode.isIP)
 			if hasMihomo && mrsOK {
-				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), behavior, mihomoPath)
+				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), mihomoMode.behavior, mihomoPath)
 			}
 
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
@@ -277,28 +272,17 @@ func main() {
 
 		name := category
 		isIP := category == "ip" || category == "asn"
+		mihomoMode := detectMihomoRuleMode(fullRules, isIP)
 
 		// Compile to all formats
 		jsonPath := compileSingBoxJSON(name, fullRules, filepath.Join(singboxDir, category))
 		if hasSingBox {
 			compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 		}
-		yamlPath := compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category), isIP)
+		yamlPath := compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category), mihomoMode.isIP)
 		if hasMihomo {
-			behavior := "domain"
-			if isIP {
-				behavior = "ipcidr"
-			}
-			// Safety check: Mihomo converter panics on empty payloads
-			isEmpty := false
-			if isIP && len(fullRules.IPCIDR) == 0 {
-				isEmpty = true
-			} else if !isIP && len(fullRules.Domain) == 0 && len(fullRules.DomainSuffix) == 0 {
-				isEmpty = true
-			}
-
-			if !isEmpty {
-				compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), behavior, mihomoPath)
+			if !mihomoMode.isEmpty {
+				compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), mihomoMode.behavior, mihomoPath)
 			}
 		}
 
@@ -651,6 +635,25 @@ func compileMihomoYAML(name string, rules Rules, outDir string, isIP bool) strin
 	yamlPath := filepath.Join(outDir, name+".yaml")
 	os.WriteFile(yamlPath, []byte(strings.Join(lines, "\n")+"\n"), 0o644)
 	return yamlPath
+}
+
+func detectMihomoRuleMode(rules Rules, categoryIsIP bool) mihomoRuleMode {
+	hasIP := len(rules.IPCIDR) > 0
+	hasDomain := len(rules.DomainSuffix) > 0 || len(rules.Domain) > 0
+
+	if categoryIsIP || (hasIP && !hasDomain) {
+		return mihomoRuleMode{
+			isIP:     true,
+			behavior: "ipcidr",
+			isEmpty:  !hasIP,
+		}
+	}
+
+	return mihomoRuleMode{
+		isIP:     false,
+		behavior: "domain",
+		isEmpty:  !hasDomain,
+	}
 }
 
 func compileMihomoMRS(yamlPath, outDir, behavior, mihomoPath string) bool {
