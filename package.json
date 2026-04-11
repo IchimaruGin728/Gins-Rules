@@ -1,6 +1,7 @@
 {
   "name": "gins-rules",
   "private": true,
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "sync": "go run ./cmd/sync/",
     "compile": "go run ./cmd/compile/",
@@ -10,6 +11,6 @@
     "deploy": "pnpm build && wrangler deploy --config cmd/scanner/wrangler.jsonc"
   },
   "devDependencies": {
-    "wrangler": "^4.79.0"
+    "wrangler": "^4.81.1"
   }
 }

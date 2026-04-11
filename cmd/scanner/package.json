@@ -2,14 +2,14 @@
   "name": "gins-rules-worker",
   "type": "module",
   "version": "1.0.0",
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "latest",
-    "wrangler": "latest",
-    "typescript": "latest"
+    "@cloudflare/workers-types": "^4.20260411.1",
+    "typescript": "^6.0.2",
+    "wrangler": "^4.81.1"
   }
 }
