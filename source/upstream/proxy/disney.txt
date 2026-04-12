@@ -171,3 +171,4 @@ thewaltdisneycompany.com
 thisispolaris.com
 watchdisneyfe.com
 watchespn.com
+user-agent:Disney+*

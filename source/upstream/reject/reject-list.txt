@@ -177294,6 +177294,7 @@ gg.uuu9.com
 adm.myzaker.com
 ggs.myzaker.com
 push-android.myzaker.com
+user-agent:AVOS*
 full:appcloud.zhihu.com
 full:appcloud2.in.zhihu.com
 full:mqtt.zhihu.com

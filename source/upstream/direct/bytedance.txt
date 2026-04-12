@@ -367,4 +367,5 @@ ixigua.com
 ixiguavideo.com
 pstatp.com
 toutiao.com
+user-agent:TikTok*
 114.246.10.65/32

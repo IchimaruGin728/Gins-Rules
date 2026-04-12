@@ -47,10 +47,16 @@ cp4.cloudflare.com
 
 # --- Maps & Location Services ---
 full:gspe1-ssl.ls.apple.com
+full:gspe35-ssl.ls.apple.com
+full:gspe35-ssl.ls.apple.cn
+full:gs-loc.apple.com
+full:gs-loc-cn.apple.com
 full:gs.apple.com
 gc.apple.com
 full:gsp-ssl.ls.apple.com
 full:gsp64-ssl.ls.apple.com
+ls.apple.com
+ls.apple.cn
 
 # --- Push Notifications (APNs) ---
 push.apple.com

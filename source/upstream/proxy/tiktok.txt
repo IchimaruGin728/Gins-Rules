@@ -29,6 +29,7 @@ trae.ai
 ttwebview.com
 keyword:musical.ly
 keyword:tiktok
+user-agent:TikTok*
 full:p16-tiktokcdn-com.akamaized.net
 byteoversea.com
 ibytedtos.com
@@ -43,3 +44,4 @@ tiktok.com
 tiktokv.com
 ttwstatic.com
 keyword:tiktokcdn
+user-agent:TikTok*

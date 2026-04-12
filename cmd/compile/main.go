@@ -16,6 +16,8 @@ type Rules struct {
 	DomainKeyword []string
 	DomainRegex   []string
 	IPCIDR        []string
+	ProcessName   []string
+	UserAgent     []string
 }
 
 type SingBoxRuleSet struct {
@@ -183,7 +185,8 @@ func main() {
 			}
 
 			total := len(rules.DomainSuffix) + len(rules.Domain) +
-				len(rules.DomainKeyword) + len(rules.DomainRegex) + len(rules.IPCIDR)
+				len(rules.DomainKeyword) + len(rules.DomainRegex) + len(rules.IPCIDR) +
+				len(rules.ProcessName) + len(rules.UserAgent)
 			if total == 0 {
 				continue
 			}
@@ -211,13 +214,13 @@ func main() {
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
 			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP, category)
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category))
-			compileLoonList(name, rules, filepath.Join(loonDir, category))
-			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
+			compileLoonList(name, rules, filepath.Join(loonDir, category), true)
+			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true)
 			compileShadowrocketDomainset(name, rules, filepath.Join(shadowrocketDir, category))
-			compileLoonList(name, rules, filepath.Join(surgeDir, category))
+			compileLoonList(name, rules, filepath.Join(surgeDir, category), true)
 			compileSurgeDomainset(name, rules, filepath.Join(surgeDir, category))
-			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
-			compileLoonList(name, rules, filepath.Join(surfboardDir, category))
+			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true)
+			compileLoonList(name, rules, filepath.Join(surfboardDir, category), false)
 			compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
 			compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
 
@@ -266,7 +269,7 @@ func main() {
 	fmt.Println("\n  [Finalizing] Generating merged rule-sets...")
 	for _, category := range outputCategories {
 		fullRules := categoryMergedRules[category]
-		if len(fullRules.DomainSuffix)+len(fullRules.Domain)+len(fullRules.DomainKeyword)+len(fullRules.IPCIDR) == 0 {
+		if len(fullRules.DomainSuffix)+len(fullRules.Domain)+len(fullRules.DomainKeyword)+len(fullRules.IPCIDR)+len(fullRules.ProcessName)+len(fullRules.UserAgent) == 0 {
 			continue
 		}
 
@@ -289,12 +292,12 @@ func main() {
 		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
 		compileQuanXList(name, fullRules, filepath.Join(quanxDir, category), isIP, category)
 		compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
-		compileLoonList(name, fullRules, filepath.Join(loonDir, category))
-		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category))
+		compileLoonList(name, fullRules, filepath.Join(loonDir, category), true)
+		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category), true)
 		compileShadowrocketDomainset(name, fullRules, filepath.Join(shadowrocketDir, category))
-		compileLoonList(name, fullRules, filepath.Join(surgeDir, category))
+		compileLoonList(name, fullRules, filepath.Join(surgeDir, category), true)
 		compileSurgeDomainset(name, fullRules, filepath.Join(surgeDir, category))
-		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category))
+		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category), false)
 		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
 		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
 
@@ -407,12 +410,12 @@ func compileDerivedCategoryRule(
 	compileTextList(name, rules, filepath.Join(textDir, category), false)
 	compileQuanXList(name, rules, filepath.Join(quanxDir, category), false, category)
 	compileEgernYAML(name, rules, filepath.Join(egernDir, category))
-	compileLoonList(name, rules, filepath.Join(loonDir, category))
-	compileLoonList(name, rules, filepath.Join(shadowrocketDir, category))
+	compileLoonList(name, rules, filepath.Join(loonDir, category), true)
+	compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true)
 	compileShadowrocketDomainset(name, rules, filepath.Join(shadowrocketDir, category))
-	compileLoonList(name, rules, filepath.Join(surgeDir, category))
+	compileLoonList(name, rules, filepath.Join(surgeDir, category), true)
 	compileSurgeDomainset(name, rules, filepath.Join(surgeDir, category))
-	compileLoonList(name, rules, filepath.Join(surfboardDir, category))
+	compileLoonList(name, rules, filepath.Join(surfboardDir, category), false)
 	compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
 	compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
 }
@@ -530,6 +533,10 @@ func parseSource(path string) Rules {
 			r.DomainKeyword = append(r.DomainKeyword, line[8:])
 		case strings.HasPrefix(line, "regexp:"):
 			r.DomainRegex = append(r.DomainRegex, line[7:])
+		case strings.HasPrefix(line, "process:"):
+			r.ProcessName = append(r.ProcessName, line[8:])
+		case strings.HasPrefix(line, "user-agent:"):
+			r.UserAgent = append(r.UserAgent, line[11:])
 		case strings.Contains(line, "/"):
 			r.IPCIDR = append(r.IPCIDR, line)
 		default:
@@ -549,12 +556,16 @@ func mergeRules(a, b Rules) Rules {
 	a.DomainKeyword = append(a.DomainKeyword, b.DomainKeyword...)
 	a.DomainRegex = append(a.DomainRegex, b.DomainRegex...)
 	a.IPCIDR = append(a.IPCIDR, b.IPCIDR...)
+	a.ProcessName = append(a.ProcessName, b.ProcessName...)
+	a.UserAgent = append(a.UserAgent, b.UserAgent...)
 
 	a.DomainSuffix = unique(a.DomainSuffix)
 	a.Domain = unique(a.Domain)
 	a.DomainKeyword = unique(a.DomainKeyword)
 	a.DomainRegex = unique(a.DomainRegex)
 	a.IPCIDR = unique(a.IPCIDR)
+	a.ProcessName = unique(a.ProcessName)
+	a.UserAgent = unique(a.UserAgent)
 	return a
 }
 
@@ -728,6 +739,12 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool, catego
 			lines = append(lines, fmt.Sprintf("ip-cidr,%s,%s", cidr, policy))
 		}
 	}
+	for _, p := range rules.ProcessName {
+		lines = append(lines, fmt.Sprintf("process-name,%s,%s", p, policy))
+	}
+	for _, ua := range rules.UserAgent {
+		lines = append(lines, fmt.Sprintf("user-agent,%s,%s", ua, policy))
+	}
 
 	suffix := ".list"
 	if isIP {
@@ -789,7 +806,7 @@ func compileEgernYAML(name string, rules Rules, outDir string) {
 	os.WriteFile(filepath.Join(outDir, name+".yaml"), []byte(content), 0o644)
 }
 
-func compileLoonList(name string, rules Rules, outDir string) {
+func compileLoonList(name string, rules Rules, outDir string, includeSpecial bool) {
 	var lines []string
 
 	for _, d := range rules.DomainSuffix {
@@ -807,6 +824,14 @@ func compileLoonList(name string, rules Rules, outDir string) {
 			prefix = "IP-CIDR6"
 		}
 		lines = append(lines, fmt.Sprintf("%s,%s", prefix, cidr))
+	}
+	if includeSpecial {
+		for _, p := range rules.ProcessName {
+			lines = append(lines, fmt.Sprintf("PROCESS-NAME,%s", p))
+		}
+		for _, ua := range rules.UserAgent {
+			lines = append(lines, fmt.Sprintf("USER-AGENT,%s", ua))
+		}
 	}
 
 	suffix := ".list"

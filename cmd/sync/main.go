@@ -152,6 +152,10 @@ func processRules(content string) []string {
 				rules = append(rules, "full:"+val)
 			case "DOMAIN-KEYWORD", "HOST-KEYWORD":
 				rules = append(rules, "keyword:"+val)
+			case "PROCESS-NAME":
+				rules = append(rules, "process:"+val)
+			case "USER-AGENT":
+				rules = append(rules, "user-agent:"+val)
 			case "IP-CIDR", "IP-CIDR6":
 				rules = append(rules, val)
 				if !strings.Contains(line, ",") {

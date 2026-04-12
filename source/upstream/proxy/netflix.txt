@@ -35,6 +35,7 @@ keyword:apiproxy-device-prod-nlb-
 keyword:dualstack.apiproxy-
 keyword:dualstack.ichnaea-web-
 keyword:netflixdnstest
+user-agent:Argo*
 103.87.204.0/22
 107.23.255.0/26
 108.128.160.0/23
