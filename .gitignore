@@ -8,6 +8,9 @@ compiled/
 # Astro and build outputs
 .astro/
 dist/
+dashboard/public/Loon-Resource-Parser.js
+dashboard/public/QX-Resource-Parser.js
+dashboard/public/geo_location_checker.js
 
 # Rust
 **/target/
