@@ -739,11 +739,8 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool, catego
 			lines = append(lines, fmt.Sprintf("ip-cidr,%s,%s", cidr, policy))
 		}
 	}
-	for _, p := range rules.ProcessName {
-		lines = append(lines, fmt.Sprintf("process-name,%s,%s", p, policy))
-	}
 	for _, ua := range rules.UserAgent {
-		lines = append(lines, fmt.Sprintf("user-agent,%s,%s", ua, policy))
+		lines = append(lines, fmt.Sprintf("USER-AGENT,%s,%s", ua, policy))
 	}
 
 	suffix := ".list"
