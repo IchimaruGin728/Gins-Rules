@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type UpstreamSource struct {
@@ -116,7 +117,14 @@ func main() {
 }
 
 func fetchURL(url string) (string, error) {
-	resp, err := http.Get(url)
+	client := &http.Client{Timeout: 30 * time.Second}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("User-Agent", "Gins-Rules/1.0 (https://github.com/IchimaruGin728/Gins-Rules)")
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}

@@ -59,13 +59,15 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 					if err != nil {
 						continue
 					}
-					writerIP.Insert(network, mmdbtype.Map{
-						"country": mmdbtype.Map{
-							"iso_code": mmdbtype.String(tag),
-						},
-					})
+						if err := writerIP.Insert(network, mmdbtype.Map{
+							"country": mmdbtype.Map{
+								"iso_code": mmdbtype.String(tag),
+							},
+						}); err != nil {
+							fmt.Printf("  [WARN] geoip(mmdb) insert failed for %s: %v\n", cidr, err)
+						}
+					}
 				}
-			}
 
 			if category == "asn" {
 				// name is e.g. "asn-telegram" — strip prefix to get service name
@@ -81,30 +83,35 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 					}
 
 					// Write GeoIP entry (tag-based, for geoip:asn-telegram usage)
-					writerIP.Insert(network, mmdbtype.Map{
-						"country": mmdbtype.Map{
-							"iso_code": mmdbtype.String(tag),
-						},
-					})
-
-					// Write ASN entries — one per ASN number in the map
-					if hasDef && len(svcDef.ASNs) > 0 {
-						for _, asnNum := range svcDef.ASNs {
-							writerASN.Insert(network, mmdbtype.Map{
-								"autonomous_system_number":       mmdbtype.Uint32(uint32(asnNum)),
-								"autonomous_system_organization": mmdbtype.String(svcDef.Org),
-							})
+						if err := writerIP.Insert(network, mmdbtype.Map{
+							"country": mmdbtype.Map{
+								"iso_code": mmdbtype.String(tag),
+							},
+						}); err != nil {
+							fmt.Printf("  [WARN] geoip(mmdb) insert failed for %s: %v\n", cidr, err)
 						}
-					} else {
-						// Fallback: write with org name only, ASN = 0
-						fmt.Printf("  [WARN] No ASN mapping for service '%s', writing org-only entry\n", svcName)
-						writerASN.Insert(network, mmdbtype.Map{
-							"autonomous_system_number":       mmdbtype.Uint32(0),
-							"autonomous_system_organization": mmdbtype.String(tag),
-						})
+
+						// Write ASN entry once per prefix.
+						// When multiple ASNs are mapped to one service, pick the first ASN as canonical.
+						if hasDef && len(svcDef.ASNs) > 0 {
+							if err := writerASN.Insert(network, mmdbtype.Map{
+								"autonomous_system_number":       mmdbtype.Uint32(uint32(svcDef.ASNs[0])),
+								"autonomous_system_organization": mmdbtype.String(svcDef.Org),
+							}); err != nil {
+								fmt.Printf("  [WARN] geoasn(mmdb) insert failed for %s: %v\n", cidr, err)
+							}
+						} else {
+							// Fallback: write with org name only, ASN = 0
+							fmt.Printf("  [WARN] No ASN mapping for service '%s', writing org-only entry\n", svcName)
+							if err := writerASN.Insert(network, mmdbtype.Map{
+								"autonomous_system_number":       mmdbtype.Uint32(0),
+								"autonomous_system_organization": mmdbtype.String(tag),
+							}); err != nil {
+								fmt.Printf("  [WARN] geoasn(mmdb) fallback insert failed for %s: %v\n", cidr, err)
+							}
+						}
 					}
 				}
-			}
 		}
 	}
 
@@ -112,13 +119,17 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 	outIP, err := os.Create(filepath.Join(outDir, "geoip.mmdb"))
 	if err == nil {
 		defer outIP.Close()
-		writerIP.WriteTo(outIP)
+		if _, werr := writerIP.WriteTo(outIP); werr != nil {
+			fmt.Printf("  [WARN] writing geoip.mmdb failed: %v\n", werr)
+		}
 	}
 
 	outASN, err := os.Create(filepath.Join(outDir, "geoasn.mmdb"))
 	if err == nil {
 		defer outASN.Close()
-		writerASN.WriteTo(outASN)
+		if _, werr := writerASN.WriteTo(outASN); werr != nil {
+			fmt.Printf("  [WARN] writing geoasn.mmdb failed: %v\n", werr)
+		}
 	}
 
 	fmt.Printf("  [MMDB] Created geoip.mmdb, geoasn.mmdb\n")

@@ -198,7 +198,7 @@ func main() {
 			}
 
 			mihomoMode := detectMihomoRuleMode(rules, isIP)
-			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), mihomoMode.isIP)
+			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), mihomoMode)
 			mrsOK := false
 			if hasMihomo {
 				if !mihomoMode.isEmpty {
@@ -206,7 +206,7 @@ func main() {
 				}
 			}
 
-			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), mihomoMode.isIP)
+			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), mihomoMode)
 			if hasMihomo && mrsOK {
 				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), mihomoMode.behavior, mihomoPath)
 			}
@@ -219,7 +219,6 @@ func main() {
 			compileShadowrocketDomainset(name, rules, filepath.Join(shadowrocketDir, category))
 			compileLoonList(name, rules, filepath.Join(surgeDir, category), true)
 			compileSurgeDomainset(name, rules, filepath.Join(surgeDir, category))
-			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true)
 			compileLoonList(name, rules, filepath.Join(surfboardDir, category), false)
 			compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
 			compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
@@ -269,7 +268,7 @@ func main() {
 	fmt.Println("\n  [Finalizing] Generating merged rule-sets...")
 	for _, category := range outputCategories {
 		fullRules := categoryMergedRules[category]
-		if len(fullRules.DomainSuffix)+len(fullRules.Domain)+len(fullRules.DomainKeyword)+len(fullRules.IPCIDR)+len(fullRules.ProcessName)+len(fullRules.UserAgent) == 0 {
+		if len(fullRules.DomainSuffix)+len(fullRules.Domain)+len(fullRules.DomainKeyword)+len(fullRules.DomainRegex)+len(fullRules.IPCIDR)+len(fullRules.ProcessName)+len(fullRules.UserAgent) == 0 {
 			continue
 		}
 
@@ -282,7 +281,7 @@ func main() {
 		if hasSingBox {
 			compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 		}
-		yamlPath := compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category), mihomoMode.isIP)
+		yamlPath := compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category), mihomoMode)
 		if hasMihomo {
 			if !mihomoMode.isEmpty {
 				compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), mihomoMode.behavior, mihomoPath)
@@ -295,11 +294,10 @@ func main() {
 		compileLoonList(name, fullRules, filepath.Join(loonDir, category), true)
 		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category), true)
 		compileShadowrocketDomainset(name, fullRules, filepath.Join(shadowrocketDir, category))
-		compileLoonList(name, fullRules, filepath.Join(surgeDir, category), true)
-		compileSurgeDomainset(name, fullRules, filepath.Join(surgeDir, category))
-		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category), false)
-		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
-		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
+			compileLoonList(name, fullRules, filepath.Join(surgeDir, category), true)
+			compileSurgeDomainset(name, fullRules, filepath.Join(surgeDir, category))
+			compileLoonList(name, fullRules, filepath.Join(surfboardDir, category), false)
+			compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
 
 		fmt.Printf("  ✅ [%-6s] Created full merged rule-set: %s\n", category, name)
 	}
@@ -397,14 +395,15 @@ func compileDerivedCategoryRule(
 		compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 	}
 
-	yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), false)
-	if hasMihomo && len(rules.Domain)+len(rules.DomainSuffix) > 0 {
-		compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), "domain", mihomoPath)
+	mihomoMode := detectMihomoRuleMode(rules, false)
+	yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), mihomoMode)
+	if hasMihomo && !mihomoMode.isEmpty {
+		compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), mihomoMode.behavior, mihomoPath)
 	}
 
-	stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), false)
-	if hasMihomo && len(rules.Domain)+len(rules.DomainSuffix) > 0 {
-		compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), "domain", mihomoPath)
+	stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), mihomoMode)
+	if hasMihomo && !mihomoMode.isEmpty {
+		compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), mihomoMode.behavior, mihomoPath)
 	}
 
 	compileTextList(name, rules, filepath.Join(textDir, category), false)
@@ -614,14 +613,14 @@ func compileSingBoxSRS(jsonPath, outDir, singboxPath string) bool {
 	return true
 }
 
-func compileMihomoYAML(name string, rules Rules, outDir string, isIP bool) string {
+func compileMihomoYAML(name string, rules Rules, outDir string, mode mihomoRuleMode) string {
 	var lines []string
 	lines = append(lines, fmt.Sprintf("# Gins-Rules: %s", name))
 	lines = append(lines, "# Auto-generated, do not edit")
 	lines = append(lines, "")
 	lines = append(lines, "payload:")
 
-	if isIP {
+	if mode.behavior == "ipcidr" {
 		for _, cidr := range rules.IPCIDR {
 			lines = append(lines, fmt.Sprintf("  - '%s'", cidr))
 		}
