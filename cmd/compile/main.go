@@ -287,6 +287,12 @@ func main() {
 				compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), mihomoMode.behavior, mihomoPath)
 			}
 		}
+		stashYAML := compileMihomoYAML(name, fullRules, filepath.Join(stashDir, category), mihomoMode)
+		if hasMihomo {
+			if !mihomoMode.isEmpty {
+				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), mihomoMode.behavior, mihomoPath)
+			}
+		}
 
 		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
 		compileQuanXList(name, fullRules, filepath.Join(quanxDir, category), isIP, category)
@@ -294,10 +300,11 @@ func main() {
 		compileLoonList(name, fullRules, filepath.Join(loonDir, category), true)
 		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category), true)
 		compileShadowrocketDomainset(name, fullRules, filepath.Join(shadowrocketDir, category))
-			compileLoonList(name, fullRules, filepath.Join(surgeDir, category), true)
-			compileSurgeDomainset(name, fullRules, filepath.Join(surgeDir, category))
-			compileLoonList(name, fullRules, filepath.Join(surfboardDir, category), false)
-			compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
+		compileLoonList(name, fullRules, filepath.Join(surgeDir, category), true)
+		compileSurgeDomainset(name, fullRules, filepath.Join(surgeDir, category))
+		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category), false)
+		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
+		compileExclaveRoute(name, fullRules, filepath.Join(exclaveDir, category))
 
 		fmt.Printf("  ✅ [%-6s] Created full merged rule-set: %s\n", category, name)
 	}
