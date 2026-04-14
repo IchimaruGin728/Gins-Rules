@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -760,29 +761,30 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool, catego
 }
 
 func compileEgernYAML(name string, rules Rules, outDir string) {
+	quoteYAMLString := func(value string) string {
+		return strconv.Quote(value)
+	}
+
+	appendStringSet := func(lines []string, key string, values []string) []string {
+		if len(values) == 0 {
+			return lines
+		}
+		lines = append(lines, key+":")
+		for _, value := range values {
+			lines = append(lines, fmt.Sprintf("  - %s", quoteYAMLString(value)))
+		}
+		return lines
+	}
+
 	var lines []string
 	lines = append(lines, "# Gins-Rules: "+name)
 	lines = append(lines, "# Optimized Egern Rule Set")
 	lines = append(lines, "")
 
-	if len(rules.DomainSuffix) > 0 {
-		lines = append(lines, "domain_suffix_set:")
-		for _, d := range rules.DomainSuffix {
-			lines = append(lines, fmt.Sprintf("  - %s", d))
-		}
-	}
-	if len(rules.Domain) > 0 {
-		lines = append(lines, "domain_set:")
-		for _, d := range rules.Domain {
-			lines = append(lines, fmt.Sprintf("  - %s", d))
-		}
-	}
-	if len(rules.DomainKeyword) > 0 {
-		lines = append(lines, "domain_keyword_set:")
-		for _, d := range rules.DomainKeyword {
-			lines = append(lines, fmt.Sprintf("  - %s", d))
-		}
-	}
+	lines = appendStringSet(lines, "domain_suffix_set", rules.DomainSuffix)
+	lines = appendStringSet(lines, "domain_set", rules.Domain)
+	lines = appendStringSet(lines, "domain_keyword_set", rules.DomainKeyword)
+	lines = appendStringSet(lines, "domain_regex_set", rules.DomainRegex)
 
 	var v4, v6 []string
 	for _, cidr := range rules.IPCIDR {
@@ -792,18 +794,9 @@ func compileEgernYAML(name string, rules Rules, outDir string) {
 			v4 = append(v4, cidr)
 		}
 	}
-	if len(v4) > 0 {
-		lines = append(lines, "ip_cidr_set:")
-		for _, c := range v4 {
-			lines = append(lines, fmt.Sprintf("  - %s", c))
-		}
-	}
-	if len(v6) > 0 {
-		lines = append(lines, "ip_cidr6_set:")
-		for _, c := range v6 {
-			lines = append(lines, fmt.Sprintf("  - %s", c))
-		}
-	}
+	lines = appendStringSet(lines, "ip_cidr_set", v4)
+	lines = appendStringSet(lines, "ip_cidr6_set", v6)
+	lines = appendStringSet(lines, "user_agent_set", rules.UserAgent)
 
 	content := strings.Join(lines, "\n") + "\n"
 	os.WriteFile(filepath.Join(outDir, name+".yaml"), []byte(content), 0o644)
