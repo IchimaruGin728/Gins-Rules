@@ -48,11 +48,45 @@ jobs:
       - name: Fetch Latest Tool Versions
         id: tool-versions
         run: |
+          set -euo pipefail
+
           # Fetch Absolute Latest sing-box Pre-release
           SINGBOX_URL=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases | jq -r 'map(select(.prerelease == true)) | .[0].assets[] | select(.name | contains("linux-amd64") and endswith(".tar.gz")) | .browser_download_url' | head -n 1)
           
-          # Fetch Absolute Latest mihomo Alpha (Support both Prerelease-Alpha and alpha tags)
-          MIHOMO_URL=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r 'map(select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha")) | .[0].assets[] | select(.name | contains("linux-amd64") and endswith(".gz") and (contains("compatible") | not)) | .browser_download_url' | head -n 1)
+          # Prefer the latest mihomo alpha for linux-amd64, but fall back to the latest stable build
+          # because upstream occasionally publishes alpha assets without any linux-amd64 artifact.
+          MIHOMO_URL=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '
+            (
+              [
+                .[]
+                | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha")
+                | .assets[]
+                | select(.name | test("^mihomo-linux-amd64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$"))
+                | .browser_download_url
+              ] +
+              [
+                .[]
+                | select(.prerelease == false)
+                | .assets[]
+                | select(.name | test("^mihomo-linux-amd64-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$"))
+                | .browser_download_url
+              ] +
+              [
+                .[]
+                | select(.prerelease == false)
+                | .assets[]
+                | select((.name | contains("linux-amd64")) and (.name | endswith(".gz")) and (.name | contains("compatible") | not))
+                | .browser_download_url
+              ]
+            )[0] // empty')
+
+          if [ -z "$SINGBOX_URL" ] || [ -z "$MIHOMO_URL" ]; then
+            echo "Resolved tool URLs:"
+            echo "  sing-box: ${SINGBOX_URL:-<empty>}"
+            echo "  mihomo:   ${MIHOMO_URL:-<empty>}"
+            exit 1
+          fi
+
           echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
           echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
           # Use hash of URLs as cache key
@@ -98,6 +132,7 @@ jobs:
       - name: Install Compilers (Bleeding Edge Alpha)
         if: (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule') && steps.cache-bin.outputs.cache-hit != 'true'
         run: |
+          set -euo pipefail
           mkdir -p bin
           
           # Fetch Absolute Latest sing-box
