@@ -10,7 +10,7 @@ import (
 
 	"github.com/maxmind/mmdbwriter"
 	"github.com/maxmind/mmdbwriter/mmdbtype"
-	"github.com/xtls/xray-core/app/router"
+	"github.com/xtls/xray-core/common/geodata"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -59,15 +59,15 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 					if err != nil {
 						continue
 					}
-						if err := writerIP.Insert(network, mmdbtype.Map{
-							"country": mmdbtype.Map{
-								"iso_code": mmdbtype.String(tag),
-							},
-						}); err != nil {
-							fmt.Printf("  [WARN] geoip(mmdb) insert failed for %s: %v\n", cidr, err)
-						}
+					if err := writerIP.Insert(network, mmdbtype.Map{
+						"country": mmdbtype.Map{
+							"iso_code": mmdbtype.String(tag),
+						},
+					}); err != nil {
+						fmt.Printf("  [WARN] geoip(mmdb) insert failed for %s: %v\n", cidr, err)
 					}
 				}
+			}
 
 			if category == "asn" {
 				// name is e.g. "asn-telegram" — strip prefix to get service name
@@ -83,35 +83,35 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 					}
 
 					// Write GeoIP entry (tag-based, for geoip:asn-telegram usage)
-						if err := writerIP.Insert(network, mmdbtype.Map{
-							"country": mmdbtype.Map{
-								"iso_code": mmdbtype.String(tag),
-							},
-						}); err != nil {
-							fmt.Printf("  [WARN] geoip(mmdb) insert failed for %s: %v\n", cidr, err)
-						}
+					if err := writerIP.Insert(network, mmdbtype.Map{
+						"country": mmdbtype.Map{
+							"iso_code": mmdbtype.String(tag),
+						},
+					}); err != nil {
+						fmt.Printf("  [WARN] geoip(mmdb) insert failed for %s: %v\n", cidr, err)
+					}
 
-						// Write ASN entry once per prefix.
-						// When multiple ASNs are mapped to one service, pick the first ASN as canonical.
-						if hasDef && len(svcDef.ASNs) > 0 {
-							if err := writerASN.Insert(network, mmdbtype.Map{
-								"autonomous_system_number":       mmdbtype.Uint32(uint32(svcDef.ASNs[0])),
-								"autonomous_system_organization": mmdbtype.String(svcDef.Org),
-							}); err != nil {
-								fmt.Printf("  [WARN] geoasn(mmdb) insert failed for %s: %v\n", cidr, err)
-							}
-						} else {
-							// Fallback: write with org name only, ASN = 0
-							fmt.Printf("  [WARN] No ASN mapping for service '%s', writing org-only entry\n", svcName)
-							if err := writerASN.Insert(network, mmdbtype.Map{
-								"autonomous_system_number":       mmdbtype.Uint32(0),
-								"autonomous_system_organization": mmdbtype.String(tag),
-							}); err != nil {
-								fmt.Printf("  [WARN] geoasn(mmdb) fallback insert failed for %s: %v\n", cidr, err)
-							}
+					// Write ASN entry once per prefix.
+					// When multiple ASNs are mapped to one service, pick the first ASN as canonical.
+					if hasDef && len(svcDef.ASNs) > 0 {
+						if err := writerASN.Insert(network, mmdbtype.Map{
+							"autonomous_system_number":       mmdbtype.Uint32(uint32(svcDef.ASNs[0])),
+							"autonomous_system_organization": mmdbtype.String(svcDef.Org),
+						}); err != nil {
+							fmt.Printf("  [WARN] geoasn(mmdb) insert failed for %s: %v\n", cidr, err)
+						}
+					} else {
+						// Fallback: write with org name only, ASN = 0
+						fmt.Printf("  [WARN] No ASN mapping for service '%s', writing org-only entry\n", svcName)
+						if err := writerASN.Insert(network, mmdbtype.Map{
+							"autonomous_system_number":       mmdbtype.Uint32(0),
+							"autonomous_system_organization": mmdbtype.String(tag),
+						}); err != nil {
+							fmt.Printf("  [WARN] geoasn(mmdb) fallback insert failed for %s: %v\n", cidr, err)
 						}
 					}
 				}
+			}
 		}
 	}
 
@@ -136,10 +136,9 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 	return nil
 }
 
-
 func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
-	geositeList := &router.GeoSiteList{}
-	geoipList := &router.GeoIPList{}
+	geositeList := &geodata.GeoSiteList{}
+	geoipList := &geodata.GeoIPList{}
 
 	for category, rulesMap := range allRules {
 		for name, rules := range rulesMap {
@@ -148,20 +147,20 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 
 			// 1. Geosite (Domains)
 			if category != "ip" && category != "asn" {
-				site := &router.GeoSite{
-					CountryCode: strings.ToUpper(tag),
+				site := &geodata.GeoSite{
+					Code: strings.ToUpper(tag),
 				}
 				for _, d := range rules.DomainSuffix {
-					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Domain, Value: d})
+					site.Domain = append(site.Domain, &geodata.Domain{Type: geodata.Domain_Domain, Value: d})
 				}
 				for _, d := range rules.Domain {
-					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Full, Value: d})
+					site.Domain = append(site.Domain, &geodata.Domain{Type: geodata.Domain_Full, Value: d})
 				}
 				for _, d := range rules.DomainKeyword {
-					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Plain, Value: d})
+					site.Domain = append(site.Domain, &geodata.Domain{Type: geodata.Domain_Substr, Value: d})
 				}
 				for _, d := range rules.DomainRegex {
-					site.Domain = append(site.Domain, &router.Domain{Type: router.Domain_Regex, Value: d})
+					site.Domain = append(site.Domain, &geodata.Domain{Type: geodata.Domain_Regex, Value: d})
 				}
 
 				if len(site.Domain) > 0 {
@@ -171,8 +170,8 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 
 			// 2. GeoIP (IP CIDRs)
 			if (category == "ip" || category == "asn") && len(rules.IPCIDR) > 0 {
-				geoIP := &router.GeoIP{
-					CountryCode: strings.ToUpper(tag),
+				geoIP := &geodata.GeoIP{
+					Code: strings.ToUpper(tag),
 				}
 				for _, cidr := range rules.IPCIDR {
 					ip, ipnet, err := net.ParseCIDR(cidr)
@@ -181,7 +180,7 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 						continue
 					}
 					ones, _ := ipnet.Mask.Size()
-					
+
 					// Convert IP to byte slice
 					var ipBytes []byte
 					if ip4 := ip.To4(); ip4 != nil {
@@ -190,7 +189,7 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 						ipBytes = ip.To16()
 					}
 
-					geoIP.Cidr = append(geoIP.Cidr, &router.CIDR{
+					geoIP.Cidr = append(geoIP.Cidr, &geodata.CIDR{
 						Ip:     ipBytes,
 						Prefix: uint32(ones),
 					})
