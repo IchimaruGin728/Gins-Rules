@@ -17,20 +17,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@latest --activate
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: '25'
+          node-version: "25.9.0"
           cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install Dependencies (Root)
         run: pnpm install --no-frozen-lockfile
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "stable"
           cache: true
@@ -47,15 +47,47 @@ jobs:
           fi
       - name: Fetch Latest Tool Versions
         id: tool-versions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
+          fetch_releases() {
+            local repo="$1"
+            local output="$2"
+
+            curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -A "Gins-Rules-Workflow" \
+              "https://api.github.com/repos/${repo}/releases?per_page=100" \
+              -o "$output"
+
+            if ! jq -e 'type == "array"' "$output" >/dev/null; then
+              echo "::error::Unexpected GitHub releases payload for ${repo}"
+              echo "::group::${repo} raw response"
+              cat "$output"
+              echo
+              echo "::endgroup::"
+              exit 1
+            fi
+          }
+
+          fetch_releases "SagerNet/sing-box" singbox-releases.json
+          fetch_releases "MetaCubeX/mihomo" mihomo-releases.json
+
           # Fetch Absolute Latest sing-box Pre-release
-          SINGBOX_URL=$(curl -sL https://api.github.com/repos/SagerNet/sing-box/releases | jq -r 'map(select(.prerelease == true)) | .[0].assets[] | select(.name | contains("linux-amd64") and endswith(".tar.gz")) | .browser_download_url' | head -n 1)
+          SINGBOX_URL=$(jq -r '
+            map(select(.prerelease == true))
+            | .[0].assets[]
+            | select(.name | contains("linux-amd64") and endswith(".tar.gz"))
+            | .browser_download_url
+          ' singbox-releases.json | head -n 1)
           
           # Prefer the latest mihomo alpha for linux-amd64, but fall back to the latest stable build
           # because upstream occasionally publishes alpha assets without any linux-amd64 artifact.
-          MIHOMO_URL=$(curl -sL https://api.github.com/repos/MetaCubeX/mihomo/releases | jq -r '
+          MIHOMO_URL=$(jq -r '
             (
               [
                 .[]
@@ -78,7 +110,8 @@ jobs:
                 | select((.name | contains("linux-amd64")) and (.name | endswith(".gz")) and (.name | contains("compatible") | not))
                 | .browser_download_url
               ]
-            )[0] // empty')
+            )[0] // empty
+          ' mihomo-releases.json)
 
           if [ -z "$SINGBOX_URL" ] || [ -z "$MIHOMO_URL" ]; then
             echo "Resolved tool URLs:"
