@@ -30,7 +30,7 @@ The delivery URLs are backed by high-performance R2 storage with Cloudflare Smar
 | **Mihomo** | MRS | `/ruleset/mihomo/{cat}/{name}.mrs` | [apple.mrs](https://rules.ichimarugin728.dev/ruleset/mihomo/proxy/apple.mrs) |
 | **Stash** | MRS | `/ruleset/stash/{cat}/{name}.mrs` | [apple.mrs](https://rules.ichimarugin728.dev/ruleset/stash/proxy/apple.mrs) |
 | **Surge / Loon** | List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
-| **Quantumult X** | List | `/ruleset/quanx/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/quanx/proxy/apple.list) |
+| **QuantumultX** | List | `/ruleset/quantumultx/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/quantumultx/proxy/apple.list) |
 | **Shadowrocket**| List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
 | **Surfboard** | List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
 | **Surfboard (Opt)**| TXT | `/ruleset/surfboard/{cat}/{name}.txt` | [apple.txt](https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.txt) |

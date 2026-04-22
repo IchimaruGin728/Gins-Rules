@@ -8,7 +8,7 @@ interface Props {
 export default function GeoChecker({ apiBase }: Props) {
   const [copied, setCopied] = useState(false);
 
-  if (activeApp.value !== "quanx") return null;
+  if (activeApp.value !== "quantumultx") return null;
 
   const codeString = `geo_location_checker = https://my.ippure.com/v1/info, ${apiBase}/geo_location_checker.js`;
 

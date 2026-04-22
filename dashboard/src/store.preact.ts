@@ -5,7 +5,7 @@ export type AppType =
   | "mihomo"
   | "stash"
   | "surge"
-  | "quanx"
+  | "quantumultx"
   | "loon"
   | "egern"
   | "shadowrocket"
@@ -51,9 +51,9 @@ export const APPS: AppConfig[] = [
     color: "#FBC02D",
   },
   {
-    id: "quanx",
-    label: "QuanX",
-    icon: "/icons/quanx.jpg",
+    id: "quantumultx",
+    label: "QuantumultX",
+    icon: "/icons/quantumultx.jpg",
     ext: "list",
     color: "#f44336",
   },

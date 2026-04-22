@@ -68,7 +68,7 @@ func main() {
 	singboxDir := filepath.Join(rulesetDir, "singbox")
 	mihomoDir := filepath.Join(rulesetDir, "mihomo")
 	textDir := filepath.Join(rulesetDir, "text")
-	quanxDir := filepath.Join(rulesetDir, "quanx")
+	quantumultxDir := filepath.Join(rulesetDir, "quantumultx")
 	egernDir := filepath.Join(rulesetDir, "egern")
 	loonDir := filepath.Join(rulesetDir, "loon")
 	stashDir := filepath.Join(rulesetDir, "stash")
@@ -99,7 +99,7 @@ func main() {
 
 	outputCategories := []string{"proxy", "direct", "reject", "ip", "asn", "ai"}
 
-	for _, dir := range []string{singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir, surgeDir} {
+	for _, dir := range []string{singboxDir, mihomoDir, textDir, quantumultxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir, surgeDir} {
 		os.RemoveAll(dir)
 		os.MkdirAll(dir, 0o755)
 		for _, cat := range outputCategories {
@@ -213,7 +213,7 @@ func main() {
 			}
 
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
-			compileQuanXList(name, rules, filepath.Join(quanxDir, category), isIP, category)
+			compileQuanXList(name, rules, filepath.Join(quantumultxDir, category), isIP, category)
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category))
 			compileLoonList(name, rules, filepath.Join(loonDir, category), true)
 			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true)
@@ -260,7 +260,7 @@ func main() {
 				aiRules := categoryMergedRules["ai"]
 				aiRules = mergeRules(aiRules, rules)
 				categoryMergedRules["ai"] = aiRules
-				compileDerivedCategoryRule(name, rules, singboxDir, mihomoDir, textDir, quanxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir, surgeDir, hasSingBox, hasMihomo, singboxPath, mihomoPath)
+				compileDerivedCategoryRule(name, rules, singboxDir, mihomoDir, textDir, quantumultxDir, egernDir, loonDir, stashDir, shadowrocketDir, surfboardDir, exclaveDir, surgeDir, hasSingBox, hasMihomo, singboxPath, mihomoPath)
 			}
 		}
 	}
@@ -296,7 +296,7 @@ func main() {
 		}
 
 		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
-		compileQuanXList(name, fullRules, filepath.Join(quanxDir, category), isIP, category)
+		compileQuanXList(name, fullRules, filepath.Join(quantumultxDir, category), isIP, category)
 		compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
 		compileLoonList(name, fullRules, filepath.Join(loonDir, category), true)
 		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category), true)
@@ -319,7 +319,7 @@ func main() {
 		fmt.Printf("  [Error] MMDB packing failed: %v\n", err)
 	}
 
-	for _, formatDir := range []string{"singbox", "mihomo", "text", "quanx", "egern", "loon", "stash", "shadowrocket", "surfboard", "exclave", "xray"} {
+	for _, formatDir := range []string{"singbox", "mihomo", "text", "quantumultx", "egern", "loon", "stash", "shadowrocket", "surfboard", "exclave", "xray"} {
 		for _, cat := range outputCategories {
 			dir := filepath.Join(rulesetDir, formatDir, cat)
 			entries, _ := os.ReadDir(dir)
