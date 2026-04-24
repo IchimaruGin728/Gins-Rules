@@ -3345,6 +3345,7 @@ tbsec.org
 tbsn.org
 tbssqh.org
 teachparentstech.org
+techbang.com
 technews.tw
 techviz.net
 teck.in
@@ -4201,8 +4202,8 @@ zvereff.com
 zynamics.com
 zyxel.com
 zzcloud.me
-+.kanshifang.com
-+.evschool.net
++.kaotic.com
++.carfax.com
 +.zzcloud.me
 +.1000giri.net
 +.10beasts.net
@@ -4815,7 +4816,7 @@ zzcloud.me
 +.caochangqing.com
 +.caoporn.us
 +.yigeni.com
-+.carfax.com
++.kantie.org
 +.yidio.com
 +.caribbeancom.com
 +.yibaochina.com
@@ -5329,7 +5330,7 @@ zzcloud.me
 +.euronews.com
 +.wxw.moe
 +.everipedia.org
-+.kantie.org
++.evschool.net
 +.exchristian.hk
 +.exhentai.org
 +.exmo.com
@@ -5629,7 +5630,7 @@ zzcloud.me
 +.gmail.com
 +.gmgard.com
 +.gmgn.ai
-+.gmodules.com
++.000webhost.com
 +.gmp4.com
 +.workers.dev
 +.gnews.org
@@ -6301,9 +6302,9 @@ zzcloud.me
 +.kakao.com
 +.vpntunnel.com
 +.kannewyork.com
-+.spankbang.com
++.softwarebychuck.com
 +.0rz.tw
-+.thinkwithgoogle.com
++.gmodules.com
 +.karayou.com
 +.kawaiikawaii.jp
 +.kawase.com
@@ -7372,7 +7373,7 @@ zzcloud.me
 +.softether-download.com
 +.softether.org
 +.softfamous.com
-+.softwarebychuck.com
++.kanshifang.com
 +.upghsbc.com
 +.sogclub.com
 +.sogrady.me
@@ -7404,7 +7405,7 @@ zzcloud.me
 +.unwire.hk
 +.unstable.icu
 +.spacex.com
-+.000webhost.com
++.spankbang.com
 +.sparkpool.com
 +.spatial.io
 +.spb.com
@@ -7548,6 +7549,7 @@ zzcloud.me
 +.tbsn.org
 +.tbssqh.org
 +.teachparentstech.org
++.techbang.com
 +.technews.tw
 +.techviz.net
 +.teck.in
@@ -7616,7 +7618,7 @@ zzcloud.me
 +.thinkchina.sg
 +.thinkgeek.com
 +.thinkingtaiwan.com
-+.kaotic.com
++.thinkwithgoogle.com
 +.thirdmill.org
 +.thisav.com
 +.thomasbernhard.org
