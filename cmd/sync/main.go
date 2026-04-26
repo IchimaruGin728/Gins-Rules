@@ -20,6 +20,20 @@ type UpstreamSource struct {
 	Enabled  bool   `json:"enabled"`
 }
 
+type SingBoxRuleSet struct {
+	Rules []SingBoxRule `json:"rules"`
+}
+
+type SingBoxRule struct {
+	Domain        []string `json:"domain"`
+	DomainSuffix  []string `json:"domain_suffix"`
+	DomainKeyword []string `json:"domain_keyword"`
+	DomainRegex   []string `json:"domain_regex"`
+	IPCIDR        []string `json:"ip_cidr"`
+	ProcessName   []string `json:"process_name"`
+	UserAgent     []string `json:"user_agent"`
+}
+
 func main() {
 	root := findRoot()
 	configPath := filepath.Join(root, "source", "sources.json")
@@ -142,6 +156,10 @@ func fetchURL(url string) (string, error) {
 }
 
 func processRules(content string) []string {
+	if rules := processSingBoxRuleSet(content); len(rules) > 0 {
+		return rules
+	}
+
 	var rules []string
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	for scanner.Scan() {
@@ -172,6 +190,35 @@ func processRules(content string) []string {
 			}
 		} else if !strings.Contains(line, ",") {
 			rules = append(rules, line)
+		}
+	}
+	return rules
+}
+
+func processSingBoxRuleSet(content string) []string {
+	var ruleSet SingBoxRuleSet
+	if err := json.Unmarshal([]byte(content), &ruleSet); err != nil {
+		return nil
+	}
+
+	var rules []string
+	for _, rule := range ruleSet.Rules {
+		rules = append(rules, rule.DomainSuffix...)
+		for _, domain := range rule.Domain {
+			rules = append(rules, "full:"+domain)
+		}
+		for _, keyword := range rule.DomainKeyword {
+			rules = append(rules, "keyword:"+keyword)
+		}
+		for _, regex := range rule.DomainRegex {
+			rules = append(rules, "regexp:"+regex)
+		}
+		rules = append(rules, rule.IPCIDR...)
+		for _, process := range rule.ProcessName {
+			rules = append(rules, "process:"+process)
+		}
+		for _, userAgent := range rule.UserAgent {
+			rules = append(rules, "user-agent:"+userAgent)
 		}
 	}
 	return rules

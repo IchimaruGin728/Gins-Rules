@@ -42,6 +42,20 @@
     "enabled": true
   },
   {
+    "name": "Yuu Ads All",
+    "url": "https://raw.githubusercontent.com/Yuu518/sing-box-rules/rule_set/rule_set_site/category-ads-all.json",
+    "category": "reject",
+    "target": "reject-list",
+    "enabled": true
+  },
+  {
+    "name": "Yuu PCDN CN",
+    "url": "https://raw.githubusercontent.com/Yuu518/sing-box-rules/rule_set/rule_set_site/pcdn-cn.json",
+    "category": "reject",
+    "target": "reject-list",
+    "enabled": true
+  },
+  {
     "name": "L GFW",
     "url": "https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/gfw.txt",
     "category": "proxy",

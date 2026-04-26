@@ -15,14 +15,23 @@ const aiRuleNames = new Set(["ai-other", "apple-intelligence", "claude", "copilo
 
 function getServices(category: string): { name: string; lines: number }[] {
     // ASN rules are stored in /source/ip/ with "asn-" prefix, not in /source/asn/
-    const dir = category === "asn"
-        ? path.join(sourceDir, "ip")
-        : category === "ai"
-            ? path.join(sourceDir, "proxy")
-            : path.join(sourceDir, category);
-    if (!fs.existsSync(dir)) return [];
-    return fs
-        .readdirSync(dir)
+    const dirs = [
+        category === "asn"
+            ? path.join(sourceDir, "ip")
+            : category === "ai"
+                ? path.join(sourceDir, "proxy")
+                : path.join(sourceDir, category),
+        category === "asn"
+            ? path.join(sourceDir, "upstream", "ip")
+            : category === "ai"
+                ? path.join(sourceDir, "upstream", "proxy")
+                : path.join(sourceDir, "upstream", category),
+    ];
+    const services = new Map<string, number>();
+
+    for (const dir of dirs) {
+        if (!fs.existsSync(dir)) continue;
+        for (const file of fs.readdirSync(dir)
         .filter((file: string) => {
             if (!file.endsWith(".txt")) return false;
             // IP category: exclude asn-* files
@@ -31,16 +40,18 @@ function getServices(category: string): { name: string; lines: number }[] {
             if (category === "asn") return file.startsWith("asn-");
             if (category === "ai") return aiRuleNames.has(path.basename(file, ".txt"));
             return true;
-        })
-        .map((file: string) => {
+        })) {
             const content = fs.readFileSync(path.join(dir, file), "utf-8");
             const lines = content
                 .split("\n")
                 .filter(
                     (line: string) => line.trim() && !line.startsWith("#"),
                 ).length;
-            return { name: file, lines };
-        })
+            services.set(file, Math.max(services.get(file) ?? 0, lines));
+        }
+    }
+
+    return Array.from(services, ([name, lines]) => ({ name, lines }))
         .sort((a: { name: string }, b: { name: string }) =>
             a.name.localeCompare(b.name),
         );
@@ -106,6 +117,7 @@ const resourceParsers = [
 const sourceProviders = [
     "Loyalsoldier",
     "MetaCubeX",
+    "Yuu518",
     "Blackmatrix7",
     "Nice (fmz200)",
     "xream/geoip (ipinfo)",
