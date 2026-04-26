@@ -174790,6 +174790,8 @@ kkpgv.kankan.com
 kkpgv2.kankan.com
 cpm.cm.kankan.com
 count.cpm.cm.kankan.com
+full:analytics.tuhu.com
+full:ta.tuhu.cn
 urbanairship.com
 combine.urbanairship.com
 full:safe.ucweb.com
