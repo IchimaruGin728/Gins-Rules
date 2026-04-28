@@ -13,7 +13,7 @@ resource_parser_url = https://raw.githubusercontent.com/KOP-XIAO/QuantumultX/mas
 ------------------------------
 */
 
-// ==== Parser Helper UI by Quantumult X====
+// ==== Parser Helper UI by Quantumult-X (918+) ====
 var $parser = $parser || {};
 
 // schema：作者声明的全部参数（不带 value）
@@ -184,9 +184,10 @@ $parser.hashSchema = function () {
   };
 };
 
-// hashToUI：解析 hash，返回当前已存在参数（带 value）
+
+// hashToUI：支持动态参数
 $parser.hashToUI = function (hash) {
-  if (!hash) return { version: 1, sections: [], unknown: "" };
+  if (!hash) return { version: 1, sections: [] };
 
   var schema = $parser.hashSchema();
   var allItems = {};
@@ -194,30 +195,38 @@ $parser.hashToUI = function (hash) {
     g.items.forEach(function (it) { allItems[it.key] = it; });
   });
 
-  // 解析 hash
   var pairs = hash.split("&");
   var values = {};
-  var unknown = [];
+  var dynamicItems = [];
+
   pairs.forEach(function (p) {
     if (!p) return;
     var eq = p.indexOf("=");
     var k = eq === -1 ? p : p.substring(0, eq);
     var v = eq === -1 ? "" : p.substring(eq + 1);
+
     if (allItems[k]) {
       values[k] = v;
     } else {
-      unknown.push(p);
+      dynamicItems.push({
+        type: "text",
+        key: k,
+        label: k,
+        value: v
+      });
     }
   });
 
-  // 按 schema 结构组装回 sections，仅保留出现的
   var sections = [];
+
   schema.sections.forEach(function (g) {
     var items = [];
     g.items.forEach(function (it) {
       if (!(it.key in values)) return;
+
       var clone = JSON.parse(JSON.stringify(it));
       var raw = values[it.key];
+
       if (it.type === "switch") {
         clone.value = (raw === it.onValue);
       } else if (it.type === "tags") {
@@ -225,26 +234,35 @@ $parser.hashToUI = function (hash) {
       } else {
         clone.value = raw;
       }
+
       items.push(clone);
     });
+
     if (items.length) {
       sections.push({
         type: "group",
         title: g.title,
-        description: g.description,
         items: items
       });
     }
   });
 
+  if (dynamicItems.length) {
+    sections.push({
+      type: "group",
+      title: "自定义参数",
+      items: dynamicItems
+    });
+  }
+
   return {
     version: 1,
-    sections: sections,
-    unknown: unknown.join("&")
+    sections: sections
   };
 };
 
-// uiToHash：把 values 序列化成 hash 字符串
+
+// uiToHash：支持动态字段回写
 $parser.uiToHash = function (values) {
   var schema = $parser.hashSchema();
   var allItems = {};
@@ -253,25 +271,31 @@ $parser.uiToHash = function (values) {
   });
 
   var parts = [];
+
   Object.keys(values).forEach(function (k) {
-    if (k === "__unknown") return;
-    var meta = allItems[k];
-    if (!meta) return;
     var v = values[k];
+    var meta = allItems[k];
     var serialized;
-    if (meta.type === "switch") {
-      serialized = v ? meta.onValue : meta.offValue;
-    } else if (meta.type === "tags") {
-      serialized = (v || []).join("+");
+
+    if (meta) {
+      if (meta.type === "switch") {
+        serialized = v ? meta.onValue : meta.offValue;
+      } else if (meta.type === "tags") {
+        serialized = (v || []).join("+");
+      } else {
+        serialized = String(v);
+      }
     } else {
+      // 动态字段默认 text
       serialized = String(v);
     }
+
     parts.push(k + "=" + serialized);
   });
 
-  if (values.__unknown) parts.push(values.__unknown);
   return parts.join("&");
 };
+
 
 //---------------------------
 
@@ -1642,6 +1666,9 @@ function Rule_Policy(content) { //增加、替换 policy
         } else if (cnt.length == 4 && cnt[3].indexOf("no-resolve") != -1) {
             ply0 = Ppolicy != "Shawn" ? Ppolicy : cnt[2]
             nn = cnt[0] + ", " + cnt[1] + ", " + ply0 //+ ", " + cnt[3]
+        } else if (cnt.length > 4 && cnt[3].indexOf("extend")!=-1) { // 2026-04-28 
+            ply0 = Ppolicy != "Shawn" ? Ppolicy : cnt[2]
+            nn = cnt[0] + ", " + cnt[1] + ", " + ply0
         } else if (!RuleK.some(RuleCheck) && content) {
             //$notify("未能解析" + "⟦" + subtag + "⟧" + "其中部分规则:", content, nan_link);
             return ""
