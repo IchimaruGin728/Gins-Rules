@@ -11,6 +11,6 @@
     "deploy": "pnpm build && wrangler deploy --config cmd/scanner/wrangler.jsonc"
   },
   "devDependencies": {
-    "wrangler": "^4.81.1"
+    "wrangler": "latest"
   }
 }

@@ -61,7 +61,7 @@ export const APPS: AppConfig[] = [
     id: "loon",
     label: "Loon",
     icon: "/icons/loon.jpg",
-    ext: "list",
+    ext: "lsr",
     color: "#03A9F4",
   },
   {

@@ -215,12 +215,12 @@ func main() {
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
 			compileQuanXList(name, rules, filepath.Join(quantumultxDir, category), isIP, category)
 			compileEgernYAML(name, rules, filepath.Join(egernDir, category))
-			compileLoonList(name, rules, filepath.Join(loonDir, category), true)
-			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true)
+			compileLoonList(name, rules, filepath.Join(loonDir, category), true, ".lsr")
+			compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true, ".list")
 			compileShadowrocketDomainset(name, rules, filepath.Join(shadowrocketDir, category))
-			compileLoonList(name, rules, filepath.Join(surgeDir, category), true)
+			compileLoonList(name, rules, filepath.Join(surgeDir, category), true, ".list")
 			compileSurgeDomainset(name, rules, filepath.Join(surgeDir, category))
-			compileLoonList(name, rules, filepath.Join(surfboardDir, category), false)
+			compileLoonList(name, rules, filepath.Join(surfboardDir, category), false, ".list")
 			compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
 			compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
 
@@ -298,12 +298,12 @@ func main() {
 		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
 		compileQuanXList(name, fullRules, filepath.Join(quantumultxDir, category), isIP, category)
 		compileEgernYAML(name, fullRules, filepath.Join(egernDir, category))
-		compileLoonList(name, fullRules, filepath.Join(loonDir, category), true)
-		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category), true)
+		compileLoonList(name, fullRules, filepath.Join(loonDir, category), true, ".lsr")
+		compileLoonList(name, fullRules, filepath.Join(shadowrocketDir, category), true, ".list")
 		compileShadowrocketDomainset(name, fullRules, filepath.Join(shadowrocketDir, category))
-		compileLoonList(name, fullRules, filepath.Join(surgeDir, category), true)
+		compileLoonList(name, fullRules, filepath.Join(surgeDir, category), true, ".list")
 		compileSurgeDomainset(name, fullRules, filepath.Join(surgeDir, category))
-		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category), false)
+		compileLoonList(name, fullRules, filepath.Join(surfboardDir, category), false, ".list")
 		compileSurfboardDomainset(name, fullRules, filepath.Join(surfboardDir, category))
 		compileExclaveRoute(name, fullRules, filepath.Join(exclaveDir, category))
 
@@ -417,12 +417,12 @@ func compileDerivedCategoryRule(
 	compileTextList(name, rules, filepath.Join(textDir, category), false)
 	compileQuanXList(name, rules, filepath.Join(quanxDir, category), false, category)
 	compileEgernYAML(name, rules, filepath.Join(egernDir, category))
-	compileLoonList(name, rules, filepath.Join(loonDir, category), true)
-	compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true)
+	compileLoonList(name, rules, filepath.Join(loonDir, category), true, ".lsr")
+	compileLoonList(name, rules, filepath.Join(shadowrocketDir, category), true, ".list")
 	compileShadowrocketDomainset(name, rules, filepath.Join(shadowrocketDir, category))
-	compileLoonList(name, rules, filepath.Join(surgeDir, category), true)
+	compileLoonList(name, rules, filepath.Join(surgeDir, category), true, ".list")
 	compileSurgeDomainset(name, rules, filepath.Join(surgeDir, category))
-	compileLoonList(name, rules, filepath.Join(surfboardDir, category), false)
+	compileLoonList(name, rules, filepath.Join(surfboardDir, category), false, ".list")
 	compileSurfboardDomainset(name, rules, filepath.Join(surfboardDir, category))
 	compileExclaveRoute(name, rules, filepath.Join(exclaveDir, category))
 }
@@ -802,7 +802,7 @@ func compileEgernYAML(name string, rules Rules, outDir string) {
 	os.WriteFile(filepath.Join(outDir, name+".yaml"), []byte(content), 0o644)
 }
 
-func compileLoonList(name string, rules Rules, outDir string, includeSpecial bool) {
+func compileLoonList(name string, rules Rules, outDir string, includeSpecial bool, suffix string) {
 	var lines []string
 
 	for _, d := range rules.DomainSuffix {
@@ -830,7 +830,6 @@ func compileLoonList(name string, rules Rules, outDir string, includeSpecial boo
 		}
 	}
 
-	suffix := ".list"
 	content := strings.Join(lines, "\n") + "\n"
 	listPath := filepath.Join(outDir, name+suffix)
 	os.WriteFile(listPath, []byte(content), 0o644)

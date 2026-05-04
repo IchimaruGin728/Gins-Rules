@@ -15,7 +15,8 @@ Comprehensive, self-maintained proxy rule list repository with high-performance 
     - **Mihomo (Clash Meta) / Stash**: `.mrs` (binary), `.yaml`
     - **Surfboard**: `.list` (Standard Ruleset), `.txt` (Optimized Domainset)
     - **Exclave**: `.list` (Standard Route format)
-    - **Surge / Loon / Shadowrocket**: `.list` (Standard format)
+    - **Surge / Shadowrocket**: `.list` (Standard format)
+    - **Loon**: `.lsr` (Loon-specific standard rule format)
     - **QuantumultX**: `.list` (Native policy format)
     - **Egern**: `.yaml` (Multi-category config)
 - **Bleeding Edge Binaries**: automated build using the latest **Sing-box (Pre-release)** and **Mihomo (Alpha)** compilers.
@@ -29,7 +30,8 @@ The delivery URLs are backed by high-performance R2 storage with Cloudflare Smar
 | **sing-box** | SRS | `/ruleset/singbox/{cat}/{name}.srs` | [apple.srs](https://rules.ichimarugin728.dev/ruleset/singbox/proxy/apple.srs) |
 | **Mihomo** | MRS | `/ruleset/mihomo/{cat}/{name}.mrs` | [apple.mrs](https://rules.ichimarugin728.dev/ruleset/mihomo/proxy/apple.mrs) |
 | **Stash** | MRS | `/ruleset/stash/{cat}/{name}.mrs` | [apple.mrs](https://rules.ichimarugin728.dev/ruleset/stash/proxy/apple.mrs) |
-| **Surge / Loon** | List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
+| **Surge** | List | `/ruleset/surge/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/surge/proxy/apple.list) |
+| **Loon** | LSR | `/ruleset/loon/{cat}/{name}.lsr` | [apple.lsr](https://rules.ichimarugin728.dev/ruleset/loon/proxy/apple.lsr) |
 | **QuantumultX** | List | `/ruleset/quantumultx/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/quantumultx/proxy/apple.list) |
 | **Shadowrocket**| List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
 | **Surfboard** | List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |

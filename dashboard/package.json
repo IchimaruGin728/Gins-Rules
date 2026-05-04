@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@astrojs/preact": "latest",
-    "@preact/signals": "^2.9.0",
+    "@preact/signals": "latest",
     "astro": "latest",
     "preact": "latest"
   },
@@ -19,8 +19,8 @@
     "@iconify-json/lucide": "latest",
     "@iconify-json/ph": "latest",
     "@types/node": "latest",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
     "@unocss/astro": "latest",
     "@unocss/reset": "latest",
     "@unocss/transformer-directives": "latest",

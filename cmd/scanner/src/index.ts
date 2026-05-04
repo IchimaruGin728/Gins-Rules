@@ -202,6 +202,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
   } else if (parts.length === 2) {
     // Format A: ruleset/proxy/google.srs (Merged Default)
     // Format B: ruleset/shadowrocket/proxy.list (New App-specific Merged)
+    // Format C: ruleset/loon/proxy.lsr (Loon-specific Merged)
     // We check if parts[0] is a known app or a known category
     const apps = ['singbox', 'mihomo', 'stash', 'surge', 'quantumultx', 'quanx', 'loon', 'egern', 'shadowrocket', 'surfboard', 'exclave'];
     const categories = ['proxy', 'direct', 'reject', 'ip', 'asn', 'ai'];
@@ -224,6 +225,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
     }
   } else if (parts.length === 3) {
     // Format: ruleset/shadowrocket/proxy/google.list
+    // Format: ruleset/loon/proxy/google.lsr
     app = parts[0];
     category = parts[1];
     const fileName = parts[2];
@@ -260,6 +262,7 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
   // Extension Mapping
   const extMap: Record<string, string> = {
     'list': 'text',
+    'lsr': 'loon',
     'yaml': 'egern',
     'srs': 'singbox',
     'mrs': 'mihomo',
@@ -270,6 +273,9 @@ async function handleFeed(request: Request, path: string, url: URL, env: Env): P
   if (!dir) return new Response('Invalid app or extension', { status: 400 });
 
   let targetFile = `${name}.${ext}`;
+  if (app === 'loon' && ext === 'list') {
+    targetFile = `${name}.lsr`;
+  }
   // Special correction for IP/ASN lists in text format (compiler outputs .ip.list)
   const isIPLike = category === 'ip' || category === 'asn';
   if (dir === 'text' && isIPLike && ext === 'list' && !targetFile.includes('.ip.')) {
