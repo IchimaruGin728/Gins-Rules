@@ -170,7 +170,7 @@ func processRules(content string) []string {
 		parts := strings.Split(line, ",")
 		if len(parts) >= 2 {
 			ruleType := strings.ToUpper(strings.TrimSpace(parts[0]))
-			val := strings.TrimSpace(parts[1])
+			val := cleanRuleValue(parts[1])
 			switch ruleType {
 			case "DOMAIN-SUFFIX", "HOST-SUFFIX":
 				rules = append(rules, val)
@@ -187,12 +187,22 @@ func processRules(content string) []string {
 				if !strings.Contains(line, ",") {
 					rules = append(rules, line)
 				}
+			case "IP-ASN":
+				rules = append(rules, "asn:"+val)
 			}
 		} else if !strings.Contains(line, ",") {
 			rules = append(rules, line)
 		}
 	}
 	return rules
+}
+
+func cleanRuleValue(value string) string {
+	value = strings.TrimSpace(value)
+	if idx := strings.Index(value, "//"); idx >= 0 {
+		value = strings.TrimSpace(value[:idx])
+	}
+	return strings.TrimSpace(strings.TrimSuffix(value, ",no-resolve"))
 }
 
 func processSingBoxRuleSet(content string) []string {

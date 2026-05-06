@@ -1,50 +1,60 @@
 # ==============================
-# Apple Direct (CDN/Download) Rules
-# App downloads, system updates, media content
+# Apple Direct Rules (large downloads, CDN, media)
+# Auto-merged and deduplicated by Gins-Rules
 # ==============================
 
-# --- App Store Downloads ---
-apps.apple.com
-itunes.apple.com
-itunes.com
-mzstatic.com
-
-# --- System Update Downloads ---
-# These are the actual binary download servers (large files)
-# Update CATALOG checking is in proxy (mesu/swscan/gdmf)
+12diasdepresentesdeitunes.com
+12diasderegalosdeitunes.com
+12diasderegalosdeitunes.com.co
+12diasderegalosdeitunes.com.hn
+12diasderegalosdeitunes.com.ni
+12diasderegalosdeitunes.com.ve
+12joursdecadeauxdeitunes.com
+aaplimg.com
+app-store.wang
 appldnld.apple.com
-oscdn.apple.com
-osrecovery.apple.com
-swcdn.apple.com
-swdist.apple.com
-swdownload.apple.com
-updates-http.cdn-apple.com
-updates.cdn-apple.com
-pkg.apple.com
-
-# --- Developer & Media CDN ---
-devimages-cdn.apple.com
-download.developer.apple.com
+appldnld.apple.com.edgesuite.net
+apps.apple.com
 audiocontentdownload.apple.com
-playgrounds-assets-cdn.apple.com
-playgrounds-cdn.apple.com
-sylvan.apple.com
-
-# --- Caching & Content Delivery ---
-lcdn-locator.apple.com
-lcdn-registration.apple.com
-ig.apple.com
-gg.apple.com
-skl.apple.com
-
-# --- Certificate & OCSP ---
+cdn-apple.com
 certs.apple.com
 configuration.apple.com
 crl.apple.com
-ocsp.apple.com
-ocsp2.apple.com
-valid.apple.com
 crl3.digicert.com
 crl4.digicert.com
+devimages-cdn.apple.com
+download.developer.apple.com
+gg.apple.com
+ig.apple.com
+itunes-apple.cn
+itunes.apple.com
+itunes.com
+itunes.com.edgekey.net
+itunesradio.cn
+itunesradio.com
+itunesradio.com.cn
+itunesradio.rio
+itunesradio.tv
+itunesradio.tw
+keyword:buy.itunes.apple.com
+lcdn-locator.apple.com
+lcdn-registration.apple.com
+mzstatic.com
+ocsp.apple.com
 ocsp.digicert.cn
 ocsp.digicert.com
+ocsp2.apple.com
+oscdn.apple.com
+osrecovery.apple.com
+pkg.apple.com
+playgrounds-assets-cdn.apple.com
+playgrounds-cdn.apple.com
+skl.apple.com
+swcdn.apple.com
+swdist.apple.com
+swdownload.apple.com
+sylvan.apple.com
+updates-http.cdn-apple.com
+updates.cdn-apple.com
+valid.apple.com
+wwwitunes.com

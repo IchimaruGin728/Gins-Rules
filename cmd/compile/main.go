@@ -17,6 +17,7 @@ type Rules struct {
 	DomainKeyword []string
 	DomainRegex   []string
 	IPCIDR        []string
+	IPASN         []string
 	ProcessName   []string
 	UserAgent     []string
 }
@@ -186,7 +187,7 @@ func main() {
 			}
 
 			total := len(rules.DomainSuffix) + len(rules.Domain) +
-				len(rules.DomainKeyword) + len(rules.DomainRegex) + len(rules.IPCIDR) +
+				len(rules.DomainKeyword) + len(rules.DomainRegex) + len(rules.IPCIDR) + len(rules.IPASN) +
 				len(rules.ProcessName) + len(rules.UserAgent)
 			if total == 0 {
 				continue
@@ -269,7 +270,7 @@ func main() {
 	fmt.Println("\n  [Finalizing] Generating merged rule-sets...")
 	for _, category := range outputCategories {
 		fullRules := categoryMergedRules[category]
-		if len(fullRules.DomainSuffix)+len(fullRules.Domain)+len(fullRules.DomainKeyword)+len(fullRules.DomainRegex)+len(fullRules.IPCIDR)+len(fullRules.ProcessName)+len(fullRules.UserAgent) == 0 {
+		if len(fullRules.DomainSuffix)+len(fullRules.Domain)+len(fullRules.DomainKeyword)+len(fullRules.DomainRegex)+len(fullRules.IPCIDR)+len(fullRules.IPASN)+len(fullRules.ProcessName)+len(fullRules.UserAgent) == 0 {
 			continue
 		}
 
@@ -439,6 +440,9 @@ func sanitizeRules(rules Rules) Rules {
 	}
 
 	isForce := func(d string) bool {
+		if strings.Contains(d, "tiktok") || strings.Contains(d, "tik-tok") {
+			return true
+		}
 		for _, p := range forceProxy {
 			if d == p || strings.HasSuffix(d, "."+p) {
 				return true
@@ -544,6 +548,8 @@ func parseSource(path string) Rules {
 			r.ProcessName = append(r.ProcessName, line[8:])
 		case strings.HasPrefix(line, "user-agent:"):
 			r.UserAgent = append(r.UserAgent, line[11:])
+		case strings.HasPrefix(line, "asn:"):
+			r.IPASN = append(r.IPASN, line[4:])
 		case strings.Contains(line, "/"):
 			r.IPCIDR = append(r.IPCIDR, line)
 		default:
@@ -563,6 +569,7 @@ func mergeRules(a, b Rules) Rules {
 	a.DomainKeyword = append(a.DomainKeyword, b.DomainKeyword...)
 	a.DomainRegex = append(a.DomainRegex, b.DomainRegex...)
 	a.IPCIDR = append(a.IPCIDR, b.IPCIDR...)
+	a.IPASN = append(a.IPASN, b.IPASN...)
 	a.ProcessName = append(a.ProcessName, b.ProcessName...)
 	a.UserAgent = append(a.UserAgent, b.UserAgent...)
 
@@ -571,6 +578,7 @@ func mergeRules(a, b Rules) Rules {
 	a.DomainKeyword = unique(a.DomainKeyword)
 	a.DomainRegex = unique(a.DomainRegex)
 	a.IPCIDR = unique(a.IPCIDR)
+	a.IPASN = unique(a.IPASN)
 	a.ProcessName = unique(a.ProcessName)
 	a.UserAgent = unique(a.UserAgent)
 	return a
@@ -628,7 +636,18 @@ func compileMihomoYAML(name string, rules Rules, outDir string, mode mihomoRuleM
 	lines = append(lines, "")
 	lines = append(lines, "payload:")
 
-	if mode.behavior == "ipcidr" {
+	if mode.behavior == "classical" {
+		for _, cidr := range rules.IPCIDR {
+			prefix := "IP-CIDR"
+			if strings.Contains(cidr, ":") {
+				prefix = "IP-CIDR6"
+			}
+			lines = append(lines, fmt.Sprintf("  - '%s,%s'", prefix, cidr))
+		}
+		for _, asn := range rules.IPASN {
+			lines = append(lines, fmt.Sprintf("  - 'IP-ASN,%s'", asn))
+		}
+	} else if mode.behavior == "ipcidr" {
 		for _, cidr := range rules.IPCIDR {
 			lines = append(lines, fmt.Sprintf("  - '%s'", cidr))
 		}
@@ -657,7 +676,16 @@ func compileMihomoYAML(name string, rules Rules, outDir string, mode mihomoRuleM
 
 func detectMihomoRuleMode(rules Rules, categoryIsIP bool) mihomoRuleMode {
 	hasIP := len(rules.IPCIDR) > 0
+	hasASN := len(rules.IPASN) > 0
 	hasDomain := len(rules.DomainSuffix) > 0 || len(rules.Domain) > 0
+
+	if hasASN {
+		return mihomoRuleMode{
+			isIP:     true,
+			behavior: "classical",
+			isEmpty:  !hasIP && !hasASN,
+		}
+	}
 
 	if categoryIsIP || (hasIP && !hasDomain) {
 		return mihomoRuleMode{
@@ -705,6 +733,9 @@ func compileTextList(name string, rules Rules, outDir string, isIP bool) int {
 		}
 		lines = append(lines, fmt.Sprintf("%s,%s", prefix, cidr))
 	}
+	for _, asn := range rules.IPASN {
+		lines = append(lines, fmt.Sprintf("IP-ASN,%s", asn))
+	}
 
 	suffix := ".list"
 	if isIP {
@@ -745,6 +776,9 @@ func compileQuanXList(name string, rules Rules, outDir string, isIP bool, catego
 		} else {
 			lines = append(lines, fmt.Sprintf("ip-cidr,%s,%s", cidr, policy))
 		}
+	}
+	for _, asn := range rules.IPASN {
+		lines = append(lines, fmt.Sprintf("ip-asn,%s,%s", asn, policy))
 	}
 	for _, ua := range rules.UserAgent {
 		lines = append(lines, fmt.Sprintf("USER-AGENT,%s,%s", ua, policy))
@@ -796,6 +830,7 @@ func compileEgernYAML(name string, rules Rules, outDir string) {
 	}
 	lines = appendStringSet(lines, "ip_cidr_set", v4)
 	lines = appendStringSet(lines, "ip_cidr6_set", v6)
+	lines = appendStringSet(lines, "ip_asn_set", rules.IPASN)
 	lines = appendStringSet(lines, "user_agent_set", rules.UserAgent)
 
 	content := strings.Join(lines, "\n") + "\n"
@@ -820,6 +855,9 @@ func compileLoonList(name string, rules Rules, outDir string, includeSpecial boo
 			prefix = "IP-CIDR6"
 		}
 		lines = append(lines, fmt.Sprintf("%s,%s", prefix, cidr))
+	}
+	for _, asn := range rules.IPASN {
+		lines = append(lines, fmt.Sprintf("IP-ASN,%s", asn))
 	}
 	if includeSpecial {
 		for _, p := range rules.ProcessName {
@@ -912,6 +950,9 @@ func compileExclaveRoute(name string, rules Rules, outDir string) {
 	}
 	for _, c := range rules.IPCIDR {
 		lines = append(lines, "ip:"+c)
+	}
+	for _, asn := range rules.IPASN {
+		lines = append(lines, "asn:"+asn)
 	}
 
 	content := strings.Join(lines, "\n") + "\n"
