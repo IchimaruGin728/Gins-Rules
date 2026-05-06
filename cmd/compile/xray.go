@@ -22,6 +22,14 @@ type ASNMapDef struct {
 	} `json:"services"`
 }
 
+type ASNPrefixRecord struct {
+	ASN  uint32 `json:"asn"`
+	CIDR string `json:"cidr"`
+	Org  string `json:"org,omitempty"`
+}
+
+type ASNPrefixIndex map[string][]ASNPrefixRecord
+
 func loadASNMap(root string) ASNMapDef {
 	var m ASNMapDef
 	data, err := os.ReadFile(filepath.Join(root, "source", "asn-map.json"))
@@ -33,9 +41,50 @@ func loadASNMap(root string) ASNMapDef {
 	return m
 }
 
+func loadASNPrefixIndex(root string) ASNPrefixIndex {
+	for _, path := range []string{
+		filepath.Join(root, "compiled", "asn-prefix-index.json"),
+		filepath.Join(root, "source", "asn-prefix-index.json"),
+	} {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		var index ASNPrefixIndex
+		if err := json.Unmarshal(data, &index); err != nil {
+			fmt.Printf("  [WARN] cannot parse %s: %v\n", path, err)
+			continue
+		}
+		return index
+	}
+
+	fmt.Printf("  [WARN] asn-prefix-index.json not found, geoasn.mmdb will only use CIDR-backed ASN rules\n")
+	return ASNPrefixIndex{}
+}
+
+func resolvedASNCIDRs(name string, rules Rules, prefixIndex ASNPrefixIndex) []string {
+	seen := make(map[string]bool)
+	var cidrs []string
+	for _, cidr := range rules.IPCIDR {
+		if !seen[cidr] {
+			seen[cidr] = true
+			cidrs = append(cidrs, cidr)
+		}
+	}
+	for _, record := range prefixIndex[name] {
+		if record.CIDR != "" && !seen[record.CIDR] {
+			seen[record.CIDR] = true
+			cidrs = append(cidrs, record.CIDR)
+		}
+	}
+	return cidrs
+}
+
 func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 	root := findRoot()
 	asnMapDef := loadASNMap(root)
+	asnPrefixIndex := loadASNPrefixIndex(root)
+	insertedASNNetworks := make(map[string]bool)
 
 	// 1. GeoIP MMDB
 	writerIP, _ := mmdbwriter.New(mmdbwriter.Options{
@@ -76,7 +125,7 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 				// Look up ASN numbers from asn-map.json
 				svcDef, hasDef := asnMapDef.Services[svcName]
 
-				for _, cidr := range rules.IPCIDR {
+				for _, cidr := range resolvedASNCIDRs(name, rules, asnPrefixIndex) {
 					_, network, err := net.ParseCIDR(cidr)
 					if err != nil {
 						continue
@@ -90,26 +139,39 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 					}); err != nil {
 						fmt.Printf("  [WARN] geoip(mmdb) insert failed for %s: %v\n", cidr, err)
 					}
+				}
 
-					// Write ASN entry once per prefix.
-					// When multiple ASNs are mapped to one service, pick the first ASN as canonical.
-					if hasDef && len(svcDef.ASNs) > 0 {
-						if err := writerASN.Insert(network, mmdbtype.Map{
-							"autonomous_system_number":       mmdbtype.Uint32(uint32(svcDef.ASNs[0])),
-							"autonomous_system_organization": mmdbtype.String(svcDef.Org),
-						}); err != nil {
-							fmt.Printf("  [WARN] geoasn(mmdb) insert failed for %s: %v\n", cidr, err)
-						}
-					} else {
-						// Fallback: write with org name only, ASN = 0
-						fmt.Printf("  [WARN] No ASN mapping for service '%s', writing org-only entry\n", svcName)
-						if err := writerASN.Insert(network, mmdbtype.Map{
-							"autonomous_system_number":       mmdbtype.Uint32(0),
-							"autonomous_system_organization": mmdbtype.String(tag),
-						}); err != nil {
-							fmt.Printf("  [WARN] geoasn(mmdb) fallback insert failed for %s: %v\n", cidr, err)
-						}
+				records := asnPrefixIndex[name]
+				if len(records) == 0 && len(rules.IPASN) > 0 {
+					fmt.Printf("  [WARN] geoasn(mmdb) has ASN declarations for %s but no expanded prefix index\n", name)
+				}
+
+				for _, record := range records {
+					if record.ASN == 0 || record.CIDR == "" {
+						continue
 					}
+					if insertedASNNetworks[record.CIDR] {
+						continue
+					}
+					_, network, err := net.ParseCIDR(record.CIDR)
+					if err != nil {
+						continue
+					}
+					org := record.Org
+					if org == "" && hasDef {
+						org = svcDef.Org
+					}
+					if org == "" {
+						org = fmt.Sprintf("AS%d", record.ASN)
+					}
+					if err := writerASN.Insert(network, mmdbtype.Map{
+						"autonomous_system_number":       mmdbtype.Uint32(record.ASN),
+						"autonomous_system_organization": mmdbtype.String(org),
+					}); err != nil {
+						fmt.Printf("  [WARN] geoasn(mmdb) insert failed for AS%d %s: %v\n", record.ASN, record.CIDR, err)
+						continue
+					}
+					insertedASNNetworks[record.CIDR] = true
 				}
 			}
 		}
@@ -137,6 +199,8 @@ func compileMMDB(allRules map[string]map[string]Rules, outDir string) error {
 }
 
 func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
+	root := findRoot()
+	asnPrefixIndex := loadASNPrefixIndex(root)
 	geositeList := &geodata.GeoSiteList{}
 	geoipList := &geodata.GeoIPList{}
 
@@ -169,11 +233,15 @@ func compileXrayDAT(allRules map[string]map[string]Rules, outDir string) error {
 			}
 
 			// 2. GeoIP (IP CIDRs)
-			if (category == "ip" || category == "asn") && len(rules.IPCIDR) > 0 {
+			cidrs := rules.IPCIDR
+			if category == "asn" {
+				cidrs = resolvedASNCIDRs(name, rules, asnPrefixIndex)
+			}
+			if (category == "ip" || category == "asn") && len(cidrs) > 0 {
 				geoIP := &geodata.GeoIP{
 					Code: strings.ToUpper(tag),
 				}
-				for _, cidr := range rules.IPCIDR {
+				for _, cidr := range cidrs {
 					ip, ipnet, err := net.ParseCIDR(cidr)
 					if err != nil {
 						fmt.Printf("  [Xray] Skip invalid CIDR: %s\n", cidr)

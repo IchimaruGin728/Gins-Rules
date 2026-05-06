@@ -127,6 +127,8 @@ func main() {
 	}
 	categoryMergedRules["ai"] = Rules{}
 
+	asnPrefixIndex := loadASNPrefixIndex(root)
+
 	for _, category := range categories {
 		ruleNames := make(map[string]bool)
 
@@ -184,6 +186,9 @@ func main() {
 
 			if category != "proxy" {
 				rules = sanitizeRules(rules)
+			}
+			if category == "asn" {
+				rules.IPCIDR = resolvedASNCIDRs(name, rules, asnPrefixIndex)
 			}
 
 			total := len(rules.DomainSuffix) + len(rules.Domain) +

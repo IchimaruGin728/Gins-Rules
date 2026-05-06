@@ -88,6 +88,18 @@ export default {
       return json({ status: 'ok', service: 'gins-rules', timestamp: Date.now() });
     }
 
+    if (path === '/api/build-summary') {
+      return handleR2JSON(env, 'ruleset/build-summary.json');
+    }
+
+    if (path === '/api/asn-prefix-index') {
+      return handleR2JSON(env, 'asn-prefix-index.json');
+    }
+
+    if (path === '/api/ruleset-manifest') {
+      return handleRulesetManifest(url, env);
+    }
+
     if (path === '/workflow/build-complete' && request.method === 'POST') {
       return handleBuildComplete(request, env);
     }
@@ -311,6 +323,38 @@ async function handleIconsCatalog(request: Request, env: Env): Promise<Response>
     status: assetResp.status,
     headers,
   });
+}
+
+async function handleR2JSON(env: Env, key: string): Promise<Response> {
+  const object = await env.RULES_BUCKET.get(key);
+  if (!object) {
+    return json({ error: 'not_found', key }, 404);
+  }
+
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set('etag', object.httpEtag);
+  headers.set('Content-Type', 'application/json; charset=utf-8');
+  headers.set('Cache-Control', 'public, max-age=300');
+  headers.set('Access-Control-Allow-Origin', '*');
+  return new Response(object.body, { headers });
+}
+
+async function handleRulesetManifest(url: URL, env: Env): Promise<Response> {
+  const format = url.searchParams.get('format') ?? '';
+  const category = url.searchParams.get('category') ?? '';
+  const formats = new Set(['singbox', 'mihomo', 'stash', 'surge', 'quantumultx', 'loon', 'egern', 'shadowrocket', 'surfboard', 'exclave']);
+  const categories = new Set(['proxy', 'direct', 'reject', 'ip', 'asn', 'ai']);
+
+  if (!formats.has(format) || !categories.has(category)) {
+    return json({
+      error: 'invalid_manifest_request',
+      formats: Array.from(formats).sort(),
+      categories: Array.from(categories).sort(),
+    }, 400);
+  }
+
+  return handleR2JSON(env, `ruleset/${format}/${category}/manifest.json`);
 }
 
 // ============================================================
