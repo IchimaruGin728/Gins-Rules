@@ -36,14 +36,9 @@ jobs:
           cache: true
 
       - name: Install Zig Latest
-        run: |
-          set -euo pipefail
-          ZIG_URL=$(curl -fsSL https://ziglang.org/download/index.json | jq -r '.master."x86_64-linux".tarball // .["0.16.0"]."x86_64-linux".tarball')
-          mkdir -p .zig
-          curl -fsSL "$ZIG_URL" -o /tmp/zig.tar.xz
-          tar -xf /tmp/zig.tar.xz -C .zig --strip-components=1
-          echo "$PWD/.zig" >> "$GITHUB_PATH"
-          .zig/zig version
+        uses: mlugg/setup-zig@v2
+        with:
+          version: master
 
       - name: Validate Zig Rule Formatter
         run: |
