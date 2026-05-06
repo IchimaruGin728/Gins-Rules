@@ -91098,8 +91098,11 @@ tijox.com
 tijox.hk
 tijox.net
 tijox.org
+tik-tokapi.com
 tik2019.com
 tikersport.com
+tiktoknewaccount.com
+tiktokrow-cdn.com
 tikuol.com
 tikv.org
 tileywy.com
@@ -117984,6 +117987,8 @@ regexp:^r+[0-9]+(---|\.)sn-(2x3|ni5|j5o)\w{5}\.xn--ngstr-lra8j\.com$
 +.tietuku.com
 +.tiexue.net
 +.tieyou.com
++.tiktokd.net
++.tiktokd.org
 +.timedoo.com
 +.timibase.com
 +.timmerse.com
@@ -130665,6 +130670,7 @@ evilamemv.com
 evildouyin.com
 evilfeishu.cn
 evilsnssdk.com
+eviltiktok.com
 eviltoutiao.com
 evinno.cn
 evketang.cn

@@ -63,6 +63,8 @@ turn.livekit.cloud
 keyword:openaicom-api
 24.199.123.28/32
 64.23.132.171/32
+asn:14061
+asn:20473
 full:chatgpt.livekit.cloud
 full:host.livekit.cloud
 turn.livekit.cloud
