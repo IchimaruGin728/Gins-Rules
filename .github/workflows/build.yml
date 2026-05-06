@@ -222,7 +222,7 @@ jobs:
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           cd dashboard
-          pnpm install
+          pnpm install --no-frozen-lockfile
           pnpm build
           # No longer copying to compiled/ as assets directory in wrangler.jsonc 
           # now points directly to dashboard/dist for stability.
