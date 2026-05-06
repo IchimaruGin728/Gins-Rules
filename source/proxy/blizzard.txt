@@ -1,3 +1,7 @@
+# blizzard
+# Auto-merged and deduplicated by Gins-Rules
+
 battle.net
+battlenet.com
 blizzard.com
 blz-contentstack.com

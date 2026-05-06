@@ -1,5 +1,11 @@
+# weibo
+# Auto-merged and deduplicated by Gins-Rules
+
+keyword:weibo
 sina.com
 sina.com.cn
 sinaimg.cn
 sinajs.cn
+weibo.cn
 weibo.com
+weibocdn.com

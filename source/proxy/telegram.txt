@@ -1,9 +1,20 @@
-full:api.imem.app
-full:api.swiftgram.app
+# telegram
+# Auto-merged and deduplicated by Gins-Rules
+
+109.239.140.0/24
+139.59.210.98/32
+149.154.160.0/20
+196.55.216.167/32
+5.28.192.0/18
+91.108.0.0/16
 cdn-telegram.org
 comments.app
 contest.com
+full:api.imem.app
+full:api.swiftgram.app
 graph.org
+keyword:nicegram
+keyword:telegram
 legra.ph
 mbrx.app
 quiz.directory
@@ -22,10 +33,3 @@ telesco.pe
 tg.dev
 tx.me
 usercontent.dev
-keyword:nicegram
-109.239.140.0/24
-139.59.210.98/32
-149.154.160.0/20
-196.55.216.167/32
-5.28.192.0/18
-91.108.0.0/16

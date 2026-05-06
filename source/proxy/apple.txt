@@ -4,15 +4,22 @@
 # ==============================
 
 100beatscheap.com
+12diasdepresentesdeitunes.com
 12diasderegalosdeitunes.cl
 12diasderegalosdeitunes.co
 12diasderegalosdeitunes.co.cr
 12diasderegalosdeitunes.co.ni
 12diasderegalosdeitunes.co.ve
+12diasderegalosdeitunes.com
+12diasderegalosdeitunes.com.co
+12diasderegalosdeitunes.com.hn
+12diasderegalosdeitunes.com.ni
+12diasderegalosdeitunes.com.ve
 12diasderegalosdeitunes.cr
 12diasderegalosdeitunes.gt
 12diasderegalosdeitunes.hn
 12diasderegalosdeitunes.pe
+12joursdecadeauxdeitunes.com
 1monsterbeatsbydreus.com
 1to1computing.com.au
 1to1conference.com.au
@@ -35,6 +42,7 @@ a0pple.net
 aaagradeheadphones.com
 aanaan.com
 aapl.tw
+aaplimg.com
 abcheadphones.com
 abeatsbydrdre.com
 account.apple.com
@@ -59,6 +67,7 @@ aple.com
 aplestore.com
 aplleipods.com
 apole.com
+app-store.wang
 app0le.com
 appattest.apple.com
 appe-store.com
@@ -406,6 +415,7 @@ applfe.com
 applle.com
 applw.com
 appmediagroup.com
+apps.apple.com
 appsto.re
 appstore.co.id
 appstore.com
@@ -761,6 +771,7 @@ casquesbeatsaudio.com
 catalina.hk
 cdn-apple-mapkit.com
 cdn-apple.com
+certs.apple.com
 cheap-beats-by-dre.net
 cheap-beatsbydre.com
 cheapbagshoes.com
@@ -820,6 +831,7 @@ chomp.com
 ciattackers.com
 cmhalq.com
 cnshopin.com
+configuration.apple.com
 cooliphonecasesstore.com
 coolmonster.net
 coreml.net
@@ -828,6 +840,9 @@ cozydrdrebeats.com
 cp4.cloudflare.com
 cqcorea.com
 crashlytics.com
+crl.apple.com
+crl3.digicert.com
+crl4.digicert.com
 cuffiesaldi.com
 cups.org
 custom-iphonecase.com
@@ -967,8 +982,10 @@ full:albert.apple.com
 full:app-site-association.cdn-apple.com
 full:app-site-association.networking.apple
 full:apple-events.akamaized.net
+full:apple.comscoreresearch.com
 full:appleworldwidedeveloper.hb-api.omtrdc.net
 full:appleworldwidedeveloper.sc.omtrdc.net
+full:apps.apple.com
 full:assistant.apple.com
 full:bag.itunes.apple.com
 full:beatselectronicsllc.tt.omtrdc.net
@@ -991,8 +1008,11 @@ full:icons.axm-usercontent-apple.com
 full:idv-prod1.apple.com
 full:idv.cdn-apple.com
 full:init-p01md.apple.com
+full:itunes.apple.com
 full:lookup-api.apple.com.edgekey.net
+full:np-edge.itunes.apple.com
 full:p-events-delivery.akamaized.net
+full:play-edge.itunes.apple.com
 full:pos-device.apple.com
 full:smp-device-content.apple.com
 full:sq-device.apple.com
@@ -1010,6 +1030,7 @@ gateway.push.apple.com
 gc.apple.com
 geoport.com
 getdrebeatssale.com
+gg.apple.com
 gmnetworks.net
 gobeatsye.com
 gobuyonlinestore.net
@@ -1106,6 +1127,7 @@ identity.apple.com
 idmsa.apple.com
 ids-apple.com
 idvd.eu
+ig.apple.com
 igoshopping.net
 ikids.com
 ilecture.co.nz
@@ -1255,10 +1277,14 @@ itools.info
 itun.es
 itunbes.com
 ituneas.com
+itunes-apple.cn
 itunes-radio.net
+itunes.apple.com
 itunes.ca
 itunes.co
 itunes.co.th
+itunes.com
+itunes.com.edgekey.net
 itunes.hk
 itunes.mx
 itunes.org
@@ -1273,6 +1299,12 @@ ituneslatino.com
 ituneslogin.net
 itunesmatch.com
 itunesparty.com
+itunesradio.cn
+itunesradio.com
+itunesradio.com.cn
+itunesradio.rio
+itunesradio.tv
+itunesradio.tw
 itunesstore.co
 itunesu.com
 itunesu.net
@@ -1288,6 +1320,7 @@ jkbeats.com
 keyword:apple-support.akadns.net
 keyword:apple.com.akadns.net
 keyword:apple.com.edgekey.net
+keyword:buy.itunes.apple.com
 keyword:icloud.com.akadns.net
 keyword:smp-device
 keyword:testflight
@@ -1296,6 +1329,8 @@ kobbeatssbydredk.com
 kopfhorergunstigshop.com
 latticedata.com
 launchpad.wang
+lcdn-locator.apple.com
+lcdn-registration.apple.com
 leecountytimes.com
 lexuemei.com
 livephotos.cn
@@ -1446,6 +1481,7 @@ myferrariheadphones.com
 myicloud.net
 myipod.net
 mylcloud.net
+mzstatic.com
 namemybeats.com
 neborder.com
 negozimonsterbeats.com
@@ -1462,6 +1498,10 @@ newton.com
 next.com
 nflhotsalejerseys.com
 nicesshop.net
+ocsp.apple.com
+ocsp.digicert.cn
+ocsp.digicert.com
+ocsp2.apple.com
 offerairjordanlebron.com
 officialbeatsbydreshop.com
 officialbeatsbydrestore.com
@@ -1551,6 +1591,7 @@ shopping-days.net
 shoppinguheadphones.com
 simplyipod.com
 siri.com
+skl.apple.com
 smoot.apple.com
 sneaker666.com
 sneakerpage.net
@@ -1593,6 +1634,7 @@ tradevip1.com
 truedepth3d.com
 tryrating.com
 tteshop.com
+tv.apple.com
 tvappstore.net
 ubnw.net
 ukipad.com
@@ -1622,6 +1664,7 @@ user-agent:Music*
 user-agent:passd*
 user-agent:Wallet*
 v-has.com
+valid.apple.com
 vertexsmb.com
 vip-beats.com
 vipbeatsbydre.com
@@ -1644,6 +1687,7 @@ worldcoinpay.com
 wpewebkit.org
 wuxiapple.com
 wwapple.net
+www-cdn.icloud.com.akadns.net
 www-sms-apple.com
 www.apple.com.edgekey.net
 wwwapple.com
@@ -1651,6 +1695,7 @@ wwwapple.net
 wwwapplemusic.com
 wwwicloud.com
 wwwipodlounge.com
+wwwitunes.com
 wwwlapple.com
 wwwmacbookair.com
 xn--czrs0t4phtr3a.cn

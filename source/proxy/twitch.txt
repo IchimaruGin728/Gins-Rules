@@ -1,4 +1,10 @@
+# twitch
+# Auto-merged and deduplicated by Gins-Rules
+
+ext-twitch.tv
 jtvnw.net
+keyword:ttvnw
 ttvnw.net
+twitch-ext.rootonline.de
 twitch.tv
 twitchcdn.net

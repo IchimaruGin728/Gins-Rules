@@ -1,4 +1,20 @@
+# dropbox
+# Auto-merged and deduplicated by Gins-Rules
+
+db.tt
+dropbox-dns.com
 dropbox.com
+dropbox.tech
+dropbox.zendesk.com
 dropboxapi.com
+dropboxbusiness.com
+dropboxcaptcha.com
+dropboxforum.com
+dropboxforums.com
+dropboxinsiders.com
+dropboxmail.com
+dropboxpartners.com
 dropboxstatic.com
 dropboxusercontent.com
+getdropbox.com
+keyword:dropbox

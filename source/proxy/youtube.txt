@@ -1,3 +1,8 @@
+# youtube
+# Auto-merged and deduplicated by Gins-Rules
+
+172.110.32.0/21
+216.73.80.0/20
 full:music.youtube.com
 full:youtubei.googleapis.com
 full:yt3.ggpht.com
@@ -6,6 +11,7 @@ ggpht.com
 googlevideo.com
 gvt1.com
 gvt2.com
+keyword:youtube
 video.google.com
 wide-youtube.l.google.com
 withyoutube.com
@@ -180,6 +186,3 @@ youtubekids.com
 youtubemobilesupport.com
 yt.be
 ytimg.com
-keyword:youtube
-172.110.32.0/21
-216.73.80.0/20

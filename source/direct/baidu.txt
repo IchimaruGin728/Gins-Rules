@@ -1,7 +1,17 @@
+# baidu
+# Auto-merged and deduplicated by Gins-Rules
+
 baidu.com
 baidubce.com
+baidubcr.com
 baiducontent.com
 baidupcs.com
+baidustatic.com
 bcebos.com
 bdimg.com
 bdstatic.com
+bdurl.net
+hao123.com
+hao123img.com
+jomodns.com
+yunjiasu-cdn.net

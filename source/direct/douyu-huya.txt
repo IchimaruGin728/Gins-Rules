@@ -1,6 +1,17 @@
+# douyu-huya
+# Auto-merged and deduplicated by Gins-Rules
+
+bytefcdnrd.com
 douyu.com
+douyu.tv
 douyucdn.cn
+douyucdn2.cn
 douyuscdn.com
+douyutv.com
+edgesrv.com
 huya.com
 huyacdn.cn
+huyagame.cn
 msstatic.com
+peiwanlu.com
+snapplay.com

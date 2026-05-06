@@ -1,3 +1,6 @@
+# discord
+# Auto-merged and deduplicated by Gins-Rules
+
 airhorn.solutions
 airhornbot.com
 bigbeans.solutions

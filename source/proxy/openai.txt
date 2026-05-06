@@ -1,6 +1,12 @@
+# openai
+# Auto-merged and deduplicated by Gins-Rules
+
 ai.com
 api.openai.com
+api.statsig.com
+auth0.com
 auth0.openai.com
+challenges.cloudflare.com
 chat.com
 chat.openai.com
 chatgpt.com
@@ -14,8 +20,10 @@ full:openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
 full:openaicomproductionae4b.blob.core.windows.net
 full:production-openaicom-storage.azureedge.net
 host.livekit.cloud
+identrust.com
 intercom.io
 intercomcdn.com
+keyword:openai
 launchdarkly.com
 oaistatic.com
 oaiusercontent.com
@@ -24,5 +32,7 @@ openai.com
 openaiapi-site.azureedge.net
 openaicom.imgix.net
 platform.openai.com
+sentry.io
 sora.com
+stripe.com
 turn.livekit.cloud

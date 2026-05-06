@@ -1,14 +1,22 @@
+# docker
+# Auto-merged and deduplicated by Gins-Rules
+
+compose-spec.io
+dhi.io
 docker.com
 docker.io
-dhi.io
+dockerhub.com
 dockerstatus.com
-full:auth.docker.io
-full:auth.docker.com
-full:login.docker.com
-full:hub.docker.com
-full:desktop.docker.com
 full:api.docker.com
 full:api.dso.docker.com
+full:auth.docker.com
+full:auth.docker.io
+full:d1q6f0aelx0por.cloudfront.net
+full:d2wy8f7a9ursnm.cloudfront.net
+full:d36jcksde1wxzq.cloudfront.net
+full:desktop.docker.com
+full:hub.docker.com
+full:login.docker.com
+full:production.cloudflare.docker.com
 full:registry-1.docker.io
 full:registry.scout.docker.com
-full:production.cloudflare.docker.com

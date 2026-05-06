@@ -1,8 +1,24 @@
+# bilibili
+# Auto-merged and deduplicated by Gins-Rules
+
 acg.tv
 acgvideo.com
+b23.tv
+bigfun.cn
+bigfunapp.cn
 biliapi.com
 biliapi.net
+bilibili.co
 bilibili.com
+bilibili.tv
 bilicomic.com
+biligame.com
+biligame.net
+biliintl.co
+bilivideo.cn
 bilivideo.com
+full:apiintl.biliapi.net
+full:upos-hz-mirrorakam.akamaized.net
 hdslb.com
+im9.com
+smtcdns.net

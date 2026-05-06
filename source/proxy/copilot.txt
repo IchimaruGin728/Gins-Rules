@@ -1,4 +1,8 @@
+# copilot
+# Auto-merged and deduplicated by Gins-Rules
+
 api.githubcopilot.com
+bing.com
 copilot-proxy.githubusercontent.com
 copilot-telemetry.githubusercontent.com
 copilot.github.com

@@ -1,3 +1,6 @@
+# github
+# Auto-merged and deduplicated by Gins-Rules
+
 atom.io
 copilot-proxy.githubusercontent.com
 dependabot.com
@@ -18,6 +21,7 @@ githubpreview.dev
 githubstatus.com
 githubuniverse.com
 githubusercontent.com
+keyword:github
 myoctocat.com
 npm.community
 npmjs.com

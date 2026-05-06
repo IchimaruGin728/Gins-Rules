@@ -1,3 +1,6 @@
+# spotify
+# Auto-merged and deduplicated by Gins-Rules
+
 audio-ak-spotify-com.akamaized.net
 byspotify.com
 full:audio4-ak-spotify-com.akamaized.net
@@ -7,6 +10,8 @@ full:spotify.com.edgesuite.net
 full:spotify.map.fastly.net
 full:spotify.map.fastlylb.net
 heads4-ak-spotify-com.akamaized.net
+keyword:-spotify-
+keyword:spotify.com
 pscdn.co
 scdn.co
 spoti.fi

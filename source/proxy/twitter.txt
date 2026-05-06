@@ -1,6 +1,10 @@
+# twitter
+# Auto-merged and deduplicated by Gins-Rules
+
 ads-twitter.com
 cms-twdigitalassets.com
 grok.com
+keyword:twitter
 periscope.tv
 pscp.tv
 t.co

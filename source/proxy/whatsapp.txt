@@ -1,3 +1,7 @@
+# whatsapp
+# Auto-merged and deduplicated by Gins-Rules
+
+keyword:whatsapp
 waba.inner.fbpigeon.com
 whatsapp.com
 whatsapp.net

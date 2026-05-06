@@ -1,3 +1,8 @@
+# claude
+# Auto-merged and deduplicated by Gins-Rules
+
+160.79.104.0/23
+2607:6bc0::/48
 anthropic.com
 clau.de
 claude.ai
@@ -5,8 +10,7 @@ claude.com
 claude.site
 claudeusercontent.com
 full:api.anthropic.com
+full:cdn.usefathom.com
 full:console.anthropic.com
 full:docs.anthropic.com
 full:status.anthropic.com
-160.79.104.0/23
-2607:6bc0::/48

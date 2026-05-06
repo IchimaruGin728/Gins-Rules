@@ -1,2 +1,9 @@
+# gitlab
+# Auto-merged and deduplicated by Gins-Rules
+
 gitlab.com
 gitlab.io
+gitlab.net
+gitter-static.net
+gitter.im
+keyword:gitlab

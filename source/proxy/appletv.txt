@@ -1,2 +1,7 @@
+# appletv
+# Auto-merged and deduplicated by Gins-Rules
+
+full:np-edge.itunes.apple.com
+full:play-edge.itunes.apple.com
 trailers.apple.com
 tv.apple.com

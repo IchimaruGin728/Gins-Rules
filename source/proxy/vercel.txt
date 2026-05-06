@@ -1,4 +1,32 @@
+# vercel
+# Auto-merged and deduplicated by Gins-Rules
+
+err.sh
+hyper.is
 netlify.app
 netlify.com
+nextjs.org
+now.sh
+static.fun
+title.sh
+turborepo.org
+vercel-analytics.com
+vercel-dns.com
+vercel-insights.com
+vercel-status.com
 vercel.app
+vercel.blog
 vercel.com
+vercel.events
+vercel.link
+vercel.live
+vercel.pub
+vercel.sh
+vercel.store
+zeit-world.co.uk
+zeit-world.com
+zeit-world.net
+zeit-world.org
+zeit.co
+zeit.sh
+zeitworld.com

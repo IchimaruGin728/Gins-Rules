@@ -33,8 +33,8 @@ The delivery URLs are backed by high-performance R2 storage with Cloudflare Smar
 | **Surge** | List | `/ruleset/surge/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/surge/proxy/apple.list) |
 | **Loon** | LSR | `/ruleset/loon/{cat}/{name}.lsr` | [apple.lsr](https://rules.ichimarugin728.dev/ruleset/loon/proxy/apple.lsr) |
 | **QuantumultX** | List | `/ruleset/quantumultx/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/quantumultx/proxy/apple.list) |
-| **Shadowrocket**| List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
-| **Surfboard** | List | `/ruleset/text/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/text/proxy/apple.list) |
+| **Shadowrocket**| List | `/ruleset/shadowrocket/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/shadowrocket/proxy/apple.list) |
+| **Surfboard** | List | `/ruleset/surfboard/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.list) |
 | **Surfboard (Opt)**| TXT | `/ruleset/surfboard/{cat}/{name}.txt` | [apple.txt](https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.txt) |
 | **Egern** | YAML | `/ruleset/egern/{cat}/{name}.yaml` | [apple.yaml](https://rules.ichimarugin728.dev/ruleset/egern/proxy/apple.yaml) |
 | **Exclave** | Route | `/ruleset/exclave/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/exclave/proxy/apple.list) |
@@ -101,4 +101,6 @@ pnpm dev
 - [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) — High-quality service rule sources.
 - [fmz200/wool_scripts](https://github.com/fmz200/wool_scripts) — Comprehensive Loon/Surge rule collections.
 - [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat).
+- [Rabbit-Spec/Surge](https://github.com/Rabbit-Spec/Surge) — Apple, China, China ASN/CIDR, and China media source rules.
+- [Centralmatrix3/Matrix-io](https://github.com/Centralmatrix3/Matrix-io) — Multi-service Surge rule source used for deduped supplemental rules.
 - Powered by **Cloudflare Workers** & **R2 Storage**.

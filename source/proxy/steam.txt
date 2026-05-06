@@ -1,4 +1,13 @@
+# steam
+# Auto-merged and deduplicated by Gins-Rules
+
 fanatical.com
+full:steambroadcast.akamaized.net
+full:steamcommunity-a.akamaihd.net
+full:steampipe.akamaized.net
+full:steamstore-a.akamaihd.net
+full:steamusercontent-a.akamaihd.net
+full:steamuserimages-a.akamaihd.net
 humblebundle.com
 playartifact.com
 s.team
@@ -15,6 +24,7 @@ steampipe-kr.akamaized.net
 steampipe-partner.akamaized.net
 steampipe.akamaized.net
 steampowered.com
+steamserver.net
 steamstat.us
 steamstatic.com
 steamunlocked.net
