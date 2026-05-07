@@ -1,9 +1,6 @@
 name: Build and Deploy
 
 on:
-  schedule:
-    - cron: "28 23 * * *" # 07:28 SGT
-    - cron: "16 9 * * *" # 17:16 SGT
   workflow_dispatch:
 
 permissions:
