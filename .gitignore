@@ -61,5 +61,3 @@ bin/
 .mmdb-cache/
 
 # Zig
-.zig-cache/
-zig-out/
