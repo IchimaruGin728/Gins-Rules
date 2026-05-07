@@ -1,4 +1,3 @@
-full:cdn.registerdisney.go.com
 20thcenturystudios.com.au
 20thcenturystudios.com.br
 20thcenturystudios.jp
@@ -128,6 +127,7 @@ espncdn.com
 espndotcom.tt.omtrdc.net
 espnqa.com
 execute-api.us-east-1.amazonaws.com
+full:cdn.registerdisney.go.com
 go-disneyworldgo.com
 go.com
 hotstar-cdn.net
@@ -169,6 +169,6 @@ themarvelexperiencetour.com
 thestationbymaker.com
 thewaltdisneycompany.com
 thisispolaris.com
+user-agent:Disney+*
 watchdisneyfe.com
 watchespn.com
-user-agent:Disney+*

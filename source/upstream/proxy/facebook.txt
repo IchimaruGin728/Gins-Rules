@@ -451,6 +451,8 @@ intagrm.com
 internet.org
 intgram.com
 ip6.static.sl-reverse.com
+keyword:facebook
+keyword:fbcdn
 kingstagram.com
 klik.me
 liverail.com
@@ -542,5 +544,3 @@ wwwmfacebook.com
 yogalayout.com
 zuckerberg.com
 zuckerberg.net
-keyword:facebook
-keyword:fbcdn
