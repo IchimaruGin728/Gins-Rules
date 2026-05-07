@@ -172,6 +172,35 @@ const ASN_TARGETS: &[AsnTarget] = &[
 #[tokio::main]
 async fn main() -> Result<()> {
     let root = find_root();
+    let command = std::env::args().nth(1).unwrap_or_else(|| "all".to_string());
+    let write = std::env::args().any(|arg| arg == "--write");
+
+    match command.as_str() {
+        "all" => {
+            normalize_sources(&root, write)?;
+            extract_geoip_asn(&root).await?;
+        }
+        "geo" | "geoip" | "asn" => extract_geoip_asn(&root).await?,
+        "normalize" | "normalise" => normalize_sources(&root, write)?,
+        "help" | "--help" | "-h" => print_help(),
+        other => {
+            anyhow::bail!("unknown rulekit command: {other}");
+        }
+    }
+
+    Ok(())
+}
+
+fn print_help() {
+    println!("Gins-Rules rulekit");
+    println!();
+    println!("Usage:");
+    println!("  rulekit all [--write]        Check source rules and extract GeoIP/ASN");
+    println!("  rulekit normalize [--write]  Normalize source rule text files");
+    println!("  rulekit geo        Extract GeoIP/ASN CIDR outputs");
+}
+
+async fn extract_geoip_asn(root: &Path) -> Result<()> {
     let ip_dir = root.join("source").join("upstream").join("ip");
     let compiled_dir = root.join("compiled");
     let tmp_dir = root.join(".mmdb-cache");
@@ -285,6 +314,116 @@ async fn main() -> Result<()> {
 
     println!("============================================================");
     Ok(())
+}
+
+fn normalize_sources(root: &Path, write: bool) -> Result<()> {
+    println!("============================================================");
+    println!("  Gins-Rules Rule Normalizer (Rust)");
+    println!("============================================================");
+
+    let source_root = root.join("source");
+    let dirs = [
+        source_root.join("proxy"),
+        source_root.join("direct"),
+        source_root.join("reject"),
+        source_root.join("ip"),
+        source_root.join("upstream").join("proxy"),
+        source_root.join("upstream").join("direct"),
+        source_root.join("upstream").join("reject"),
+        source_root.join("upstream").join("ip"),
+    ];
+
+    let mut files = 0usize;
+    let mut changed = 0usize;
+    let mut rules = 0usize;
+
+    for dir in dirs {
+        if !dir.exists() {
+            continue;
+        }
+        for path in list_txt_paths(&dir)? {
+            files += 1;
+            let before = fs::read_to_string(&path)?;
+            let normalized = normalize_rule_text(&before);
+            rules += normalized.lines().filter(|line| !line.trim().is_empty()).count();
+            if before != normalized {
+                changed += 1;
+                if write {
+                    fs::write(&path, normalized)?;
+                }
+            }
+        }
+    }
+
+    println!("  [NORMALIZE] files: {files}");
+    println!("  [NORMALIZE] changed: {changed}");
+    println!(
+        "  [NORMALIZE] mode: {}",
+        if write { "write" } else { "check" }
+    );
+    println!("  [NORMALIZE] rules: {rules}");
+    println!("============================================================");
+    Ok(())
+}
+
+fn list_txt_paths(dir: &Path) -> Result<Vec<PathBuf>> {
+    let mut files = Vec::new();
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.extension().and_then(|s| s.to_str()) == Some("txt") {
+            files.push(path);
+        }
+    }
+    files.sort();
+    Ok(files)
+}
+
+fn normalize_rule_text(input: &str) -> String {
+    let mut comments = BTreeSet::new();
+    let mut rules = BTreeSet::new();
+
+    for raw in input.lines() {
+        let line = raw.trim();
+        if line.is_empty() {
+            continue;
+        }
+        if line.starts_with('#') {
+            comments.insert(line.to_string());
+            continue;
+        }
+
+        let normalized = normalize_rule_line(line);
+        if !normalized.is_empty() {
+            rules.insert(normalized);
+        }
+    }
+
+    let mut output = Vec::new();
+    output.extend(comments);
+    output.extend(rules);
+    if output.is_empty() {
+        String::new()
+    } else {
+        format!("{}\n", output.into_iter().collect::<Vec<_>>().join("\n"))
+    }
+}
+
+fn normalize_rule_line(line: &str) -> String {
+    let mut value = line.trim().trim_end_matches('\r').trim().to_string();
+    if let Some((left, _comment)) = value.split_once(" #") {
+        value = left.trim().to_string();
+    }
+    if value.starts_with("+.") {
+        value = value.trim_start_matches("+.").to_string();
+    }
+    if value.starts_with('.') && value.chars().filter(|c| *c == '.').count() > 1 {
+        value = value.trim_start_matches('.').to_string();
+    }
+    if value.starts_with("DOMAIN-SUFFIX,") {
+        value = value.trim_start_matches("DOMAIN-SUFFIX,").to_string();
+    }
+    value
 }
 
 fn extract_country_cidrs(
