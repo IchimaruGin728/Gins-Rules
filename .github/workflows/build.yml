@@ -36,10 +36,11 @@ jobs:
           cache: true
 
       - name: Install Zig Latest
+        timeout-minutes: 8
         run: |
           set -euo pipefail
           curl_retry() {
-            curl --retry 8 --retry-all-errors --retry-delay 5 --connect-timeout 30 -fsSL "$@"
+            curl --retry 3 --retry-all-errors --retry-delay 3 --connect-timeout 20 --max-time 180 -fsSL "$@"
           }
 
           ZIG_URL=$(curl_retry https://ziglang.org/download/index.json | jq -r '.master."x86_64-linux".tarball // .["0.16.0"]."x86_64-linux".tarball')
@@ -48,8 +49,18 @@ jobs:
             exit 1
           fi
 
+          ZIG_FILE="${ZIG_URL##*/}"
           mkdir -p .zig
-          curl_retry "$ZIG_URL" -o /tmp/zig.tar.xz
+
+          for url in "https://pkg.machengine.org/zig/${ZIG_FILE}" "https://pkg.hexops.org/zig/${ZIG_FILE}" "$ZIG_URL"; do
+            echo "Downloading Zig from $url"
+            if curl_retry "$url" -o /tmp/zig.tar.xz; then
+              break
+            fi
+            rm -f /tmp/zig.tar.xz
+          done
+
+          test -s /tmp/zig.tar.xz
           tar -xf /tmp/zig.tar.xz -C .zig --strip-components=1
           echo "$PWD/.zig" >> "$GITHUB_PATH"
           .zig/zig version
