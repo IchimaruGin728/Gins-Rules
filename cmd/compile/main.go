@@ -205,17 +205,15 @@ func main() {
 			}
 
 			mihomoMode := detectMihomoRuleMode(rules, isIP)
-			yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), mihomoMode)
+			compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), mihomoMode)
 			mrsOK := false
 			if hasMihomo {
-				if !mihomoMode.isEmpty {
-					mrsOK = compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), mihomoMode.behavior, mihomoPath)
-				}
+				mrsOK = compileMihomoMRSForRules(name, rules, filepath.Join(mihomoDir, category), isIP, mihomoPath)
 			}
 
-			stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), mihomoMode)
+			compileMihomoYAML(name, rules, filepath.Join(stashDir, category), mihomoMode)
 			if hasMihomo && mrsOK {
-				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), mihomoMode.behavior, mihomoPath)
+				compileMihomoMRSForRules(name, rules, filepath.Join(stashDir, category), isIP, mihomoPath)
 			}
 
 			count := compileTextList(name, rules, filepath.Join(textDir, category), isIP)
@@ -288,17 +286,13 @@ func main() {
 		if hasSingBox {
 			compileSingBoxSRS(jsonPath, filepath.Join(singboxDir, category), singboxPath)
 		}
-		yamlPath := compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category), mihomoMode)
+		compileMihomoYAML(name, fullRules, filepath.Join(mihomoDir, category), mihomoMode)
 		if hasMihomo {
-			if !mihomoMode.isEmpty {
-				compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), mihomoMode.behavior, mihomoPath)
-			}
+			compileMihomoMRSForRules(name, fullRules, filepath.Join(mihomoDir, category), isIP, mihomoPath)
 		}
-		stashYAML := compileMihomoYAML(name, fullRules, filepath.Join(stashDir, category), mihomoMode)
+		compileMihomoYAML(name, fullRules, filepath.Join(stashDir, category), mihomoMode)
 		if hasMihomo {
-			if !mihomoMode.isEmpty {
-				compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), mihomoMode.behavior, mihomoPath)
-			}
+			compileMihomoMRSForRules(name, fullRules, filepath.Join(stashDir, category), isIP, mihomoPath)
 		}
 
 		compileTextList(name, fullRules, filepath.Join(textDir, category), isIP)
@@ -410,14 +404,14 @@ func compileDerivedCategoryRule(
 	}
 
 	mihomoMode := detectMihomoRuleMode(rules, false)
-	yamlPath := compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), mihomoMode)
-	if hasMihomo && !mihomoMode.isEmpty {
-		compileMihomoMRS(yamlPath, filepath.Join(mihomoDir, category), mihomoMode.behavior, mihomoPath)
+	compileMihomoYAML(name, rules, filepath.Join(mihomoDir, category), mihomoMode)
+	if hasMihomo {
+		compileMihomoMRSForRules(name, rules, filepath.Join(mihomoDir, category), false, mihomoPath)
 	}
 
-	stashYAML := compileMihomoYAML(name, rules, filepath.Join(stashDir, category), mihomoMode)
-	if hasMihomo && !mihomoMode.isEmpty {
-		compileMihomoMRS(stashYAML, filepath.Join(stashDir, category), mihomoMode.behavior, mihomoPath)
+	compileMihomoYAML(name, rules, filepath.Join(stashDir, category), mihomoMode)
+	if hasMihomo {
+		compileMihomoMRSForRules(name, rules, filepath.Join(stashDir, category), false, mihomoPath)
 	}
 
 	compileTextList(name, rules, filepath.Join(textDir, category), false)
@@ -709,6 +703,10 @@ func detectMihomoRuleMode(rules Rules, categoryIsIP bool) mihomoRuleMode {
 
 func compileMihomoMRS(yamlPath, outDir, behavior, mihomoPath string) bool {
 	name := strings.TrimSuffix(filepath.Base(yamlPath), ".yaml")
+	return compileMihomoMRSNamed(name, yamlPath, outDir, behavior, mihomoPath)
+}
+
+func compileMihomoMRSNamed(name, yamlPath, outDir, behavior, mihomoPath string) bool {
 	mrsPath := filepath.Join(outDir, name+".mrs")
 	cmd := exec.Command(mihomoPath, "convert-ruleset", behavior, "yaml", yamlPath, mrsPath)
 	output, err := cmd.CombinedOutput()
@@ -717,6 +715,22 @@ func compileMihomoMRS(yamlPath, outDir, behavior, mihomoPath string) bool {
 		return false
 	}
 	return true
+}
+
+func compileMihomoMRSForRules(name string, rules Rules, outDir string, categoryIsIP bool, mihomoPath string) bool {
+	mrsRules := rules
+	mrsRules.IPASN = nil
+
+	mode := detectMihomoRuleMode(mrsRules, categoryIsIP)
+	if mode.isEmpty {
+		return false
+	}
+
+	tmpPath := filepath.Join(outDir, "."+name+".mrs-input.yaml")
+	compileMihomoYAML("."+name+".mrs-input", mrsRules, outDir, mode)
+	defer os.Remove(tmpPath)
+
+	return compileMihomoMRSNamed(name, tmpPath, outDir, mode.behavior, mihomoPath)
 }
 
 func compileTextList(name string, rules Rules, outDir string, isIP bool) int {
