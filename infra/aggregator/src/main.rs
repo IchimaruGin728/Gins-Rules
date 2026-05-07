@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use ipnet::{Ipv4Net, Ipv6Net};
 use ipnetwork::IpNetwork;
 use maxminddb::Reader;
@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 #[derive(Deserialize)]
 struct CountryRecord {
@@ -22,6 +23,39 @@ struct Country {
 struct AsnRecord {
     autonomous_system_number: Option<u32>,
     autonomous_system_organization: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct UpstreamSource {
+    name: String,
+    url: String,
+    category: String,
+    target: String,
+    enabled: bool,
+}
+
+#[derive(Deserialize)]
+struct SingBoxRuleSet {
+    #[serde(default)]
+    rules: Vec<SingBoxRule>,
+}
+
+#[derive(Deserialize, Default)]
+struct SingBoxRule {
+    #[serde(default)]
+    domain: Vec<String>,
+    #[serde(default)]
+    domain_suffix: Vec<String>,
+    #[serde(default)]
+    domain_keyword: Vec<String>,
+    #[serde(default)]
+    domain_regex: Vec<String>,
+    #[serde(default)]
+    ip_cidr: Vec<String>,
+    #[serde(default)]
+    process_name: Vec<String>,
+    #[serde(default)]
+    user_agent: Vec<String>,
 }
 
 struct MmdbSource {
@@ -177,9 +211,11 @@ async fn main() -> Result<()> {
 
     match command.as_str() {
         "all" => {
+            sync_upstream_rules(&root).await?;
             normalize_sources(&root, write)?;
             extract_geoip_asn(&root).await?;
         }
+        "sync" | "sync-upstream" => sync_upstream_rules(&root).await?,
         "geo" | "geoip" | "asn" => extract_geoip_asn(&root).await?,
         "normalize" | "normalise" => normalize_sources(&root, write)?,
         "help" | "--help" | "-h" => print_help(),
@@ -195,9 +231,240 @@ fn print_help() {
     println!("Gins-Rules rulekit");
     println!();
     println!("Usage:");
-    println!("  rulekit all [--write]        Check source rules and extract GeoIP/ASN");
+    println!("  rulekit all [--write]        Sync, check source rules and extract GeoIP/ASN");
+    println!("  rulekit sync                 Sync upstream rules and QX/Loon parsers");
     println!("  rulekit normalize [--write]  Normalize source rule text files");
-    println!("  rulekit geo        Extract GeoIP/ASN CIDR outputs");
+    println!("  rulekit geo                  Extract GeoIP/ASN CIDR outputs");
+}
+
+async fn sync_upstream_rules(root: &Path) -> Result<()> {
+    println!("============================================================");
+    println!("  Gins-Rules Upstream Syncer (Rust)");
+    println!("============================================================");
+
+    let config_path = root.join("source").join("sources.json");
+    let config_data = fs::read(&config_path)
+        .with_context(|| format!("failed to read {}", config_path.display()))?;
+    let sources: Vec<UpstreamSource> = serde_json::from_slice(&config_data)
+        .with_context(|| format!("failed to parse {}", config_path.display()))?;
+
+    let client = http_client()?;
+    let mut merged: BTreeMap<String, BTreeMap<String, BTreeSet<String>>> = BTreeMap::new();
+
+    for source in sources {
+        if !source.enabled {
+            println!("  [SKIP] {}", source.name);
+            continue;
+        }
+
+        println!(
+            "  [FETCH] {} -> {}/{}",
+            source.name, source.category, source.target
+        );
+        match fetch_text(&client, &source.url).await {
+            Ok(content) => {
+                let rules = process_upstream_rules(&content);
+                let target_rules = merged
+                    .entry(source.category)
+                    .or_default()
+                    .entry(source.target)
+                    .or_default();
+                target_rules.extend(rules);
+            }
+            Err(err) => {
+                println!("  [WARN] {}: {err:#}", source.url);
+            }
+        }
+    }
+
+    let upstream_root = root.join("source").join("upstream");
+    for (category, targets) in merged {
+        let out_dir = upstream_root.join(category);
+        fs::create_dir_all(&out_dir)?;
+        for (target, rules) in targets {
+            let out_path = out_dir.join(format!("{target}.txt"));
+            let body = if rules.is_empty() {
+                String::new()
+            } else {
+                format!("{}\n", rules.into_iter().collect::<Vec<_>>().join("\n"))
+            };
+            fs::write(&out_path, body)?;
+            println!("  [WRITE] {}", out_path.strip_prefix(root)?.display());
+        }
+    }
+
+    sync_resource_parsers(root, &client).await?;
+
+    println!("============================================================");
+    Ok(())
+}
+
+async fn sync_resource_parsers(root: &Path, client: &reqwest::Client) -> Result<()> {
+    let qx_url =
+        "https://raw.githubusercontent.com/KOP-XIAO/QuantumultX/master/Scripts/resource-parser.js";
+    let loon_url = "https://github.com/sub-store-org/Sub-Store/releases/latest/download/sub-store-parser.loon.min.js";
+
+    println!("  [FETCH] QX Resource Parser");
+    let qx = fetch_text(client, qx_url).await?;
+    fs::write(
+        root.join("source").join("QX-Resource-Parser.js"),
+        clean_qx_parser(&qx),
+    )?;
+
+    println!("  [FETCH] Loon Resource Parser");
+    let loon = fetch_text(client, loon_url).await?;
+    fs::write(root.join("source").join("Loon-Resource-Parser.js"), loon)?;
+
+    Ok(())
+}
+
+fn process_upstream_rules(content: &str) -> BTreeSet<String> {
+    if let Ok(rule_set) = serde_json::from_str::<SingBoxRuleSet>(content) {
+        if !rule_set.rules.is_empty() {
+            let mut out = BTreeSet::new();
+            for rule in rule_set.rules {
+                out.extend(rule.domain_suffix.into_iter().map(clean_domain_suffix));
+                out.extend(
+                    rule.domain
+                        .into_iter()
+                        .map(|v| format!("full:{}", clean_value(&v))),
+                );
+                out.extend(
+                    rule.domain_keyword
+                        .into_iter()
+                        .map(|v| format!("keyword:{}", clean_value(&v))),
+                );
+                out.extend(
+                    rule.domain_regex
+                        .into_iter()
+                        .map(|v| format!("regexp:{}", clean_value(&v))),
+                );
+                out.extend(rule.ip_cidr.into_iter().map(|v| clean_value(&v)));
+                out.extend(
+                    rule.process_name
+                        .into_iter()
+                        .map(|v| format!("process:{}", clean_value(&v))),
+                );
+                out.extend(
+                    rule.user_agent
+                        .into_iter()
+                        .map(|v| format!("user-agent:{}", clean_value(&v))),
+                );
+            }
+            out.retain(|rule| !rule.is_empty());
+            return out;
+        }
+    }
+
+    let mut out = BTreeSet::new();
+    for raw in content.lines() {
+        let mut line = raw.trim();
+        if line.is_empty()
+            || line.starts_with('#')
+            || line.starts_with(';')
+            || line.starts_with("//")
+            || line == "payload:"
+        {
+            continue;
+        }
+        line = line.trim_start_matches('-').trim();
+        if line.starts_with('\'') && line.ends_with('\'') && line.len() > 1 {
+            line = &line[1..line.len() - 1];
+        }
+        if line.starts_with('"') && line.ends_with('"') && line.len() > 1 {
+            line = &line[1..line.len() - 1];
+        }
+
+        let parts: Vec<&str> = line.split(',').map(str::trim).collect();
+        if parts.len() >= 2 {
+            let value = clean_value(parts[1]);
+            let rule = match parts[0].to_ascii_uppercase().as_str() {
+                "DOMAIN-SUFFIX" | "HOST-SUFFIX" => clean_domain_suffix(&value),
+                "DOMAIN" | "HOST" => format!("full:{value}"),
+                "DOMAIN-KEYWORD" | "HOST-KEYWORD" => format!("keyword:{value}"),
+                "DOMAIN-REGEX" | "URL-REGEX" => format!("regexp:{value}"),
+                "PROCESS-NAME" | "PROCESS" => format!("process:{value}"),
+                "USER-AGENT" => format!("user-agent:{value}"),
+                "IP-CIDR" | "IP-CIDR6" | "IP6-CIDR" | "SRC-IP-CIDR" => value,
+                "IP-ASN" => format!("asn:{value}"),
+                _ => String::new(),
+            };
+            if !rule.is_empty() {
+                out.insert(rule);
+            }
+        } else if !line.contains(',') {
+            out.insert(normalize_external_rule_line(line));
+        }
+    }
+    out.retain(|rule| !rule.is_empty());
+    out
+}
+
+fn normalize_external_rule_line(line: &str) -> String {
+    let line = normalize_rule_line(line);
+    match line.split_once(':') {
+        Some(("domain", value)) => clean_domain_suffix(value),
+        Some(("full", value)) => format!("full:{}", clean_value(value)),
+        Some(("keyword", value)) => format!("keyword:{}", clean_value(value)),
+        Some(("regexp", value)) | Some(("regex", value)) => {
+            format!("regexp:{}", clean_value(value))
+        }
+        Some(("process", value)) => format!("process:{}", clean_value(value)),
+        Some(("user-agent", value)) => format!("user-agent:{}", clean_value(value)),
+        Some(("asn", value)) => format!("asn:{}", clean_value(value)),
+        _ => line,
+    }
+}
+
+fn clean_qx_parser(content: &str) -> String {
+    let Some(start) = content.find("/**") else {
+        return content.to_string();
+    };
+    let Some(relative_end) = content[start..].find("*/") else {
+        return content.to_string();
+    };
+    let end = start + relative_end + 2;
+    let header =
+        "/** \n * Gins-Rules QX Resource Parser\n * - Automated Proxy Rule Conversion\n */";
+    format!("{header}\n{}", &content[end..])
+}
+
+fn clean_value(value: &str) -> String {
+    let mut value = value.trim().to_string();
+    if let Some((left, _)) = value.split_once("//") {
+        value = left.trim().to_string();
+    }
+    value
+        .trim_end_matches(",no-resolve")
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"')
+        .to_string()
+}
+
+fn clean_domain_suffix(value: impl AsRef<str>) -> String {
+    let value = clean_value(value.as_ref());
+    value
+        .trim_start_matches("+.")
+        .trim_start_matches('.')
+        .to_string()
+}
+
+fn http_client() -> Result<reqwest::Client> {
+    reqwest::Client::builder()
+        .timeout(Duration::from_secs(30))
+        .user_agent("Gins-Rules/1.0 (https://github.com/IchimaruGin728/Gins-Rules)")
+        .build()
+        .context("failed to build HTTP client")
+}
+
+async fn fetch_text(client: &reqwest::Client, url: &str) -> Result<String> {
+    let response = client.get(url).send().await?;
+    let status = response.status();
+    if !status.is_success() {
+        anyhow::bail!("{url}: HTTP {status}");
+    }
+    Ok(response.text().await?)
 }
 
 async fn extract_geoip_asn(root: &Path) -> Result<()> {
@@ -345,7 +612,10 @@ fn normalize_sources(root: &Path, write: bool) -> Result<()> {
             files += 1;
             let before = fs::read_to_string(&path)?;
             let normalized = normalize_rule_text(&before);
-            rules += normalized.lines().filter(|line| !line.trim().is_empty()).count();
+            rules += normalized
+                .lines()
+                .filter(|line| !line.trim().is_empty())
+                .count();
             if before != normalized {
                 changed += 1;
                 if write {

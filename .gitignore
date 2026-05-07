@@ -59,5 +59,3 @@ bin/
 
 # MMDB cache
 .mmdb-cache/
-
-# Zig

@@ -167,6 +167,8 @@ func processRules(content string) []string {
 		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") || strings.HasPrefix(line, "//") {
 			continue
 		}
+		line = strings.TrimSpace(strings.TrimPrefix(line, "-"))
+		line = strings.Trim(line, `"'`)
 		parts := strings.Split(line, ",")
 		if len(parts) >= 2 {
 			ruleType := strings.ToUpper(strings.TrimSpace(parts[0]))
@@ -178,6 +180,8 @@ func processRules(content string) []string {
 				rules = append(rules, "full:"+val)
 			case "DOMAIN-KEYWORD", "HOST-KEYWORD":
 				rules = append(rules, "keyword:"+val)
+			case "DOMAIN-REGEX", "URL-REGEX":
+				rules = append(rules, "regexp:"+val)
 			case "PROCESS-NAME":
 				rules = append(rules, "process:"+val)
 			case "USER-AGENT":
@@ -191,7 +195,9 @@ func processRules(content string) []string {
 				rules = append(rules, "asn:"+val)
 			}
 		} else if !strings.Contains(line, ",") {
-			rules = append(rules, line)
+			if rule := normalizePlainRule(line); rule != "" {
+				rules = append(rules, rule)
+			}
 		}
 	}
 	return rules
@@ -199,10 +205,33 @@ func processRules(content string) []string {
 
 func cleanRuleValue(value string) string {
 	value = strings.TrimSpace(value)
+	value = strings.Trim(value, `"'`)
 	if idx := strings.Index(value, "//"); idx >= 0 {
 		value = strings.TrimSpace(value[:idx])
 	}
 	return strings.TrimSpace(strings.TrimSuffix(value, ",no-resolve"))
+}
+
+func normalizePlainRule(line string) string {
+	line = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "-"))
+	line = strings.Trim(line, `"'`)
+	line = strings.TrimPrefix(line, "+.")
+	if strings.HasPrefix(line, ".") && strings.Count(line, ".") > 1 {
+		line = strings.TrimPrefix(line, ".")
+	}
+
+	if strings.HasPrefix(line, "domain:") {
+		return strings.TrimPrefix(line, "domain:")
+	}
+	if strings.HasPrefix(line, "full:") ||
+		strings.HasPrefix(line, "keyword:") ||
+		strings.HasPrefix(line, "regexp:") ||
+		strings.HasPrefix(line, "process:") ||
+		strings.HasPrefix(line, "user-agent:") ||
+		strings.HasPrefix(line, "asn:") {
+		return line
+	}
+	return line
 }
 
 func processSingBoxRuleSet(content string) []string {
