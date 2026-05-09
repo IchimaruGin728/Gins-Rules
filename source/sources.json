@@ -126,6 +126,34 @@
     "enabled": true
   },
   {
+    "name": "Apple (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/Apple/Apple.list",
+    "category": "proxy",
+    "target": "apple",
+    "enabled": true
+  },
+  {
+    "name": "AppleTV (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/AppleTV/AppleTV.list",
+    "category": "proxy",
+    "target": "appletv",
+    "enabled": true
+  },
+  {
+    "name": "AppleMusic (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/AppleMusic/AppleMusic.list",
+    "category": "proxy",
+    "target": "apple-music",
+    "enabled": true
+  },
+  {
+    "name": "iCloud (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/iCloud/iCloud.list",
+    "category": "proxy",
+    "target": "apple",
+    "enabled": true
+  },
+  {
     "name": "Claude (BM7)",
     "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/Claude/Claude.list",
     "category": "proxy",
