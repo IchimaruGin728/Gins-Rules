@@ -158,7 +158,6 @@ jobs:
           cd compiler
           cargo run --release -- --root ..
           cd ..
-          cp -r public/* compiled/
           SERVICES=$(find source/proxy source/direct source/reject source/ip source/upstream -name '*.txt' 2>/dev/null | wc -l | tr -d ' ')
           ALL_TEXT_RULES=$(cat source/proxy/*.txt source/direct/*.txt source/reject/*.txt source/ip/*.txt source/upstream/proxy/*.txt source/upstream/direct/*.txt source/upstream/reject/*.txt source/upstream/ip/*.txt 2>/dev/null | grep -v '^#' | grep -v '^$' | wc -l | tr -d ' ')
           echo "services=$SERVICES" >> $GITHUB_OUTPUT
