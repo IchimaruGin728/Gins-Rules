@@ -210,27 +210,37 @@ fn main() -> Result<()> {
     ];
     for fmt in &format_dirs {
         let fmt_path = ruleset_dir.join(fmt);
+        println!("  [Diagnostic] Handling format dir: {}", fmt);
         if fmt_path.exists() {
+            println!("  [Diagnostic] Removing format dir: {}", fmt);
             fs::remove_dir_all(&fmt_path)?;
         }
+        println!("  [Diagnostic] Creating format dir: {}", fmt);
         fs::create_dir_all(&fmt_path)?;
         for cat in &output_categories {
             fs::create_dir_all(fmt_path.join(cat))?;
         }
     }
+    println!("  [Diagnostic] Directories created");
+
     let categories = vec!["proxy", "direct", "reject", "ip", "asn"];
     let mut category_merged_rules: HashMap<String, Rules> = HashMap::new();
     for cat in &output_categories {
         category_merged_rules.insert(cat.to_string(), Rules::default());
     }
+
     let mut stats = BuildStats::default();
     stats.formats = format_dirs.len();
     stats.timestamp = chrono::Utc::now().to_rfc3339();
+
     let mut all_rules: HashMap<String, HashMap<String, Rules>> = HashMap::new();
+
     for category in categories {
+        println!("  [Diagnostic] Processing category: {}", category);
         let mut rule_names: HashSet<String> = HashSet::new();
         let local_dir = root.join("source").join(category);
         let upstream_dir = root.join("source").join("upstream").join(category);
+
         let (actual_local, actual_upstream) = if category == "asn" {
             (
                 root.join("source").join("ip"),
@@ -239,6 +249,7 @@ fn main() -> Result<()> {
         } else {
             (local_dir, upstream_dir)
         };
+
         for d in &[&actual_local, &actual_upstream] {
             if d.exists() {
                 for entry in fs::read_dir(d)? {
@@ -257,26 +268,41 @@ fn main() -> Result<()> {
                 }
             }
         }
+
         let mut sorted_names: Vec<_> = rule_names.into_iter().collect();
         sorted_names.sort();
+        println!(
+            "  [Diagnostic] Found {} rules in category: {}",
+            sorted_names.len(),
+            category
+        );
+
         let processed_rules: Vec<(String, Rules)> = sorted_names
             .par_iter()
             .map(|name| {
                 let mut rules = Rules::default();
                 let local_path = actual_local.join(format!("{}.txt", name));
                 let upstream_path = actual_upstream.join(format!("{}.txt", name));
+
                 if local_path.exists() {
                     rules = merge_rules(rules, parse_source(&local_path).unwrap_or_default());
                 }
                 if upstream_path.exists() {
                     rules = merge_rules(rules, parse_source(&upstream_path).unwrap_or_default());
                 }
+
                 if category != "proxy" {
                     rules = sanitize_rules(rules);
                 }
+
                 (name.clone(), rules)
             })
             .collect();
+
+        println!(
+            "  [Diagnostic] Parsed and merged rules for category: {}",
+            category
+        );
         for (name, rules) in processed_rules {
             let count = rules.domain_suffix.len()
                 + rules.domain.len()
@@ -368,11 +394,17 @@ fn compile_to_all_formats(
     singbox_path: &Option<PathBuf>,
     mihomo_path: &Option<PathBuf>,
 ) -> Result<()> {
+    println!(
+        "    [Diagnostic] compile_to_all_formats starting for: {}",
+        name
+    );
     let is_ip = category == "ip" || category == "asn";
     let json_path = compile_singbox_json(name, rules, &ruleset_dir.join("singbox").join(category))?;
     if let Some(sb) = singbox_path {
+        println!("    [Diagnostic] Compiling singbox srs for: {}", name);
         compile_singbox_srs(&json_path, sb)?;
     }
+
     let mode = detect_mihomo_rule_mode(rules, is_ip);
     compile_mihomo_yaml(
         name,
@@ -381,6 +413,7 @@ fn compile_to_all_formats(
         &mode,
     )?;
     if let Some(mh) = mihomo_path {
+        println!("    [Diagnostic] Compiling mihomo mrs for: {}", name);
         compile_mihomo_mrs(
             name,
             rules,
@@ -389,6 +422,7 @@ fn compile_to_all_formats(
             mh,
         )?;
     }
+
     compile_mihomo_yaml(
         name,
         rules,
@@ -396,6 +430,7 @@ fn compile_to_all_formats(
         &mode,
     )?;
     if let Some(mh) = mihomo_path {
+        println!("    [Diagnostic] Compiling stash mrs for: {}", name);
         compile_mihomo_mrs(
             name,
             rules,
@@ -404,6 +439,8 @@ fn compile_to_all_formats(
             mh,
         )?;
     }
+
+    println!("    [Diagnostic] Compiling text lists for: {}", name);
     compile_text_list(name, rules, &ruleset_dir.join("text").join(category), is_ip)?;
     compile_quanx_list(
         name,
@@ -450,6 +487,11 @@ fn compile_to_all_formats(
     compile_surfboard_domainset(name, rules, &ruleset_dir.join("surfboard").join(category))?;
     compile_exclave_route(name, rules, &ruleset_dir.join("exclave").join(category))?;
     compile_anywhere_json(name, rules, &ruleset_dir.join("anywhere").join(category))?;
+
+    println!(
+        "    [Diagnostic] compile_to_all_formats finished for: {}",
+        name
+    );
     Ok(())
 }
 
@@ -464,10 +506,15 @@ fn pack_binary_assets(
     mmdb_geoip.metadata.database_type = "GeoLite2-Country".to_string();
     mmdb_geoip.metadata.languages = vec!["en".to_string()];
     mmdb_geoip.metadata.ip_version = IpVersion::V6;
+    mmdb_geoip.metadata.binary_format_major_version = 2;
+    mmdb_geoip.metadata.build_epoch = chrono::Utc::now().timestamp() as u64;
+
     let mut mmdb_geoasn = Database::default();
     mmdb_geoasn.metadata.database_type = "GeoLite2-ASN".to_string();
     mmdb_geoasn.metadata.languages = vec!["en".to_string()];
     mmdb_geoasn.metadata.ip_version = IpVersion::V6;
+    mmdb_geoasn.metadata.binary_format_major_version = 2;
+    mmdb_geoasn.metadata.build_epoch = chrono::Utc::now().timestamp() as u64;
     let asn_prefix_index_path = root.join("compiled").join("asn-prefix-index.json");
     let asn_prefix_index: HashMap<String, Vec<AsnPrefixRecord>> = if asn_prefix_index_path.exists()
     {
@@ -790,12 +837,15 @@ fn compile_mihomo_mrs(
     is_ip_category: bool,
     mihomo_path: &Path,
 ) -> Result<()> {
-    let mode = detect_mihomo_rule_mode(rules, is_ip_category);
+    let mut mrs_rules = rules.clone();
+    mrs_rules.ip_asn.clear();
+
+    let mode = detect_mihomo_rule_mode(&mrs_rules, is_ip_category);
     if mode.is_empty {
         return Ok(());
     }
     let tmp_path = out_dir.join(format!(".{}.mrs-input.yaml", name));
-    compile_mihomo_yaml(&format!(".{}.mrs-input", name), rules, out_dir, &mode)?;
+    compile_mihomo_yaml(&format!(".{}.mrs-input", name), &mrs_rules, out_dir, &mode)?;
     Command::new(mihomo_path)
         .args([
             "convert-ruleset",
