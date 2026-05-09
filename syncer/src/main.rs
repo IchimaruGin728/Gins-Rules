@@ -172,41 +172,30 @@ struct AsnPrefixRecord {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
     let root = find_root();
-
     match cli.command {
         Commands::Sync => run_sync(&root).await?,
         Commands::Icons => run_icons(&root).await?,
         Commands::He => run_he(&root).await?,
         Commands::Geo => run_geo(&root).await?,
     }
-
     Ok(())
 }
 
 async fn run_sync(root: &Path) -> Result<()> {
     let config_path = root.join("source").join("sources.json");
     let upstream_dir = root.join("source").join("upstream");
-
-    println!("============================================================");
-    println!("  Gins-Rules Upstream Syncer (Rust Refactor)");
-    println!("============================================================");
-
     let config_data = fs::read_to_string(&config_path)?;
     let sources: Vec<UpstreamSource> = serde_json::from_str(&config_data)?;
-
     let mut merged_results: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
-
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30))
         .user_agent("Gins-Rules/1.0")
         .build()?;
-
     for src in sources {
         if !src.enabled {
             continue;
         }
         println!("  Fetching {} (targeting {})...", src.name, src.target);
-
         if let Ok(resp) = client.get(&src.url).send().await {
             if resp.status().is_success() {
                 let content = resp.text().await?;
@@ -220,9 +209,8 @@ async fn run_sync(root: &Path) -> Result<()> {
             }
         }
     }
-
     for (cat, targets) in merged_results {
-        let out_dir = upstream_dir.join(&cat);
+        let out_dir = upstream_dir.join(cat);
         fs::create_dir_all(&out_dir)?;
         for (name, rules) in targets {
             fs::write(
@@ -232,11 +220,8 @@ async fn run_sync(root: &Path) -> Result<()> {
             println!("  [SUCCESS] Written {} rules to {}.txt", rules.len(), name);
         }
     }
-
     sync_qx_parser(&client, root).await?;
     sync_loon_parser(&client, root).await?;
-
-    println!("\n  Sync complete!");
     Ok(())
 }
 
@@ -248,20 +233,13 @@ async fn run_icons(root: &Path) -> Result<()> {
         .join("dashboard")
         .join("public")
         .join("icons-catalog.json");
-
-    println!("============================================================");
-    println!("  Gins-Icons Advanced Aggregator (Rust Refactor)");
-    println!("============================================================");
-
     let config_data = fs::read_to_string(&config_path)?;
     let sources: Vec<IconSource> = serde_json::from_str(&config_data)?;
-
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30))
         .user_agent("Gins-Rules/1.0")
         .build()?;
     let all_icons = Arc::new(Mutex::new(Vec::new()));
-
     let mut futures = Vec::new();
     for src in sources {
         if !src.enabled {
@@ -270,7 +248,6 @@ async fn run_icons(root: &Path) -> Result<()> {
         let client_clone = client.clone();
         let all_icons_clone = Arc::clone(&all_icons);
         futures.push(async move {
-            println!(" [FETCH] {}...", src.name);
             if let Ok(resp) = client_clone.get(&src.url).send().await {
                 if let Ok(body) = resp.text().await {
                     let raw_icons = extract_icons(&body);
@@ -297,14 +274,11 @@ async fn run_icons(root: &Path) -> Result<()> {
                         });
                     }
                     all_icons_clone.lock().unwrap().extend(normalized);
-                    println!(" [SUCCESS] Got icons from {}", src.name);
                 }
             }
         });
     }
-
     futures::future::join_all(futures).await;
-
     let mut icons = all_icons.lock().unwrap().clone();
     icons.sort_by(|a, b| {
         if a.source != b.source {
@@ -313,24 +287,16 @@ async fn run_icons(root: &Path) -> Result<()> {
             a.name.to_lowercase().cmp(&b.name.to_lowercase())
         }
     });
-
     let final_data = serde_json::to_string_pretty(&icons)?;
     fs::create_dir_all(out_path.parent().unwrap())?;
     fs::write(&out_path, &final_data)?;
     fs::create_dir_all(dashboard_path.parent().unwrap())?;
     fs::write(&dashboard_path, &final_data)?;
-
     let mut hasher = Sha256::new();
     hasher.update(&final_data);
     let hash_str = hex::encode(hasher.finalize());
     let hash_json = serde_json::json!({ "sha256": hash_str, "total": icons.len().to_string() });
     fs::write(hash_path, serde_json::to_string_pretty(&hash_json)?)?;
-
-    println!(
-        "\n [DONE] Total icons: {} | Fingerprint: {}",
-        icons.len(),
-        &hash_str[..8]
-    );
     Ok(())
 }
 
@@ -338,20 +304,13 @@ async fn run_he(root: &Path) -> Result<()> {
     let asn_map_path = root.join("source").join("asn-map.json");
     let out_dir = root.join("source").join("upstream").join("ip");
     fs::create_dir_all(&out_dir)?;
-
-    println!("============================================================");
-    println!("  Gins-Rules RIPE BGP + Official CIDR Syncer (Rust)");
-    println!("============================================================");
-
     let asn_map_data = fs::read_to_string(&asn_map_path)?;
     let asn_map: ASNMap = serde_json::from_str(&asn_map_data)?;
-
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30))
         .user_agent("Gins-Rules/1.0")
         .build()?;
     let mut results: HashMap<String, HashSet<String>> = HashMap::new();
-
     for (svc_name, svc_def) in &asn_map.services {
         results.insert(svc_name.clone(), HashSet::new());
         for &asn in &svc_def.asns {
@@ -368,16 +327,14 @@ async fn run_he(root: &Path) -> Result<()> {
                     }
                 }
             }
-            tokio::time::sleep(Duration::from_millis(100)).await;
+            tokio::time::sleep(Duration::from_millis(50)).await;
         }
     }
-
     let official_sources = vec![
         ("telegram", "https://core.telegram.org/resources/cidr.txt"),
         ("cloudflare", "https://www.cloudflare.com/ips-v4"),
         ("cloudflare", "https://www.cloudflare.com/ips-v6"),
     ];
-
     for (svc, url) in official_sources {
         if let Ok(resp) = client.get(url).send().await {
             if let Ok(body) = resp.text().await {
@@ -393,7 +350,6 @@ async fn run_he(root: &Path) -> Result<()> {
             }
         }
     }
-
     for (svc_name, cidrs) in results {
         if cidrs.is_empty() {
             continue;
@@ -406,7 +362,6 @@ async fn run_he(root: &Path) -> Result<()> {
         )?;
         println!("  [OK] asn-{}.txt → {} CIDRs", svc_name, sorted.len());
     }
-
     Ok(())
 }
 
@@ -414,36 +369,25 @@ async fn run_geo(root: &Path) -> Result<()> {
     let ip_dir = root.join("source").join("upstream").join("ip");
     let compiled_dir = root.join("compiled");
     let tmp_dir = root.join(".mmdb-cache");
-
     fs::create_dir_all(&ip_dir)?;
     fs::create_dir_all(&compiled_dir)?;
     fs::create_dir_all(&tmp_dir)?;
-
-    println!("============================================================");
-    println!("  Gins-Rules MMDB Parser (Rust Extreme Version)");
-    println!("============================================================");
-
     let mut country_cidrs: HashMap<String, HashSet<IpNetwork>> = HashMap::new();
     let mut asn_cidrs: HashMap<u32, Vec<AsnNetwork>> = HashMap::new();
-
     for src in MMDB_SOURCES {
-        println!("\n  Processing {}...", src.name);
         let local_path = tmp_dir.join(format!("{}.mmdb", src.name));
-
         if !local_path.exists() {
             println!("  Downloading {}...", src.url);
             let response = reqwest::get(src.url).await?.bytes().await?;
             fs::write(&local_path, response)?;
         }
-
         let reader = Reader::open_readfile(&local_path)?;
         match src.r#type {
             "country" => {
                 let iter = reader.networks(Default::default())?;
                 for result in iter {
                     let lookup = result?;
-                    let record: Option<CountryRecord> = lookup.decode()?;
-                    if let Some(record) = record {
+                    if let Ok(Some(record)) = lookup.decode::<CountryRecord>() {
                         if let Some(val) = record.country {
                             let code = if val.is_string() {
                                 val.as_str().map(|s| s.to_string())
@@ -454,7 +398,7 @@ async fn run_geo(root: &Path) -> Result<()> {
                             };
                             if let Some(c) = code {
                                 country_cidrs
-                                    .entry(c)
+                                    .entry(c.to_uppercase())
                                     .or_default()
                                     .insert(lookup.network()?);
                             }
@@ -466,24 +410,24 @@ async fn run_geo(root: &Path) -> Result<()> {
                 let iter = reader.networks(Default::default())?;
                 for result in iter {
                     let lookup = result?;
-                    let record: Option<AsnRecord> = lookup.decode()?;
-                    if let Some(record) = record {
+                    if let Ok(Some(record)) = lookup.decode::<AsnRecord>() {
                         if let Some(asn) = record.autonomous_system_number {
                             asn_cidrs.entry(asn).or_default().push(AsnNetwork {
                                 net: lookup.network()?,
-                                org: record.autonomous_system_organization,
+                                org: record.autonomous_system_organization.clone(),
                             });
                         }
                     }
                 }
             }
             _ => (),
-        };
+        }
     }
-
-    let common_regions: HashSet<&str> = vec!["CN", "SG", "TW", "JP", "US"].into_iter().collect();
     let mut not_cn = HashSet::new();
-
+    let common_regions: HashSet<&str> =
+        vec!["CN", "SG", "TW", "JP", "US", "HK", "KR", "UK", "DE", "FR"]
+            .into_iter()
+            .collect();
     for (code, nets) in &country_cidrs {
         if code != "CN" {
             for net in nets {
@@ -494,18 +438,14 @@ async fn run_geo(root: &Path) -> Result<()> {
             write_aggregated_ip_list(&ip_dir.join(format!("{}.txt", code.to_lowercase())), nets)?;
         }
     }
-
     if !not_cn.is_empty() {
         write_aggregated_ip_list(&ip_dir.join("!cn.txt"), &not_cn)?;
     }
-
     let targets = discover_asn_targets(root)?;
     let mut prefix_index: BTreeMap<String, Vec<AsnPrefixRecord>> = BTreeMap::new();
-
     for (target_name, target_asns) in targets {
         let mut merged = HashSet::new();
         let mut records = Vec::new();
-
         for asn in target_asns {
             let Some(nets) = asn_cidrs.get(&asn) else {
                 continue;
@@ -519,7 +459,6 @@ async fn run_geo(root: &Path) -> Result<()> {
                     org = entry.org.clone();
                 }
             }
-
             for cidr in aggregate_networks(&per_asn) {
                 records.push(AsnPrefixRecord {
                     asn,
@@ -528,18 +467,26 @@ async fn run_geo(root: &Path) -> Result<()> {
                 });
             }
         }
-
         if !merged.is_empty() {
             write_aggregated_ip_list(&ip_dir.join(format!("{}.txt", target_name)), &merged)?;
             records.sort_by(|a, b| a.asn.cmp(&b.asn).then_with(|| a.cidr.cmp(&b.cidr)));
             prefix_index.insert(target_name, records);
         }
     }
-
     let index_json = serde_json::to_vec_pretty(&prefix_index)?;
     fs::write(compiled_dir.join("asn-prefix-index.json"), index_json)?;
-
-    println!("============================================================");
+    let mut raw_asn_index: HashMap<u32, Vec<String>> = HashMap::new();
+    for (asn, networks) in asn_cidrs {
+        let mut nets = HashSet::new();
+        for n in networks {
+            nets.insert(n.net);
+        }
+        raw_asn_index.insert(asn, aggregate_networks(&nets));
+    }
+    fs::write(
+        compiled_dir.join("raw-asn-index.json"),
+        serde_json::to_vec_pretty(&raw_asn_index)?,
+    )?;
     Ok(())
 }
 
@@ -556,11 +503,17 @@ fn discover_asn_targets(root: &Path) -> Result<BTreeMap<String, BTreeSet<u32>>> 
             }
         }
     }
-
-    for dir in [
+    let dirs = [
+        root.join("source").join("proxy"),
+        root.join("source").join("direct"),
+        root.join("source").join("reject"),
         root.join("source").join("ip"),
+        root.join("source").join("upstream").join("proxy"),
+        root.join("source").join("upstream").join("direct"),
+        root.join("source").join("upstream").join("reject"),
         root.join("source").join("upstream").join("ip"),
-    ] {
+    ];
+    for dir in dirs {
         let Ok(entries) = fs::read_dir(dir) else {
             continue;
         };
@@ -572,9 +525,6 @@ fn discover_asn_targets(root: &Path) -> Result<BTreeMap<String, BTreeSet<u32>>> 
             let Some(name) = path.file_stem().and_then(|s| s.to_str()) else {
                 continue;
             };
-            if !name.starts_with("asn-") {
-                continue;
-            }
             let data = fs::read_to_string(&path)?;
             for line in data.lines() {
                 let line = line.trim();

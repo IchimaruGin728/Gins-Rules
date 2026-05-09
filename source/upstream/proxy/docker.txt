@@ -1,0 +1,7 @@
+full:d1q6f0aelx0por.cloudfront.net
+full:d2wy8f7a9ursnm.cloudfront.net
+full:d36jcksde1wxzq.cloudfront.net
+compose-spec.io
+docker.com
+docker.io
+dockerhub.com

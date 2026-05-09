@@ -376,11 +376,11 @@ fn main() -> Result<()> {
             &mihomo_path,
         )?;
     }
-    pack_binary_assets(&all_rules, &ruleset_dir, &root)?;
+    pack_binary_assets(&all_rules, &compiled_dir, &root)?;
     generate_manifests(&ruleset_dir, &format_dirs)?;
     copy_parsers_js(&root, &compiled_dir)?;
     fs::write(
-        ruleset_dir.join("build-summary.json"),
+        compiled_dir.join("build-summary.json"),
         serde_json::to_string_pretty(&stats)?,
     )?;
     Ok(())
@@ -558,49 +558,73 @@ fn pack_binary_assets(
                     geosite_list.entry.push(site);
                 }
             }
-            let mut cidrs = rules.ip_cidr.clone();
-            if category == "asn" {
-                if let Some(records) = asn_prefix_index.get(name) {
-                    for r in records {
-                        cidrs.push(r.cidr.clone());
+            if category == "ip" || category == "asn" {
+                let mut cidrs = rules.ip_cidr.clone();
+                if category == "asn" {
+                    if let Some(records) = asn_prefix_index.get(name) {
+                        for r in records {
+                            cidrs.push(r.cidr.clone());
+                        }
                     }
                 }
-            }
-            cidrs.sort();
-            cidrs.dedup();
-            if !cidrs.is_empty() {
-                let mut geo_ip = GeoIp {
-                    country_code: tag.clone(),
-                    cidr: Vec::new(),
-                };
-                for cidr_str in &cidrs {
-                    if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
-                        let ip_bytes = match net.addr {
-                            IpAddr::V4(a) => a.to_ipv6_mapped().octets().to_vec(),
-                            IpAddr::V6(a) => a.octets().to_vec(),
-                        };
-                        geo_ip.cidr.push(Cidr {
-                            ip: ip_bytes,
-                            prefix: net.mask as u32,
-                        });
-                        let data_ref = mmdb_geoip
-                            .insert_value(&CountryRecord {
-                                country: CountryIso {
-                                    iso_code: tag.clone(),
-                                },
-                            })
-                            .unwrap();
-                        mmdb_geoip.insert_node(net, data_ref);
-                    }
+                cidrs.sort();
+                cidrs.dedup();
+
+                let mut geoip_tag = tag.clone();
+                if category == "asn" {
+                    geoip_tag = name.strip_prefix("asn-").unwrap_or(name).to_uppercase();
                 }
-                if !geo_ip.cidr.is_empty() {
-                    geoip_list.entry.push(geo_ip);
+
+                if !cidrs.is_empty() {
+                    let mut geo_ip = GeoIp {
+                        country_code: geoip_tag.clone(),
+                        cidr: Vec::new(),
+                    };
+                    for cidr_str in &cidrs {
+                        if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
+                            let ip_bytes = match net.addr {
+                                IpAddr::V4(a) => a.octets().to_vec(),
+                                IpAddr::V6(a) => a.octets().to_vec(),
+                            };
+                            geo_ip.cidr.push(Cidr {
+                                ip: ip_bytes,
+                                prefix: net.mask as u32,
+                            });
+
+                            let mmdb_net = match net.addr {
+                                IpAddr::V4(a) => IpAddrWithMask::new(
+                                    IpAddr::V6(a.to_ipv6_mapped()),
+                                    net.mask + 96,
+                                ),
+                                IpAddr::V6(_) => net,
+                            };
+
+                            let data_ref = mmdb_geoip
+                                .insert_value(&CountryRecord {
+                                    country: CountryIso {
+                                        iso_code: geoip_tag.clone(),
+                                    },
+                                })
+                                .unwrap();
+                            mmdb_geoip.insert_node(mmdb_net, data_ref);
+                        }
+                    }
+                    if !geo_ip.cidr.is_empty() {
+                        geoip_list.entry.push(geo_ip);
+                    }
                 }
             }
             if category == "asn" {
                 if let Some(records) = asn_prefix_index.get(name) {
                     for r in records {
                         if let Ok(net) = r.cidr.parse::<IpAddrWithMask>() {
+                            let mmdb_net = match net.addr {
+                                IpAddr::V4(a) => IpAddrWithMask::new(
+                                    IpAddr::V6(a.to_ipv6_mapped()),
+                                    net.mask + 96,
+                                ),
+                                IpAddr::V6(_) => net,
+                            };
                             let org = r.org.clone().unwrap_or_else(|| format!("AS{}", r.asn));
                             let data_ref = mmdb_geoasn
                                 .insert_value(&AsnRecord {
@@ -608,7 +632,7 @@ fn pack_binary_assets(
                                     autonomous_system_organization: org,
                                 })
                                 .unwrap();
-                            mmdb_geoasn.insert_node(net, data_ref);
+                            mmdb_geoasn.insert_node(mmdb_net, data_ref);
                         }
                     }
                 }
@@ -759,60 +783,16 @@ fn compile_singbox_srs(json_path: &Path, singbox_path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn compile_mihomo_yaml(
-    name: &str,
-    rules: &Rules,
-    out_dir: &Path,
-    mode: &MihomoRuleMode,
-) -> Result<()> {
-    let mut lines = vec![
-        format!("# Gins-Rules: {}", name),
-        "# Auto-generated, do not edit".to_string(),
-        "".to_string(),
-        "payload:".to_string(),
-    ];
-    if mode.behavior == "classical" {
-        for cidr in &rules.ip_cidr {
-            lines.push(format!(
-                "  - '{},{}'",
-                if cidr.contains(':') {
-                    "IP-CIDR6"
-                } else {
-                    "IP-CIDR"
-                },
-                cidr
-            ));
-        }
-        for asn in &rules.ip_asn {
-            lines.push(format!("  - 'IP-ASN,{}'", asn));
-        }
-    } else if mode.behavior == "ipcidr" {
-        for cidr in &rules.ip_cidr {
-            lines.push(format!("  - '{}'", cidr));
-        }
-    } else {
-        let mut domains = rules.domain_suffix.clone();
-        domains.extend(rules.domain.clone());
-        let domains = unique(domains);
-        for d in domains {
-            if d.matches('.').count() > 5 {
-                continue;
-            }
-            lines.push(format!("  - '{}'", d));
-        }
-    }
-    fs::write(
-        out_dir.join(format!("{}.yaml", name)),
-        lines.join("\n") + "\n",
-    )?;
-    Ok(())
-}
-
 fn detect_mihomo_rule_mode(rules: &Rules, is_ip_category: bool) -> MihomoRuleMode {
     let has_ip = !rules.ip_cidr.is_empty();
     let has_asn = !rules.ip_asn.is_empty();
-    let has_domain = !rules.domain_suffix.is_empty() || !rules.domain.is_empty();
-    if has_asn {
+    let has_domain = !rules.domain_suffix.is_empty()
+        || !rules.domain.is_empty()
+        || !rules.domain_keyword.is_empty()
+        || !rules.domain_regex.is_empty();
+    let has_other = !rules.process_name.is_empty() || !rules.user_agent.is_empty();
+
+    if has_other || has_asn || (has_ip && has_domain) {
         return MihomoRuleMode {
             behavior: "classical".to_string(),
             is_empty: false,
@@ -837,15 +817,12 @@ fn compile_mihomo_mrs(
     is_ip_category: bool,
     mihomo_path: &Path,
 ) -> Result<()> {
-    let mut mrs_rules = rules.clone();
-    mrs_rules.ip_asn.clear();
-
-    let mode = detect_mihomo_rule_mode(&mrs_rules, is_ip_category);
+    let mode = detect_mihomo_rule_mode(rules, is_ip_category);
     if mode.is_empty {
         return Ok(());
     }
     let tmp_path = out_dir.join(format!(".{}.mrs-input.yaml", name));
-    compile_mihomo_yaml(&format!(".{}.mrs-input", name), &mrs_rules, out_dir, &mode)?;
+    compile_mihomo_yaml(&format!(".{}.mrs-input", name), rules, out_dir, &mode)?;
     Command::new(mihomo_path)
         .args([
             "convert-ruleset",
@@ -856,6 +833,73 @@ fn compile_mihomo_mrs(
         ])
         .output()?;
     fs::remove_file(tmp_path)?;
+    Ok(())
+}
+
+fn compile_mihomo_yaml(
+    name: &str,
+    rules: &Rules,
+    out_dir: &Path,
+    mode: &MihomoRuleMode,
+) -> Result<()> {
+    let mut lines = vec![
+        format!("# Gins-Rules: {}", name),
+        "# Auto-generated, do not edit".to_string(),
+        "".to_string(),
+        "payload:".to_string(),
+    ];
+    if mode.behavior == "classical" {
+        for d in &rules.domain_suffix {
+            lines.push(format!("  - 'DOMAIN-SUFFIX,{}'", d));
+        }
+        for d in &rules.domain {
+            lines.push(format!("  - 'DOMAIN,{}'", d));
+        }
+        for d in &rules.domain_keyword {
+            lines.push(format!("  - 'DOMAIN-KEYWORD,{}'", d));
+        }
+        for d in &rules.domain_regex {
+            lines.push(format!("  - 'DOMAIN-REGEXP,{}'", d));
+        }
+        for cidr in &rules.ip_cidr {
+            lines.push(format!(
+                "  - '{},{}'",
+                if cidr.contains(':') {
+                    "IP-CIDR6"
+                } else {
+                    "IP-CIDR"
+                },
+                cidr
+            ));
+        }
+        for asn in &rules.ip_asn {
+            lines.push(format!("  - 'IP-ASN,{}'", asn));
+        }
+        for p in &rules.process_name {
+            lines.push(format!("  - 'PROCESS-NAME,{}'", p));
+        }
+        for u in &rules.user_agent {
+            lines.push(format!("  - 'USER-AGENT,{}'", u));
+        }
+    } else if mode.behavior == "ipcidr" {
+        for cidr in &rules.ip_cidr {
+            lines.push(format!("  - '{}'", cidr));
+        }
+    } else {
+        let mut domains = rules.domain_suffix.clone();
+        domains.extend(rules.domain.clone());
+        let domains = unique(domains);
+        for d in domains {
+            if d.matches('.').count() > 5 {
+                continue;
+            }
+            lines.push(format!("  - '{}'", d));
+        }
+    }
+    fs::write(
+        out_dir.join(format!("{}.yaml", name)),
+        lines.join("\n") + "\n",
+    )?;
     Ok(())
 }
 

@@ -3,8 +3,8 @@
   "private": true,
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "sync": "go run ./cmd/sync/",
-    "compile": "go run ./cmd/compile/",
+    "sync": "cargo run --manifest-path syncer/Cargo.toml -- sync && cargo run --manifest-path syncer/Cargo.toml -- geo",
+    "compile": "cargo run --release --manifest-path compiler/Cargo.toml",
     "board:build": "pnpm --filter gins-rules-board build && cp -r dashboard/dist/* compiled/",
     "build": "pnpm sync && pnpm compile && pnpm board:build",
     "dev": "wrangler dev --config cmd/scanner/wrangler.jsonc",
