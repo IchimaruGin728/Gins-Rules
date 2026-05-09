@@ -181,47 +181,155 @@ async function handleFeed(
   let response = await cache.match(cacheKey);
   if (response) return response;
 
+  let assetPath: string;
+  let ext: string = "";
+
   const isGeo = path.includes(".dat") || path.includes(".mmdb");
-  const key = isGeo
-    ? path
-        .replace(/^\/(ruleset)\/(v2ray|xray)\//, "$1/xray/")
-        .replace(/^\//, "")
-    : path.replace(/^\//, "");
+  if (isGeo) {
+    assetPath = path.endsWith(".mmdb")
+      ? path.replace(/^\//, "")
+      : path
+          .replace(/^\/(ruleset)\/(v2ray|xray)\//, "$1/xray/")
+          .replace(/^\//, "");
+    ext = path.split(".").pop() || "";
+  } else {
+    const parts = path.replace("/ruleset/", "").split("/");
+    let app: string | null = null;
+    let category: string;
+    let name: string;
+
+    if (parts.length === 1) {
+      const dotIdx = parts[0].lastIndexOf(".");
+      if (dotIdx === -1)
+        return new Response("Invalid filename", { status: 400 });
+      category = parts[0].slice(0, dotIdx);
+      name = category;
+      ext = parts[0].slice(dotIdx + 1);
+    } else if (parts.length === 2) {
+      const apps = [
+        "singbox",
+        "mihomo",
+        "stash",
+        "surge",
+        "quantumultx",
+        "quanx",
+        "loon",
+        "egern",
+        "shadowrocket",
+        "surfboard",
+        "exclave",
+        "anywhere",
+      ];
+      if (apps.includes(parts[0])) {
+        app = parts[0];
+        const dotIdx = parts[1].lastIndexOf(".");
+        if (dotIdx === -1)
+          return new Response("Invalid filename", { status: 400 });
+        category = parts[1].slice(0, dotIdx);
+        name = category;
+        ext = parts[1].slice(dotIdx + 1);
+      } else {
+        category = parts[0];
+        const dotIdx = parts[1].lastIndexOf(".");
+        if (dotIdx === -1)
+          return new Response("Invalid filename", { status: 400 });
+        name = parts[1].slice(0, dotIdx);
+        ext = parts[1].slice(dotIdx + 1);
+      }
+    } else if (parts.length === 3) {
+      app = parts[0];
+      category = parts[1];
+      const dotIdx = parts[2].lastIndexOf(".");
+      if (dotIdx === -1)
+        return new Response("Invalid filename", { status: 400 });
+      name = parts[2].slice(0, dotIdx);
+      ext = parts[2].slice(dotIdx + 1);
+    } else {
+      return new Response("Not Found", { status: 404 });
+    }
+
+    const appToDir: Record<string, string> = {
+      singbox: "singbox",
+      mihomo: "mihomo",
+      clash: "mihomo",
+      stash: "stash",
+      surge: "surge",
+      quantumultx: "quantumultx",
+      quanx: "quantumultx",
+      loon: "loon",
+      egern: "egern",
+      shadowrocket: "shadowrocket",
+      surfboard: "surfboard",
+      surfboard_ds: "surfboard",
+      exclave: "exclave",
+      anywhere: "anywhere",
+      v2ray: "xray",
+    };
+    const extMap: Record<string, string> = {
+      lsr: "loon",
+      yaml: "egern",
+      srs: "singbox",
+      mrs: "mihomo",
+    };
+    const dir = app ? appToDir[app] : (extMap[ext] ?? ext);
+    if (!dir) return new Response("Invalid app or extension", { status: 400 });
+
+    let targetFile = `${name}.${ext}`;
+    if (app === "loon" && ext === "list") targetFile = `${name}.lsr`;
+    const isIPLike = category === "ip" || category === "asn";
+    if (
+      dir === "text" &&
+      isIPLike &&
+      ext === "list" &&
+      !targetFile.includes(".ip.")
+    ) {
+      targetFile = targetFile.replace(".list", ".ip.list");
+    }
+
+    assetPath = `ruleset/${dir}/${category}/${targetFile}`;
+    env.GINS_RULES_ANALYTICS_HITS.writeDataPoint({
+      blobs: [app || "unknown", category, name, ext],
+      indexes: [name],
+    });
+  }
 
   ctx.waitUntil(
-    env.GINS_RULES_KV_METADATA.get(`hit:${key}`)
+    env.GINS_RULES_KV_METADATA.get(`hit:${assetPath}`)
       .then((c) =>
         env.GINS_RULES_KV_METADATA.put(
-          `hit:${key}`,
+          `hit:${assetPath}`,
           (parseInt(c || "0") + 1).toString(),
         ),
       )
       .catch(() => {}),
   );
 
-  const kvStream = await env.GINS_RULES_KV_HOT.get(key, "stream");
-  let body,
-    source,
-    headers = new Headers({
-      "Access-Control-Allow-Origin": "*",
-      "Cache-Control": "public, max-age=86400",
-    });
+  const kvStream = await env.GINS_RULES_KV_HOT.get(assetPath, "stream");
+  let body: ReadableStream | null = null;
+  let source = "R2";
+  const headers = new Headers({
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "public, max-age=86400",
+  });
 
   if (kvStream) {
     body = kvStream;
     source = "KV";
   } else {
-    const r2Obj = await env.GINS_RULES_R2_STORAGE.get(key);
+    const r2Obj = await env.GINS_RULES_R2_STORAGE.get(assetPath);
     if (!r2Obj) return new Response("Not Found", { status: 404 });
     body = r2Obj.body;
     source = "R2";
     r2Obj.writeHttpMetadata(headers);
   }
 
-  env.GINS_RULES_ANALYTICS_HITS.writeDataPoint({
-    blobs: [source, path],
-    indexes: [path],
-  });
+  headers.set("X-Cache-Source", source);
+  headers.set("X-Cache-Status", "MISS-Edge");
+
+  if (ext === "srs" || ext === "mrs" || isGeo)
+    headers.set("Content-Type", "application/octet-stream");
+  else if (ext === "json") headers.set("Content-Type", "application/json");
+  else headers.set("Content-Type", "text/plain; charset=utf-8");
 
   const finalResponse = new Response(body, { headers });
   ctx.waitUntil(cache.put(cacheKey, finalResponse.clone()));
