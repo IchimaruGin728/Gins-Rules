@@ -27,10 +27,15 @@ source/ip/*
 !source/ip/*.txt
 
 # Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Root temp files
+/geoip.mmdb
+/test.mrs
 
 # IDEs and OS files
 .vscode/
