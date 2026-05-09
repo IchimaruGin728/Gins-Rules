@@ -278,5 +278,54 @@
     "category": "direct",
     "target": "direct-list",
     "enabled": true
+  },
+  {
+    "name": "Rabbit Apple",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Apple.list",
+    "category": "proxy",
+    "target": "apple",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit China",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/China.list",
+    "category": "direct",
+    "target": "direct-list",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit Proxy",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Proxy.list",
+    "category": "proxy",
+    "target": "proxy-list",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Apple",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Apple.list",
+    "category": "proxy",
+    "target": "apple",
+    "enabled": true
+  },
+  {
+    "name": "Matrix ChinaMax",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/ChinaMax.list",
+    "category": "direct",
+    "target": "direct-list",
+    "enabled": true
+  },
+  {
+    "name": "Matrix GlobalMax",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/GlobalMax.list",
+    "category": "proxy",
+    "target": "proxy-list",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Reject",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/REJECT.list",
+    "category": "reject",
+    "target": "reject-list",
+    "enabled": true
   }
 ]
