@@ -55,27 +55,9 @@
   },
   "workflows": [
     {
-      "name": "gins-rules-workflow-build",
+      "name": "gins-rules-build-workflow",
       "binding": "GINS_RULES_WORKFLOW_BUILD",
       "class_name": "BuildWorkflow",
-    },
-  ],
-  "secrets_store_secrets": [
-    {
-      "binding": "TELEGRAM_BOT_TOKEN",
-      "secret_name": "TELEGRAM_BOT_TOKEN",
-    },
-    {
-      "binding": "TELEGRAM_CHAT_ID",
-      "secret_name": "TELEGRAM_CHAT_ID",
-    },
-    {
-      "binding": "DISCORD_WEBHOOK_URL",
-      "secret_name": "DISCORD_WEBHOOK_URL",
-    },
-    {
-      "binding": "WORKFLOW_SECRET",
-      "secret_name": "WORKFLOW_SECRET",
     },
   ],
   "analytics_engine_datasets": [
