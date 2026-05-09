@@ -19,12 +19,22 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            syncer -> target
+            compiler -> target
+
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@latest --activate
 
       - uses: actions/setup-node@v6
         with:
-          node-version: "26"
+          node-version: "22"
           cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
@@ -48,6 +58,11 @@ jobs:
               -A "Gins-Rules-Workflow" \
               "https://api.github.com/repos/${repo}/releases?per_page=100" \
               -o "$output"
+
+            if ! jq -e 'type == "array"' "$output" >/dev/null; then
+              echo "Error: Failed to fetch releases for $repo"
+              exit 1
+            fi
           }
 
           fetch_releases "SagerNet/sing-box" singbox-releases.json
@@ -78,6 +93,11 @@ jobs:
               ]
             )[0] // empty
           ' mihomo-releases.json)
+
+          if [ -z "$SINGBOX_URL" ] || [ -z "$MIHOMO_URL" ]; then
+            echo "Error: Could not resolve binary URLs"
+            exit 1
+          fi
 
           echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
           echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT

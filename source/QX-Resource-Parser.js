@@ -1,6 +1,5 @@
 /** 
  * Gins-Rules QX Resource Parser
- * - Automated Proxy Rule Conversion
  */
 
 

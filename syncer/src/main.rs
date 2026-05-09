@@ -245,7 +245,7 @@ async fn run_icons(root: &Path) -> Result<()> {
 
     futures::future::join_all(futures).await;
 
-    let mut icons = Arc::try_unwrap(all_icons).unwrap().into_inner().unwrap();
+    let mut icons = all_icons.lock().unwrap().clone();
     icons.sort_by(|a, b| {
         if a.source != b.source {
             a.source.cmp(&b.source)
