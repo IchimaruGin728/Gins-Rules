@@ -442,20 +442,22 @@ async fn run_geo(root: &Path) -> Result<()> {
                 let iter = reader.networks(Default::default())?;
                 for result in iter {
                     let lookup = result?;
-                    let record = lookup.decode::<CountryRecord>()?;
-                    if let Some(val) = record.country {
-                        let code = if val.is_string() {
-                            val.as_str().map(|s| s.to_string())
-                        } else {
-                            val.get("iso_code")
-                                .and_then(|v| v.as_str())
-                                .map(|s| s.to_string())
-                        };
-                        if let Some(c) = code {
-                            country_cidrs
-                                .entry(c)
-                                .or_default()
-                                .insert(lookup.network()?);
+                    let record: Option<CountryRecord> = lookup.decode()?;
+                    if let Some(record) = record {
+                        if let Some(val) = record.country {
+                            let code = if val.is_string() {
+                                val.as_str().map(|s| s.to_string())
+                            } else {
+                                val.get("iso_code")
+                                    .and_then(|v| v.as_str())
+                                    .map(|s| s.to_string())
+                            };
+                            if let Some(c) = code {
+                                country_cidrs
+                                    .entry(c)
+                                    .or_default()
+                                    .insert(lookup.network()?);
+                            }
                         }
                     }
                 }
@@ -464,7 +466,8 @@ async fn run_geo(root: &Path) -> Result<()> {
                 let iter = reader.networks(Default::default())?;
                 for result in iter {
                     let lookup = result?;
-                    if let Some(record) = lookup.decode::<AsnRecord>()? {
+                    let record: Option<AsnRecord> = lookup.decode()?;
+                    if let Some(record) = record {
                         if let Some(asn) = record.autonomous_system_number {
                             asn_cidrs.entry(asn).or_default().push(AsnNetwork {
                                 net: lookup.network()?,
