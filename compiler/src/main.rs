@@ -174,18 +174,14 @@ fn main() -> Result<()> {
     } else {
         std::env::current_dir()?.join(args.root).canonicalize()?
     };
-
     let compiled_dir = root.join("compiled");
     let ruleset_dir = compiled_dir.join("ruleset");
-
     println!("============================================================");
     println!("  Gins-Rules Compiler (Rust Parallel Refactor)");
     println!("============================================================");
-
     let bin_dir = root.join("bin");
     let mihomo_path = find_binary("mihomo", &bin_dir);
     let singbox_path = find_binary("sing-box", &bin_dir);
-
     println!("\n  [Diagnostic] Root: {:?}", root);
     println!(
         "  sing-box: {} ({:?})",
@@ -197,7 +193,6 @@ fn main() -> Result<()> {
         if mihomo_path.is_some() { "✓" } else { "✗" },
         mihomo_path
     );
-
     let output_categories = vec!["proxy", "direct", "reject", "ip", "asn", "ai"];
     let format_dirs = vec![
         "singbox",
@@ -213,7 +208,6 @@ fn main() -> Result<()> {
         "surge",
         "anywhere",
     ];
-
     for fmt in &format_dirs {
         let fmt_path = ruleset_dir.join(fmt);
         if fmt_path.exists() {
@@ -224,24 +218,19 @@ fn main() -> Result<()> {
             fs::create_dir_all(fmt_path.join(cat))?;
         }
     }
-
     let categories = vec!["proxy", "direct", "reject", "ip", "asn"];
     let mut category_merged_rules: HashMap<String, Rules> = HashMap::new();
     for cat in &output_categories {
         category_merged_rules.insert(cat.to_string(), Rules::default());
     }
-
     let mut stats = BuildStats::default();
     stats.formats = format_dirs.len();
     stats.timestamp = chrono::Utc::now().to_rfc3339();
-
     let mut all_rules: HashMap<String, HashMap<String, Rules>> = HashMap::new();
-
     for category in categories {
         let mut rule_names: HashSet<String> = HashSet::new();
         let local_dir = root.join("source").join(category);
         let upstream_dir = root.join("source").join("upstream").join(category);
-
         let (actual_local, actual_upstream) = if category == "asn" {
             (
                 root.join("source").join("ip"),
@@ -250,7 +239,6 @@ fn main() -> Result<()> {
         } else {
             (local_dir, upstream_dir)
         };
-
         for d in &[&actual_local, &actual_upstream] {
             if d.exists() {
                 for entry in fs::read_dir(d)? {
@@ -269,32 +257,26 @@ fn main() -> Result<()> {
                 }
             }
         }
-
         let mut sorted_names: Vec<_> = rule_names.into_iter().collect();
         sorted_names.sort();
-
         let processed_rules: Vec<(String, Rules)> = sorted_names
             .par_iter()
             .map(|name| {
                 let mut rules = Rules::default();
                 let local_path = actual_local.join(format!("{}.txt", name));
                 let upstream_path = actual_upstream.join(format!("{}.txt", name));
-
                 if local_path.exists() {
                     rules = merge_rules(rules, parse_source(&local_path).unwrap_or_default());
                 }
                 if upstream_path.exists() {
                     rules = merge_rules(rules, parse_source(&upstream_path).unwrap_or_default());
                 }
-
                 if category != "proxy" {
                     rules = sanitize_rules(rules);
                 }
-
                 (name.clone(), rules)
             })
             .collect();
-
         for (name, rules) in processed_rules {
             let count = rules.domain_suffix.len()
                 + rules.domain.len()
@@ -307,7 +289,6 @@ fn main() -> Result<()> {
             if count == 0 {
                 continue;
             }
-
             compile_to_all_formats(
                 &name,
                 category,
@@ -316,15 +297,12 @@ fn main() -> Result<()> {
                 &singbox_path,
                 &mihomo_path,
             )?;
-
             all_rules
                 .entry(category.to_string())
                 .or_default()
                 .insert(name.clone(), rules.clone());
-
             let cat_rules = category_merged_rules.get_mut(category).unwrap();
             *cat_rules = merge_rules(cat_rules.clone(), rules.clone());
-
             if is_ai_rule_name(&name) {
                 let ai_rules = category_merged_rules.get_mut("ai").unwrap();
                 *ai_rules = merge_rules(ai_rules.clone(), rules.clone());
@@ -337,7 +315,6 @@ fn main() -> Result<()> {
                     &mihomo_path,
                 )?;
             }
-
             stats.services += 1;
             stats.rules += count;
             if category == "ip" || category == "asn" {
@@ -356,12 +333,9 @@ fn main() -> Result<()> {
             if mihomo_path.is_some() {
                 stats.mrs += 1;
             }
-
             println!("  [{:<6}] {:<20} {} rules", category, name, count);
         }
     }
-
-    println!("\n  [Finalizing] Generating merged rule-sets...");
     for category in output_categories {
         let rules = category_merged_rules.get(category).unwrap();
         if rules.domain_suffix.is_empty() && rules.ip_cidr.is_empty() && rules.ip_asn.is_empty() {
@@ -375,22 +349,14 @@ fn main() -> Result<()> {
             &singbox_path,
             &mihomo_path,
         )?;
-        println!(
-            "  ✅ [{:<6}] Created full merged rule-set: {}",
-            category, category
-        );
     }
-
-    println!("\n  [Assets] Packing binary assets (DAT & MMDB)...");
     pack_binary_assets(&all_rules, &ruleset_dir, &root)?;
-
     generate_manifests(&ruleset_dir, &format_dirs)?;
     copy_parsers_js(&root, &compiled_dir)?;
-
-    let summary_json = serde_json::to_string_pretty(&stats)?;
-    fs::write(ruleset_dir.join("build-summary.json"), summary_json)?;
-
-    println!("\n  [DONE] Rust Refactor Progress: Full compiler implemented.");
+    fs::write(
+        ruleset_dir.join("build-summary.json"),
+        serde_json::to_string_pretty(&stats)?,
+    )?;
     Ok(())
 }
 
@@ -407,7 +373,6 @@ fn compile_to_all_formats(
     if let Some(sb) = singbox_path {
         compile_singbox_srs(&json_path, sb)?;
     }
-
     let mode = detect_mihomo_rule_mode(rules, is_ip);
     compile_mihomo_yaml(
         name,
@@ -424,7 +389,6 @@ fn compile_to_all_formats(
             mh,
         )?;
     }
-
     compile_mihomo_yaml(
         name,
         rules,
@@ -440,7 +404,6 @@ fn compile_to_all_formats(
             mh,
         )?;
     }
-
     compile_text_list(name, rules, &ruleset_dir.join("text").join(category), is_ip)?;
     compile_quanx_list(
         name,
@@ -497,17 +460,14 @@ fn pack_binary_assets(
 ) -> Result<()> {
     let mut geosite_list = GeoSiteList::default();
     let mut geoip_list = GeoIpList::default();
-
     let mut mmdb_geoip = Database::default();
     mmdb_geoip.metadata.database_type = "GeoLite2-Country".to_string();
     mmdb_geoip.metadata.languages = vec!["en".to_string()];
     mmdb_geoip.metadata.ip_version = IpVersion::V6;
-
     let mut mmdb_geoasn = Database::default();
     mmdb_geoasn.metadata.database_type = "GeoLite2-ASN".to_string();
     mmdb_geoasn.metadata.languages = vec!["en".to_string()];
     mmdb_geoasn.metadata.ip_version = IpVersion::V6;
-
     let asn_prefix_index_path = root.join("compiled").join("asn-prefix-index.json");
     let asn_prefix_index: HashMap<String, Vec<AsnPrefixRecord>> = if asn_prefix_index_path.exists()
     {
@@ -515,11 +475,9 @@ fn pack_binary_assets(
     } else {
         HashMap::new()
     };
-
     for (category, rules_map) in all_rules {
         for (name, rules) in rules_map {
             let tag = name.to_uppercase();
-
             if category != "ip" && category != "asn" {
                 let mut site = GeoSite {
                     country_code: tag.clone(),
@@ -553,7 +511,6 @@ fn pack_binary_assets(
                     geosite_list.entry.push(site);
                 }
             }
-
             let mut cidrs = rules.ip_cidr.clone();
             if category == "asn" {
                 if let Some(records) = asn_prefix_index.get(name) {
@@ -564,7 +521,6 @@ fn pack_binary_assets(
             }
             cidrs.sort();
             cidrs.dedup();
-
             if !cidrs.is_empty() {
                 let mut geo_ip = GeoIp {
                     country_code: tag.clone(),
@@ -573,14 +529,13 @@ fn pack_binary_assets(
                 for cidr_str in &cidrs {
                     if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
                         let ip_bytes = match net.addr {
-                            IpAddr::V4(a) => a.octets().to_vec(),
+                            IpAddr::V4(a) => a.to_ipv6_mapped().octets().to_vec(),
                             IpAddr::V6(a) => a.octets().to_vec(),
                         };
                         geo_ip.cidr.push(Cidr {
                             ip: ip_bytes,
                             prefix: net.mask as u32,
                         });
-
                         let data_ref = mmdb_geoip
                             .insert_value(&CountryRecord {
                                 country: CountryIso {
@@ -595,7 +550,6 @@ fn pack_binary_assets(
                     geoip_list.entry.push(geo_ip);
                 }
             }
-
             if category == "asn" {
                 if let Some(records) = asn_prefix_index.get(name) {
                     for r in records {
@@ -614,19 +568,14 @@ fn pack_binary_assets(
             }
         }
     }
-
     let xray_dir = out_dir.join("xray");
     fs::create_dir_all(&xray_dir)?;
-
     fs::write(xray_dir.join("geosite.dat"), geosite_list.encode_to_vec())?;
     fs::write(xray_dir.join("geoip.dat"), geoip_list.encode_to_vec())?;
-
     let out_geoip = fs::File::create(out_dir.join("geoip.mmdb"))?;
     mmdb_geoip.write_to(out_geoip).unwrap();
-
     let out_geoasn = fs::File::create(out_dir.join("geoasn.mmdb"))?;
     mmdb_geoasn.write_to(out_geoasn).unwrap();
-
     Ok(())
 }
 
