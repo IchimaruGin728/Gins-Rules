@@ -453,15 +453,18 @@ async function generateDailySummary(
     timeZone: "Asia/Singapore",
   });
   const domainRules = Math.max(0, stats.rules - (stats.ipRules || 0));
-  const prompt = `Write build report for project Gins-Rules. Services: ${stats.services}, Rules: ${domainRules} domain + ${stats.ipRules} IP. Build Time: ${stats.timestamp}. Top Hits: ${stats.topHits}. Use ---SPLIT--- for CN/EN. Updated ${date}`;
-  try {
-    const res = await env.GINS_RULES_AI.run("@cf/meta/llama-3.1-8b-instruct", {
-      messages: [{ role: "user", content: prompt }],
-    });
-    return (res as any).response || "Build Success";
-  } catch (e) {
-    return "Build Success";
-  }
+  const srsRate =
+    stats.services > 0 ? ((stats.srs / stats.services) * 100).toFixed(0) : "0";
+  const mrsRate =
+    stats.services > 0 ? ((stats.mrs / stats.services) * 100).toFixed(0) : "0";
+
+  return `🛡️ Gins-Rules 报告
+✅ ${stats.services} 个分流服务活跃中，已更新 ${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录。二进制编译率：SRS ${srsRate}% / MRS ${mrsRate}%。 (Updated ${date})
+
+---SPLIT---
+
+🛡️ Gins-Rules Report
+✅ ${stats.services} routing services active. Synchronized ${domainRules} domain rules and ${stats.ipRules} IP records. Binary compilation: SRS ${srsRate}% / MRS ${mrsRate}%. (Updated ${date})`;
 }
 
 async function handleBuildComplete(
