@@ -190,7 +190,7 @@ jobs:
       - name: Notify
         if: always() && (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule')
         run: |
-          SUMMARY=$(cat compiled/ruleset/build-summary.json 2>/dev/null || echo "{}")
+          SUMMARY=$(cat compiled/ruleset/build-summary.json 2>/dev/null || echo "{\"services\":0,\"rules\":0,\"ipRules\":0,\"asnFiles\":0,\"srs\":0,\"mrs\":0,\"categoryCounts\":{},\"formats\":0,\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}")
           ICONS_HASH=$(cat source/icons-hash.json 2>/dev/null || echo "{}")
           ICONS_TOTAL=$(jq 'length' dashboard/public/icons-catalog.json 2>/dev/null || echo "0")
           PAYLOAD=$(jq -n \
@@ -202,16 +202,14 @@ jobs:
             --argjson icons_hash "$ICONS_HASH" \
             --argjson icons_total "$ICONS_TOTAL" \
             --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '{
+            '$stats + {
               project: $project,
               build: {
                 id: $run_id,
                 sha: $sha,
                 trigger: $trigger
               },
-              metrics: ($stats + {
-                icons_total: $icons_total
-              }),
+              icons_total: $icons_total,
               artifacts: {
                 icons: $icons_hash
               },
