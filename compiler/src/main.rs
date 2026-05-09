@@ -376,11 +376,11 @@ fn main() -> Result<()> {
             &mihomo_path,
         )?;
     }
-    pack_binary_assets(&all_rules, &compiled_dir, &root)?;
+    pack_binary_assets(&all_rules, &ruleset_dir, &root)?;
     generate_manifests(&ruleset_dir, &format_dirs)?;
     copy_parsers_js(&root, &compiled_dir)?;
     fs::write(
-        compiled_dir.join("build-summary.json"),
+        ruleset_dir.join("build-summary.json"),
         serde_json::to_string_pretty(&stats)?,
     )?;
     Ok(())

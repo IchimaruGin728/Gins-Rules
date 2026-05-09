@@ -7,7 +7,7 @@ interface GlobalAssetsProps {
 
 export default function GlobalAssets({ apiBase }: GlobalAssetsProps) {
   const showDat = ["v2ray", "exclave"].includes(activeApp.value);
-  
+
   return (
     <div class="space-y-8">
       {/* DAT Section - Conditional */}
@@ -20,9 +20,18 @@ export default function GlobalAssets({ apiBase }: GlobalAssetsProps) {
             </span>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <DatCard name="geosite.dat" url={`${apiBase}/ruleset/xray/geosite.dat`} />
-            <DatCard name="geoip.dat" url={`${apiBase}/ruleset/xray/geoip.dat`} />
-            <DatCard name="geoasn.dat" url={`${apiBase}/ruleset/xray/geoasn.dat`} />
+            <DatCard
+              name="geosite.dat"
+              url={`${apiBase}/ruleset/xray/geosite.dat`}
+            />
+            <DatCard
+              name="geoip.dat"
+              url={`${apiBase}/ruleset/xray/geoip.dat`}
+            />
+            <DatCard
+              name="geoasn.dat"
+              url={`${apiBase}/ruleset/xray/geoasn.dat`}
+            />
           </div>
         </section>
       )}
