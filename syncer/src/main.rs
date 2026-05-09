@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::{Parser, Subcommand};
 use hex;
 use ipnet::{Ipv4Net, Ipv6Net};
