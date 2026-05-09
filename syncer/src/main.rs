@@ -116,12 +116,7 @@ struct RIPEPrefix {
 
 #[derive(Deserialize)]
 struct CountryRecord {
-    country: Option<Country>,
-}
-
-#[derive(Deserialize)]
-struct Country {
-    iso_code: Option<String>,
+    country: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize)]
@@ -373,7 +368,7 @@ async fn run_he(root: &Path) -> Result<()> {
                     }
                 }
             }
-            tokio::time::sleep(Duration::from_millis(50)).await;
+            tokio::time::sleep(Duration::from_millis(100)).await;
         }
     }
 
@@ -447,15 +442,21 @@ async fn run_geo(root: &Path) -> Result<()> {
                 let iter = reader.networks(Default::default())?;
                 for result in iter {
                     let lookup = result?;
-                    if let Some(code) = lookup
-                        .decode::<CountryRecord>()?
-                        .and_then(|r| r.country)
-                        .and_then(|c| c.iso_code)
-                    {
-                        country_cidrs
-                            .entry(code)
-                            .or_default()
-                            .insert(lookup.network()?);
+                    let record = lookup.decode::<CountryRecord>()?;
+                    if let Some(val) = record.country {
+                        let code = if val.is_string() {
+                            val.as_str().map(|s| s.to_string())
+                        } else {
+                            val.get("iso_code")
+                                .and_then(|v| v.as_str())
+                                .map(|s| s.to_string())
+                        };
+                        if let Some(c) = code {
+                            country_cidrs
+                                .entry(c)
+                                .or_default()
+                                .insert(lookup.network()?);
+                        }
                     }
                 }
             }
