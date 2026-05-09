@@ -1,9 +1,11 @@
 use anyhow::Result;
 use clap::Parser;
+use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs;
+use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -85,6 +87,79 @@ struct MihomoRuleMode {
     is_empty: bool,
 }
 
+// --- Xray DAT Protobuf Structures ---
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GeoIp {
+    #[prost(string, tag = "1")]
+    pub country_code: String,
+    #[prost(message, repeated, tag = "2")]
+    pub cidr: Vec<Cidr>,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Cidr {
+    #[prost(bytes = "vec", tag = "1")]
+    pub ip: Vec<u8>,
+    #[prost(uint32, tag = "2")]
+    pub prefix: u32,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GeoIpList {
+    #[prost(message, repeated, tag = "1")]
+    pub entry: Vec<GeoIp>,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GeoSite {
+    #[prost(string, tag = "1")]
+    pub country_code: String,
+    #[prost(message, repeated, tag = "2")]
+    pub domain: Vec<Domain>,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Domain {
+    #[prost(enumeration = "DomainType", tag = "1")]
+    pub r#type: i32,
+    #[prost(string, tag = "2")]
+    pub value: String,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum DomainType {
+    Plain = 0,
+    Regex = 1,
+    Domain = 2,
+    Full = 3,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GeoSiteList {
+    #[prost(message, repeated, tag = "1")]
+    pub entry: Vec<GeoSite>,
+}
+
+// --- MMDB Record Structures ---
+
+#[derive(Serialize)]
+struct CountryRecord {
+    country: CountryIso,
+}
+
+#[derive(Serialize)]
+struct CountryIso {
+    iso_code: String,
+}
+
+#[derive(Serialize)]
+struct AsnRecord {
+    autonomous_system_number: u32,
+    autonomous_system_organization: String,
+}
+
 fn main() -> Result<()> {
     let args = Args::parse();
     let root = if args.root.is_absolute() {
@@ -152,6 +227,8 @@ fn main() -> Result<()> {
     let mut stats = BuildStats::default();
     stats.formats = format_dirs.len();
     stats.timestamp = chrono::Utc::now().to_rfc3339();
+
+    let mut all_rules: HashMap<String, HashMap<String, Rules>> = HashMap::new();
 
     for category in categories {
         let mut rule_names: HashSet<String> = HashSet::new();
@@ -233,6 +310,11 @@ fn main() -> Result<()> {
                 &mihomo_path,
             )?;
 
+            all_rules
+                .entry(category.to_string())
+                .or_default()
+                .insert(name.clone(), rules.clone());
+
             let cat_rules = category_merged_rules.get_mut(category).unwrap();
             *cat_rules = merge_rules(cat_rules.clone(), rules.clone());
 
@@ -292,15 +374,16 @@ fn main() -> Result<()> {
         );
     }
 
+    println!("\n  [Assets] Packing binary assets (DAT & MMDB)...");
+    pack_binary_assets(&all_rules, &ruleset_dir, &root)?;
+
     generate_manifests(&ruleset_dir, &format_dirs)?;
     copy_parsers_js(&root, &compiled_dir)?;
 
     let summary_json = serde_json::to_string_pretty(&stats)?;
     fs::write(ruleset_dir.join("build-summary.json"), summary_json)?;
 
-    println!(
-        "\n  [DONE] Rust Refactor Progress: Full compiler implemented with parallel processing."
-    );
+    println!("\n  [DONE] Rust Refactor Progress: Full compiler implemented.");
     Ok(())
 }
 
@@ -313,7 +396,6 @@ fn compile_to_all_formats(
     mihomo_path: &Option<PathBuf>,
 ) -> Result<()> {
     let is_ip = category == "ip" || category == "asn";
-
     let json_path = compile_singbox_json(name, rules, &ruleset_dir.join("singbox").join(category))?;
     if let Some(sb) = singbox_path {
         compile_singbox_srs(&json_path, sb)?;
@@ -398,6 +480,138 @@ fn compile_to_all_formats(
     compile_surfboard_domainset(name, rules, &ruleset_dir.join("surfboard").join(category))?;
     compile_exclave_route(name, rules, &ruleset_dir.join("exclave").join(category))?;
     compile_anywhere_json(name, rules, &ruleset_dir.join("anywhere").join(category))?;
+    Ok(())
+}
+
+fn pack_binary_assets(
+    all_rules: &HashMap<String, HashMap<String, Rules>>,
+    out_dir: &Path,
+    root: &Path,
+) -> Result<()> {
+    let mut geosite_list = GeoSiteList::default();
+    let mut geoip_list = GeoIpList::default();
+
+    let mut mmdb_geoip = maxminddb_writer::MMDBWriter::new("GeoLite2-Country", "en");
+    let mut mmdb_geoasn = maxminddb_writer::MMDBWriter::new("GeoLite2-ASN", "en");
+
+    let asn_prefix_index_path = root.join("compiled").join("asn-prefix-index.json");
+    let asn_prefix_index: HashMap<String, Vec<AsnPrefixRecord>> = if asn_prefix_index_path.exists()
+    {
+        serde_json::from_str(&fs::read_to_string(asn_prefix_index_path)?)?
+    } else {
+        HashMap::new()
+    };
+
+    for (category, rules_map) in all_rules {
+        for (name, rules) in rules_map {
+            let tag = name.to_uppercase();
+
+            // 1. Geosite (Domains)
+            if category != "ip" && category != "asn" {
+                let mut site = GeoSite {
+                    country_code: tag.clone(),
+                    domain: Vec::new(),
+                };
+                for d in &rules.domain_suffix {
+                    site.domain.push(Domain {
+                        r_type: DomainType::Domain as i32,
+                        value: d.clone(),
+                    });
+                }
+                for d in &rules.domain {
+                    site.domain.push(Domain {
+                        r_type: DomainType::Full as i32,
+                        value: d.clone(),
+                    });
+                }
+                for d in &rules.domain_keyword {
+                    site.domain.push(Domain {
+                        r_type: DomainType::Plain as i32,
+                        value: d.clone(),
+                    });
+                }
+                for d in &rules.domain_regex {
+                    site.domain.push(Domain {
+                        r_type: DomainType::Regex as i32,
+                        value: d.clone(),
+                    });
+                }
+                if !site.domain.is_empty() {
+                    geosite_list.entry.push(site);
+                }
+            }
+
+            // 2. GeoIP (IP CIDRs)
+            let mut cidrs = rules.ip_cidr.clone();
+            if category == "asn" {
+                if let Some(records) = asn_prefix_index.get(name) {
+                    for r in records {
+                        cidrs.push(r.cidr.clone());
+                    }
+                }
+            }
+            cidrs.sort();
+            cidrs.dedup();
+
+            if !cidrs.is_empty() {
+                let mut geo_ip = GeoIp {
+                    country_code: tag.clone(),
+                    cidr: Vec::new(),
+                };
+                for cidr_str in &cidrs {
+                    if let Ok(net) = cidr_str.parse::<ipnetwork::IpNetwork>() {
+                        let ip_bytes = match net.ip() {
+                            IpAddr::V4(a) => a.octets().to_vec(),
+                            IpAddr::V6(a) => a.octets().to_vec(),
+                        };
+                        geo_ip.cidr.push(Cidr {
+                            ip: ip_bytes,
+                            prefix: net.prefix() as u32,
+                        });
+
+                        // 3. MMDB GeoIP
+                        let _ = mmdb_geoip.insert_network(
+                            net,
+                            maxminddb_writer::Record::new(CountryRecord {
+                                country: CountryIso {
+                                    iso_code: tag.clone(),
+                                },
+                            }),
+                        );
+                    }
+                }
+                if !geo_ip.cidr.is_empty() {
+                    geoip_list.entry.push(geo_ip);
+                }
+            }
+
+            // 4. MMDB GeoASN
+            if category == "asn" {
+                if let Some(records) = asn_prefix_index.get(name) {
+                    for r in records {
+                        if let Ok(net) = r.cidr.parse::<ipnetwork::IpNetwork>() {
+                            let org = r.org.clone().unwrap_or_else(|| format!("AS{}", r.asn));
+                            let _ = mmdb_geoasn.insert_network(
+                                net,
+                                maxminddb_writer::Record::new(AsnRecord {
+                                    autonomous_system_number: r.asn,
+                                    autonomous_system_organization: org,
+                                }),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let xray_dir = out_dir.join("xray");
+    fs::create_dir_all(&xray_dir)?;
+
+    fs::write(xray_dir.join("geosite.dat"), geosite_list.encode_to_vec())?;
+    fs::write(xray_dir.join("geoip.dat"), geoip_list.encode_to_vec())?;
+    mmdb_geoip.write_to_file(out_dir.join("geoip.mmdb"))?;
+    mmdb_geoasn.write_to_file(out_dir.join("geoasn.mmdb"))?;
 
     Ok(())
 }
@@ -452,7 +666,6 @@ fn merge_rules(mut a: Rules, b: Rules) -> Rules {
     a.ip_asn.extend(b.ip_asn);
     a.process_name.extend(b.process_name);
     a.user_agent.extend(b.user_agent);
-
     a.domain_suffix = unique(a.domain_suffix);
     a.domain = unique(a.domain);
     a.domain_keyword = unique(a.domain_keyword);
@@ -491,7 +704,6 @@ fn sanitize_rules(mut rules: Rules) -> Rules {
         "musical.ly",
         "tik-tokapi.com",
     ];
-
     let is_force = |d: &str| {
         if d.contains("tiktok") || d.contains("tik-tok") {
             return true;
@@ -503,7 +715,6 @@ fn sanitize_rules(mut rules: Rules) -> Rules {
         }
         false
     };
-
     rules.domain.retain(|d| !is_force(d));
     rules.domain_suffix.retain(|d| !is_force(d));
     rules
@@ -521,8 +732,7 @@ fn compile_singbox_json(name: &str, rules: &Rules, out_dir: &Path) -> Result<Pat
         }],
     };
     let path = out_dir.join(format!("{}.json", name));
-    let data = serde_json::to_string_pretty(&rs)?;
-    fs::write(&path, data)?;
+    fs::write(&path, serde_json::to_string_pretty(&rs)?)?;
     Ok(path)
 }
 

@@ -1,10 +1,14 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use hex;
+use ipnet::{Ipv4Net, Ipv6Net};
+use ipnetwork::IpNetwork;
+use maxminddb::Reader;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
+use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -21,6 +25,7 @@ enum Commands {
     Sync,
     Icons,
     He,
+    Geo,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -109,6 +114,65 @@ struct RIPEPrefix {
     prefix: String,
 }
 
+#[derive(Deserialize)]
+struct CountryRecord {
+    country: Option<Country>,
+}
+
+#[derive(Deserialize)]
+struct Country {
+    iso_code: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct AsnRecord {
+    autonomous_system_number: Option<u32>,
+    autonomous_system_organization: Option<String>,
+}
+
+struct MmdbSource {
+    name: &'static str,
+    url: &'static str,
+    r#type: &'static str,
+}
+
+const MMDB_SOURCES: &[MmdbSource] = &[
+    MmdbSource {
+        name: "ipinfo.country",
+        url: "https://github.com/xream/geoip/releases/latest/download/ipinfo.country.mmdb",
+        r#type: "country",
+    },
+    MmdbSource {
+        name: "ip2location.country",
+        url: "https://github.com/xream/geoip/releases/latest/download/ip2location.country.mmdb",
+        r#type: "country",
+    },
+    MmdbSource {
+        name: "ipinfo.asn",
+        url: "https://github.com/xream/geoip/releases/latest/download/ipinfo.asn.mmdb",
+        r#type: "asn",
+    },
+    MmdbSource {
+        name: "ip2location.asn",
+        url: "https://github.com/xream/geoip/releases/latest/download/ip2location.asn.mmdb",
+        r#type: "asn",
+    },
+];
+
+#[derive(Clone)]
+struct AsnNetwork {
+    net: IpNetwork,
+    org: Option<String>,
+}
+
+#[derive(Serialize)]
+struct AsnPrefixRecord {
+    asn: u32,
+    cidr: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    org: Option<String>,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -118,6 +182,7 @@ async fn main() -> Result<()> {
         Commands::Sync => run_sync(&root).await?,
         Commands::Icons => run_icons(&root).await?,
         Commands::He => run_he(&root).await?,
+        Commands::Geo => run_geo(&root).await?,
     }
 
     Ok(())
@@ -348,6 +413,217 @@ async fn run_he(root: &Path) -> Result<()> {
     }
 
     Ok(())
+}
+
+async fn run_geo(root: &Path) -> Result<()> {
+    let ip_dir = root.join("source").join("upstream").join("ip");
+    let compiled_dir = root.join("compiled");
+    let tmp_dir = root.join(".mmdb-cache");
+
+    fs::create_dir_all(&ip_dir)?;
+    fs::create_dir_all(&compiled_dir)?;
+    fs::create_dir_all(&tmp_dir)?;
+
+    println!("============================================================");
+    println!("  Gins-Rules MMDB Parser (Rust Extreme Version)");
+    println!("============================================================");
+
+    let mut country_cidrs: HashMap<String, HashSet<IpNetwork>> = HashMap::new();
+    let mut asn_cidrs: HashMap<u32, Vec<AsnNetwork>> = HashMap::new();
+
+    for src in MMDB_SOURCES {
+        println!("\n  Processing {}...", src.name);
+        let local_path = tmp_dir.join(format!("{}.mmdb", src.name));
+
+        if !local_path.exists() {
+            println!("  Downloading {}...", src.url);
+            let response = reqwest::get(src.url).await?.bytes().await?;
+            fs::write(&local_path, response)?;
+        }
+
+        let reader = Reader::open_readfile(&local_path)?;
+        match src.r#type {
+            "country" => {
+                let iter = reader.networks(Default::default())?;
+                for result in iter {
+                    let lookup = result?;
+                    if let Some(code) = lookup
+                        .decode::<CountryRecord>()?
+                        .and_then(|r| r.country)
+                        .and_then(|c| c.iso_code)
+                    {
+                        country_cidrs
+                            .entry(code)
+                            .or_default()
+                            .insert(lookup.network()?);
+                    }
+                }
+            }
+            "asn" => {
+                let iter = reader.networks(Default::default())?;
+                for result in iter {
+                    let lookup = result?;
+                    if let Some(record) = lookup.decode::<AsnRecord>()? {
+                        if let Some(asn) = record.autonomous_system_number {
+                            asn_cidrs.entry(asn).or_default().push(AsnNetwork {
+                                net: lookup.network()?,
+                                org: record.autonomous_system_organization,
+                            });
+                        }
+                    }
+                }
+            }
+            _ => (),
+        };
+    }
+
+    let common_regions: HashSet<&str> = vec!["CN", "SG", "TW", "JP", "US"].into_iter().collect();
+    let mut not_cn = HashSet::new();
+
+    for (code, nets) in &country_cidrs {
+        if code != "CN" {
+            for net in nets {
+                not_cn.insert(*net);
+            }
+        }
+        if common_regions.contains(code.as_str()) {
+            write_aggregated_ip_list(&ip_dir.join(format!("{}.txt", code.to_lowercase())), nets)?;
+        }
+    }
+
+    if !not_cn.is_empty() {
+        write_aggregated_ip_list(&ip_dir.join("!cn.txt"), &not_cn)?;
+    }
+
+    let targets = discover_asn_targets(root)?;
+    let mut prefix_index: BTreeMap<String, Vec<AsnPrefixRecord>> = BTreeMap::new();
+
+    for (target_name, target_asns) in targets {
+        let mut merged = HashSet::new();
+        let mut records = Vec::new();
+
+        for asn in target_asns {
+            let Some(nets) = asn_cidrs.get(&asn) else {
+                continue;
+            };
+            let mut per_asn = HashSet::new();
+            let mut org: Option<String> = None;
+            for entry in nets {
+                merged.insert(entry.net);
+                per_asn.insert(entry.net);
+                if org.is_none() {
+                    org = entry.org.clone();
+                }
+            }
+
+            for cidr in aggregate_networks(&per_asn) {
+                records.push(AsnPrefixRecord {
+                    asn,
+                    cidr,
+                    org: org.clone(),
+                });
+            }
+        }
+
+        if !merged.is_empty() {
+            write_aggregated_ip_list(&ip_dir.join(format!("{}.txt", target_name)), &merged)?;
+            records.sort_by(|a, b| a.asn.cmp(&b.asn).then_with(|| a.cidr.cmp(&b.cidr)));
+            prefix_index.insert(target_name, records);
+        }
+    }
+
+    let index_json = serde_json::to_vec_pretty(&prefix_index)?;
+    fs::write(compiled_dir.join("asn-prefix-index.json"), index_json)?;
+
+    println!("============================================================");
+    Ok(())
+}
+
+fn discover_asn_targets(root: &Path) -> Result<BTreeMap<String, BTreeSet<u32>>> {
+    let mut targets: BTreeMap<String, BTreeSet<u32>> = BTreeMap::new();
+    let asn_map_path = root.join("source").join("asn-map.json");
+    if let Ok(data) = fs::read(&asn_map_path) {
+        if let Ok(asn_map) = serde_json::from_slice::<ASNMap>(&data) {
+            for (service, def) in asn_map.services {
+                let entry = targets.entry(format!("asn-{}", service)).or_default();
+                for asn in def.asns {
+                    entry.insert(asn);
+                }
+            }
+        }
+    }
+
+    for dir in [
+        root.join("source").join("ip"),
+        root.join("source").join("upstream").join("ip"),
+    ] {
+        let Ok(entries) = fs::read_dir(dir) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|s| s.to_str()) != Some("txt") {
+                continue;
+            }
+            let Some(name) = path.file_stem().and_then(|s| s.to_str()) else {
+                continue;
+            };
+            if !name.starts_with("asn-") {
+                continue;
+            }
+            let data = fs::read_to_string(&path)?;
+            for line in data.lines() {
+                let line = line.trim();
+                let asn = line
+                    .strip_prefix("asn:")
+                    .or_else(|| line.strip_prefix("AS"))
+                    .and_then(|value| value.trim().parse::<u32>().ok());
+                if let Some(asn) = asn {
+                    targets.entry(name.to_string()).or_default().insert(asn);
+                }
+            }
+        }
+    }
+    Ok(targets)
+}
+
+fn write_aggregated_ip_list(path: &Path, nets: &HashSet<IpNetwork>) -> Result<()> {
+    let aggregated = aggregate_networks(nets);
+    let file = fs::File::create(path)?;
+    let mut writer = BufWriter::new(file);
+    for n in aggregated {
+        writeln!(writer, "{}", n)?;
+    }
+    writer.flush()?;
+    Ok(())
+}
+
+fn aggregate_networks(nets: &HashSet<IpNetwork>) -> Vec<String> {
+    let mut v4: Vec<Ipv4Net> = Vec::new();
+    let mut v6: Vec<Ipv6Net> = Vec::new();
+    for net in nets {
+        match net {
+            IpNetwork::V4(n) => {
+                if let Ok(converted) = Ipv4Net::new(n.ip(), n.prefix()) {
+                    v4.push(converted);
+                }
+            }
+            IpNetwork::V6(n) => {
+                if let Ok(converted) = Ipv6Net::new(n.ip(), n.prefix()) {
+                    v6.push(converted);
+                }
+            }
+        }
+    }
+    let mut out: Vec<String> = Vec::new();
+    for n in Ipv4Net::aggregate(&v4) {
+        out.push(n.to_string());
+    }
+    for n in Ipv6Net::aggregate(&v6) {
+        out.push(n.to_string());
+    }
+    out.sort();
+    out
 }
 
 fn process_rules(content: &str) -> Vec<String> {
