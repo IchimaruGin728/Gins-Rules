@@ -4,15 +4,17 @@ Comprehensive, self-maintained proxy rule list repository with high-performance 
 
 ## ✨ Features
 
+- **Extreme Rust Performance**: Entire toolchain rewritten in highly-concurrent Rust using `rayon` for sub-second compilation.
 - **Dynamic ASN Routing**: Native support for **Autonomous System Numbers (ASN)** across all platforms (Sing-box, Mihomo, Loon, QX, etc.).
 - **AI Rule-sets**: Dedicated high-priority routing for **Claude**, **Gemini**, and **Copilot** (merged into `ai-other`).
 - **Rolling Xray Kernel**: Automatically tracks and compiles with the latest **xtls/xray-core** (Pinned by Commit SHA) for dev-release feature parity.
-- **Dynamic R2 Storage**: Powered by **Cloudflare R2** via S3 protocol. Handles full-scale IP/ASN rulesets (30MB+) with differential sync.
+- **Cloudflare Native Delivery**: Powered by **R2 Storage** and **Workers KV** edge caching. Real-time observability via **Cloudflare Analytics Engine** and fully automated CI/CD via **Cloudflare Workflows**.
 - **High-Speed Sync**: GitHub Actions optimized with **AWS CLI S3 Sync** for lightning-fast delivery.
 - **Premium Icon Hub**: A centralized, automated aggregator of **30+ premium icon libraries** (Qure, Lige, Semporia, etc.) with a searchable dashboard and click-to-copy functionality.
-- **Multi-Format Matrix (12 Formats)**:
+- **Multi-Format Matrix (13 Formats)**:
     - **sing-box**: `.srs` (binary v2), `.json`
     - **Mihomo (Clash Meta) / Stash**: `.mrs` (binary), `.yaml`
+    - **Anywhere**: `.json` (Native `RoutingRule` format)
     - **Surfboard**: `.list` (Standard Ruleset), `.txt` (Optimized Domainset)
     - **Exclave**: `.list` (Standard Route format)
     - **Surge / Shadowrocket**: `.list` (Standard format)
@@ -38,6 +40,7 @@ The delivery URLs are backed by high-performance R2 storage with Cloudflare Smar
 | **Surfboard (Opt)**| TXT | `/ruleset/surfboard/{cat}/{name}.txt` | [apple.txt](https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.txt) |
 | **Egern** | YAML | `/ruleset/egern/{cat}/{name}.yaml` | [apple.yaml](https://rules.ichimarugin728.dev/ruleset/egern/proxy/apple.yaml) |
 | **Exclave** | Route | `/ruleset/exclave/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/exclave/proxy/apple.list) |
+| **Anywhere** | JSON | `/ruleset/anywhere/{cat}/{name}.json` | [apple.json](https://rules.ichimarugin728.dev/ruleset/anywhere/proxy/apple.json) |
 | **Icons Hub** | JSON | `/Gins-Icons.json` | [Gins-Icons.json](https://rules.ichimarugin728.dev/Gins-Icons.json) |
 
 ### 🎨 Icon Hub Dashboard
@@ -66,9 +69,8 @@ Access the premium, searchable icon collection at: **[rules.ichimarugin728.dev/i
 - `source/`: Plain text core rule lists.
   - `source/[category]/`: Domain lists.
   - `source/ip/`: Source for both **IP CIDR** and **ASN** rules.
-- **cmd/sync/**: Go upstream rule fetcher (Supports ASN & Domain mapping).
-- **cmd/compile/**: Go compiler for multi-format output. Features native Xray .dat bundling.
-- **cmd/icons/**: High-performance icon aggregator (30+ sources, SHA-256 fingerprinting).
+- **syncer/**: Rust upstream rule and icon fetcher (Supports ASN & Domain mapping).
+- **compiler/**: Rust parallel compiler for multi-format output. Features native Xray .dat bundling.
 - **cmd/scanner/**: High-performance CF Worker gateway and dashboard.
 - `bin/`: Local workspace for Alpha/Beta binary compilers.
 
