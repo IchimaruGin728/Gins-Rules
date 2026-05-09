@@ -75,17 +75,18 @@ Access the premium, searchable icon collection at: **[rules.ichimarugin728.dev/i
 ## ⚙️ Development
 
 ```bash
-# 1. Sync upstream rules (Recognizes ASN and AI sources)
-go run ./cmd/sync/
+# 1. Sync upstream rules & icons (Unified Rust Syncer)
+cd syncer
+cargo run --release -- sync
+cargo run --release -- icons
+cargo run --release -- he
 
-# 2. Sync premium icons (Aggregates 30+ libraries)
-go run ./cmd/icons/
+# 2. Compile rules locally (Parallel Rust Compiler)
+cd ../compiler
+cargo run --release -- --root ..
 
-# 3. Compile rules locally (Requires Go 1.24+)
-go run ./cmd/compile
-
-# 4. Dashboard Development (pnpm)
-cd dashboard
+# 3. Dashboard Development (pnpm)
+cd ../dashboard
 pnpm install
 pnpm dev
 ```

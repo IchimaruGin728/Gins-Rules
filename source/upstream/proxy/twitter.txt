@@ -1,6 +1,5 @@
 ads-twitter.com
 cms-twdigitalassets.com
-keyword:twitter
 periscope.tv
 pscp.tv
 t.co
@@ -24,3 +23,4 @@ twttr.net
 twvid.com
 vine.co
 x.com
+keyword:twitter

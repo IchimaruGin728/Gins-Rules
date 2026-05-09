@@ -1,6 +1,3 @@
-172.110.32.0/21
-216.73.80.0/20
-2620:120:e000::/40
 full:music.youtube.com
 full:youtubei.googleapis.com
 full:yt3.ggpht.com
@@ -9,14 +6,6 @@ ggpht.com
 googlevideo.com
 gvt1.com
 gvt2.com
-keyword:youtube
-user-agent:*YouTubeMusic*
-user-agent:*com.google.ios.youtubemusic*
-user-agent:*youtube*
-user-agent:YouTube*
-user-agent:YouTubeMusic*
-user-agent:com.google.ios.youtube*
-user-agent:com.google.ios.youtubemusic*
 video.google.com
 wide-youtube.l.google.com
 withyoutube.com
@@ -191,3 +180,13 @@ youtubekids.com
 youtubemobilesupport.com
 yt.be
 ytimg.com
+keyword:youtube
+user-agent:*YouTubeMusic*
+user-agent:*com.google.ios.youtubemusic*
+user-agent:*youtube*
+user-agent:YouTube*
+user-agent:YouTubeMusic*
+user-agent:com.google.ios.youtube*
+user-agent:com.google.ios.youtubemusic*
+172.110.32.0/21
+216.73.80.0/20

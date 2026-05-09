@@ -3,32 +3,44 @@
   "name": "gins-rules",
   "main": "src/index.ts",
   "compatibility_date": "2026-04-01",
-  "placement": { "mode": "smart" },
+  "placement": {
+    "mode": "smart",
+  },
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "../../dashboard/dist",
-    "binding": "ASSETS",
-    "not_found_handling": "404-page"
+    "binding": "GINS_RULES_ASSETS",
+    "not_found_handling": "404-page",
   },
   "routes": [
     {
       "pattern": "rules.ichimarugin728.dev",
-      "custom_domain": true
-    }
+      "custom_domain": true,
+    },
   ],
   "ai": {
-    "binding": "AI",
+    "binding": "GINS_RULES_AI",
   },
+  "kv_namespaces": [
+    {
+      "binding": "GINS_RULES_KV_HOT",
+      "id": "2461f1f0e2bc485391eb4c1caca8f23e",
+    },
+    {
+      "binding": "GINS_RULES_KV_METADATA",
+      "id": "f8d7539304974f0f8f51e93c5212ff59",
+    },
+  ],
   "r2_buckets": [
     {
-      "binding": "RULES_BUCKET",
-      "bucket_name": "gins-rules-storage"
-    }
+      "binding": "GINS_RULES_R2_STORAGE",
+      "bucket_name": "gins-rules-storage",
+    },
   ],
   "queues": {
     "producers": [
       {
-        "binding": "NOTIFY_QUEUE",
+        "binding": "GINS_RULES_QUEUE_NOTIFY",
         "queue": "gins-rules-notify",
       },
     ],
@@ -43,9 +55,33 @@
   },
   "workflows": [
     {
-      "name": "gins-rules-build-workflow",
-      "binding": "BUILD_WORKFLOW",
+      "name": "gins-rules-workflow-build",
+      "binding": "GINS_RULES_WORKFLOW_BUILD",
       "class_name": "BuildWorkflow",
+    },
+  ],
+  "secrets_store_secrets": [
+    {
+      "binding": "TELEGRAM_BOT_TOKEN",
+      "secret_name": "TELEGRAM_BOT_TOKEN",
+    },
+    {
+      "binding": "TELEGRAM_CHAT_ID",
+      "secret_name": "TELEGRAM_CHAT_ID",
+    },
+    {
+      "binding": "DISCORD_WEBHOOK_URL",
+      "secret_name": "DISCORD_WEBHOOK_URL",
+    },
+    {
+      "binding": "WORKFLOW_SECRET",
+      "secret_name": "WORKFLOW_SECRET",
+    },
+  ],
+  "analytics_engine_datasets": [
+    {
+      "binding": "GINS_RULES_ANALYTICS_HITS",
+      "dataset": "gins-rules-analytics-hits",
     },
   ],
   "observability": {
