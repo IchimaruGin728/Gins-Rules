@@ -280,10 +280,66 @@
     "enabled": true
   },
   {
+    "name": "Rabbit AIGC",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/AIGC.list",
+    "category": "proxy",
+    "target": "ai-other",
+    "enabled": true
+  },
+  {
     "name": "Rabbit Apple",
     "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Apple.list",
     "category": "proxy",
     "target": "apple",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit Google",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Google.list",
+    "category": "proxy",
+    "target": "google",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit Microsoft",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Microsoft.list",
+    "category": "proxy",
+    "target": "microsoft",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit Netflix",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Netflix.list",
+    "category": "proxy",
+    "target": "netflix",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit Disney",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Disney.list",
+    "category": "proxy",
+    "target": "disney",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit TikTok",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/TikTok.list",
+    "category": "proxy",
+    "target": "tiktok",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit YouTube",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/YouTube.list",
+    "category": "proxy",
+    "target": "youtube",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit Spotify",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Spotify.list",
+    "category": "proxy",
+    "target": "spotify",
     "enabled": true
   },
   {
@@ -308,6 +364,237 @@
     "enabled": true
   },
   {
+    "name": "Matrix AppleTV",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/AppleTV.list",
+    "category": "proxy",
+    "target": "appletv",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Google",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Google.list",
+    "category": "proxy",
+    "target": "google",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Microsoft",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Microsoft.list",
+    "category": "proxy",
+    "target": "microsoft",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Netflix",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Netflix.list",
+    "category": "proxy",
+    "target": "netflix",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Disney",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Disney.list",
+    "category": "proxy",
+    "target": "disney",
+    "enabled": true
+  },
+  {
+    "name": "Matrix TikTok",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/TikTok.list",
+    "category": "proxy",
+    "target": "tiktok",
+    "enabled": true
+  },
+  {
+    "name": "Matrix YouTube",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/YouTube.list",
+    "category": "proxy",
+    "target": "youtube",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Spotify",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Spotify.list",
+    "category": "proxy",
+    "target": "spotify",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Telegram",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Telegram.list",
+    "category": "proxy",
+    "target": "telegram",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Discord",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Discord.list",
+    "category": "proxy",
+    "target": "discord",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Facebook",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Facebook.list",
+    "category": "proxy",
+    "target": "facebook",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Twitter",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Twitter.list",
+    "category": "proxy",
+    "target": "twitter",
+    "enabled": true
+  },
+  {
+    "name": "Matrix WhatsApp",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/WhatsApp.list",
+    "category": "proxy",
+    "target": "whatsapp",
+    "enabled": true
+  },
+  {
+    "name": "Matrix OpenAI",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/OpenAI.list",
+    "category": "proxy",
+    "target": "ai-other",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Claude",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Claude.list",
+    "category": "proxy",
+    "target": "ai-other",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Copilot",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Copilot.list",
+    "category": "proxy",
+    "target": "ai-other",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Baidu",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Baidu.list",
+    "category": "direct",
+    "target": "baidu",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Tencent",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Tencent.list",
+    "category": "direct",
+    "target": "tencent",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Alibaba",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Alibaba.list",
+    "category": "direct",
+    "target": "alibaba",
+    "enabled": true
+  },
+  {
+    "name": "Matrix BiliBili",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/BiliBili.list",
+    "category": "direct",
+    "target": "bilibili",
+    "enabled": true
+  },
+  {
+    "name": "Matrix ByteDance",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/ByteDance.list",
+    "category": "direct",
+    "target": "bytedance",
+    "enabled": true
+  },
+  {
+    "name": "Matrix NetEase",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/NetEase.list",
+    "category": "direct",
+    "target": "netease",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Steam",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Steam.list",
+    "category": "proxy",
+    "target": "steam",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Blizzard",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Blizzard.list",
+    "category": "proxy",
+    "target": "blizzard",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Amazon",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Amazon.list",
+    "category": "proxy",
+    "target": "amazon",
+    "enabled": true
+  },
+  {
+    "name": "Matrix PayPal",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/PayPal.list",
+    "category": "proxy",
+    "target": "paypal",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Dropbox",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Dropbox.list",
+    "category": "proxy",
+    "target": "dropbox",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Vercel",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Vercel.list",
+    "category": "proxy",
+    "target": "vercel",
+    "enabled": true
+  },
+  {
+    "name": "Matrix GitHub",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/GitHub.list",
+    "category": "proxy",
+    "target": "github",
+    "enabled": true
+  },
+  {
+    "name": "Matrix GitLab",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/GitLab.list",
+    "category": "proxy",
+    "target": "gitlab",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Docker",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Docker.list",
+    "category": "proxy",
+    "target": "docker",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Speedtest",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Speedtest.list",
+    "category": "proxy",
+    "target": "speedtest",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Wikipedia",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Wikipedia.list",
+    "category": "proxy",
+    "target": "wikipedia",
+    "enabled": true
+  },
+  {
     "name": "Matrix ChinaMax",
     "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/ChinaMax.list",
     "category": "direct",
@@ -322,8 +609,15 @@
     "enabled": true
   },
   {
-    "name": "Matrix Reject",
+    "name": "Matrix REJECT",
     "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/REJECT.list",
+    "category": "reject",
+    "target": "reject-list",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Advertising",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Advertising.list",
     "category": "reject",
     "target": "reject-list",
     "enabled": true
