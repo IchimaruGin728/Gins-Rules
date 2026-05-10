@@ -532,14 +532,9 @@ fn compile_mihomo_mrs_split(
     let mut domain_rules = Rules::default();
     domain_rules.domain_suffix = rules.domain_suffix.clone();
     domain_rules.domain = rules.domain.clone();
-    domain_rules.domain_keyword = rules.domain_keyword.clone();
-    domain_rules.domain_regex = rules.domain_regex.clone();
 
-    if !domain_rules.domain_suffix.is_empty()
-        || !domain_rules.domain.is_empty()
-        || !domain_rules.domain_keyword.is_empty()
-        || !domain_rules.domain_regex.is_empty()
-    {
+    // Only compile domain MRS if we actually have domains/suffixes
+    if !domain_rules.domain_suffix.is_empty() || !domain_rules.domain.is_empty() {
         let tmp_path = out_dir.join(format!(".{}.mrs-domain.yaml", name));
         let mode = MihomoRuleMode {
             behavior: "domain".to_string(),
@@ -551,7 +546,7 @@ fn compile_mihomo_mrs_split(
             &mode,
         )?;
         let output_mrs = out_dir.join(format!("{}.mrs", name));
-        Command::new(mihomo_path)
+        let status = Command::new(mihomo_path)
             .args([
                 "convert-ruleset",
                 "domain",
@@ -560,6 +555,13 @@ fn compile_mihomo_mrs_split(
                 output_mrs.to_str().unwrap(),
             ])
             .output()?;
+        if !status.status.success() {
+            println!(
+                "    [Error] Domain MRS conversion failed for {}: {}",
+                name,
+                String::from_utf8_lossy(&status.stderr)
+            );
+        }
         fs::remove_file(tmp_path)?;
     }
 
@@ -580,7 +582,7 @@ fn compile_mihomo_mrs_split(
             format!("{}-ip", name)
         };
         let output_mrs = out_dir.join(format!("{}.mrs", output_name));
-        Command::new(mihomo_path)
+        let status = Command::new(mihomo_path)
             .args([
                 "convert-ruleset",
                 "ipcidr",
@@ -589,6 +591,13 @@ fn compile_mihomo_mrs_split(
                 output_mrs.to_str().unwrap(),
             ])
             .output()?;
+        if !status.status.success() {
+            println!(
+                "    [Error] IP MRS conversion failed for {}: {}",
+                name,
+                String::from_utf8_lossy(&status.stderr)
+            );
+        }
         fs::remove_file(tmp_path)?;
     }
     Ok(())
