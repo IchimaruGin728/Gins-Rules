@@ -21636,6 +21636,12 @@
     "theme": "Media"
   },
   {
+    "name": "shunyin-emby",
+    "url": "https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/emby/shunyin-emby.png",
+    "source": "Lige Emby",
+    "theme": "Media"
+  },
+  {
     "name": "SIESTA(1)-emby",
     "url": "https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/emby/SIESTA(1)-emby.png",
     "source": "Lige Emby",
