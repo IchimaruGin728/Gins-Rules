@@ -154,13 +154,6 @@
     "enabled": true
   },
   {
-    "name": "Rabbit Tencent",
-    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Tencent.list",
-    "category": "direct",
-    "target": "tencent",
-    "enabled": true
-  },
-  {
     "name": "Matrix Tencent",
     "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Tencent.list",
     "category": "direct",
