@@ -22,3 +22,4 @@ maxminddb-writer = { version = "0.1.2", default-features = false }
 prost-derive = "0.14.3"
 ipnetwork = "0.21.1"
 ipnet = "2.12.0"
+gins-rules-core = { path = "../core" }
