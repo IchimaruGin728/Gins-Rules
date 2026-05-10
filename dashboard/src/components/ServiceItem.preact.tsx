@@ -11,9 +11,9 @@ interface Props {
   category: string;
   lines: number;
   apiBase: string;
-  classical?: boolean;
-  pureDomain?: boolean;
-  hasIP?: boolean;
+  classical?: boolean | undefined;
+  pureDomain?: boolean | undefined;
+  hasIP?: boolean | undefined;
 }
 
 export default function ServiceItem({
