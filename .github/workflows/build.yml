@@ -106,10 +106,10 @@ jobs:
       - name: Sync Data (Rules, Icons, ASN, Geo)
         run: |
           cd tools
-          swift run gins-rules-syncer -- sync
-          swift run gins-rules-syncer -- icons
-          swift run gins-rules-syncer -- he
-          swift run gins-rules-syncer -- geo
+          swift run gins-rules-syncer --root .. sync
+          swift run gins-rules-syncer --root .. icons
+          swift run gins-rules-syncer --root .. he
+          swift run gins-rules-syncer --root .. geo
 
       - name: Commit Synced Rules
         id: sync
