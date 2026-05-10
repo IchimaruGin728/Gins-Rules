@@ -26,30 +26,28 @@ export default function ServiceItem({
   hasIP,
 }: Props) {
   const [copied, setCopied] = useState(false);
+  const [yamlCopied, setYamlCopied] = useState(false);
   const cleanName = name.replace(".txt", "");
   const config = getActiveConfig();
 
   const isMihomoLike = ["mihomo", "stash"].includes(activeApp.value);
   const isIPPart = name.includes("-ip");
 
-  // Logic: Sing-box and others don't use split -ip files
+  // Logic: Non-Mihomo apps don't use split -ip files
   if (isIPPart && !isMihomoLike) return null;
 
-  // Logic to determine if this service supports Domain-Set
-  const isDomainSetSupported =
-    pureDomain ||
-    category === "ai" ||
-    category === "proxy" ||
-    category === "direct";
-
-  // Logic to determine if this should be disabled when optimizedDomainSet is active
+  // DOMAIN-SET STRICTURE: Must be pure domain (no IP, no classical rules like regex/keywords)
+  const isDomainSetSupported = pureDomain;
   const isDisabled =
     optimizedDomainSet.value &&
     !isDomainSetSupported &&
     category !== "ip" &&
     category !== "asn";
 
-  const handleCopy = async (e: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
+  const handleCopy = async (
+    e: JSX.TargetedMouseEvent<HTMLButtonElement>,
+    forceYaml = false,
+  ) => {
     if (isDisabled) return;
     e.preventDefault();
     e.stopPropagation();
@@ -66,8 +64,8 @@ export default function ServiceItem({
         ext = "txt";
     }
 
-    // SMART DOWNGRADE: Mihomo/Stash MRS doesn't support classical behavior
-    if (classical && isMihomoLike) {
+    // Manual YAML override or smart downgrade
+    if (forceYaml || (classical && isMihomoLike)) {
       ext = "yaml";
     }
 
@@ -75,29 +73,30 @@ export default function ServiceItem({
 
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      if (forceYaml) {
+        setYamlCopied(true);
+        setTimeout(() => setYamlCopied(false), 1500);
+      } else {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }
     } catch (err) {
       console.error("Copy failed", err);
     }
   };
 
-  // Badge logic: Only show IP badges on the IP part in Mihomo, or on combined items in Sing-box
   const showIPBadges = hasIP && (!isMihomoLike || isIPPart);
 
   return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      disabled={isDisabled}
+    <div
       class={`
         group/item relative flex items-center justify-between w-full p-3 rounded-xl transition-all duration-300
         ${
           isDisabled
-            ? "bg-white/[0.01] border-white/5 opacity-40 cursor-not-allowed grayscale"
-            : "bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06] hover:border-white/20 active:scale-[0.98]"
+            ? "bg-white/[0.01] border border-white/5 opacity-40 cursor-not-allowed grayscale"
+            : "bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06] hover:border-white/20"
         }
-        ${copied ? "border-brand-primary/40!" : ""}
+        ${copied || yamlCopied ? "border-brand-primary/40!" : ""}
       `}
     >
       <div class="flex items-center gap-3 overflow-hidden">
@@ -114,13 +113,13 @@ export default function ServiceItem({
               <div class="flex gap-0.5">
                 <span
                   class="text-[7px] px-1 py-0 bg-white/10 text-white/60 rounded font-black uppercase tracking-tighter"
-                  title="Includes IP Rules"
+                  title="Includes IP CIDR rules"
                 >
                   IP
                 </span>
                 <span
-                  class="text-[7px] px-1 py-0 bg-brand-primary/20 text-brand-primary rounded font-black uppercase tracking-tighter"
-                  title="Supports No-Resolve"
+                  class="text-[7px] px-1 py-0 bg-brand-primary/20 text-brand-primary rounded font-black uppercase tracking-tighter cursor-help"
+                  title="Contains IP rules. Enable 'no-resolve' in your config to avoid redundant DNS lookups."
                 >
                   NR
                 </span>
@@ -128,20 +127,38 @@ export default function ServiceItem({
             )}
           </div>
           <span class="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
-            {isDisabled ? "Incompatible" : `${lines} Rules`}
+            {isDisabled ? "Unsupported Domain-Set" : `${lines} Rules`}
           </span>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <div
+      <div class="flex items-center gap-1.5">
+        {/* Classical YAML Fallback Button for Mihomo/Stash */}
+        {isMihomoLike && classical && !isDisabled && (
+          <button
+            onClick={(e) => handleCopy(e, true)}
+            title="Copy full Classical YAML"
+            class={`text-[9px] font-black px-1.5 py-1 rounded-md border transition-all duration-300 ${
+              yamlCopied
+                ? "bg-brand-secondary border-brand-secondary text-white"
+                : "bg-white/5 border-white/10 text-white/40 hover:text-white hover:border-white/30"
+            }`}
+          >
+            {yamlCopied ? "OK" : "YAML"}
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={(e) => handleCopy(e)}
+          disabled={isDisabled}
           class={`
           rounded-[1.1rem] border p-1 transition-all duration-300
           ${
             copied
               ? "bg-brand-primary border-brand-primary text-white scale-110 shadow-lg shadow-brand-primary/20"
               : isDisabled
-                ? "bg-transparent border-transparent text-white/10"
+                ? "bg-transparent border-transparent text-white/5"
                 : "bg-white/5 border-white/5 text-gray-500 group-hover/item:border-brand-primary/20 group-hover/item:bg-brand-primary/5"
           }
         `}
@@ -153,14 +170,14 @@ export default function ServiceItem({
               class={`text-xs ${isDisabled ? "i-ph-prohibit-bold" : "i-ph-copy-bold"}`}
             ></div>
           )}
-        </div>
+        </button>
       </div>
 
-      {copied && (
+      {(copied || yamlCopied) && (
         <div class="absolute -top-1 -right-1 px-1.5 py-0.5 bg-brand-primary text-white text-[7px] font-black uppercase tracking-widest rounded-md shadow-lg animate-bounce">
           Copied
         </div>
       )}
-    </button>
+    </div>
   );
 }
