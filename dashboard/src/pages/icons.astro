@@ -15,6 +15,13 @@ try {
 } catch (e) {
   console.error("Failed to load icons:", e);
 }
+
+// Silencing Biome "unused" warnings for Astro templates
+void fs;
+void path;
+void Layout;
+void GinsIcons;
+void icons;
 ---
 
 <Layout title="Gins Icon Hub | Premium Proxy Assets">

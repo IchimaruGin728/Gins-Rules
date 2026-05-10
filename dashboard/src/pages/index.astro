@@ -231,6 +231,24 @@ const buildTime = `${new Date(Date.now() + 8 * 60 * 60 * 1000)
   .toISOString()
   .replace("T", " ")
   .slice(0, 19)} SGT`;
+
+// Silencing Biome "unused" warnings for Astro templates
+void fs;
+void path;
+void AppSwitcher;
+void CopyCard;
+void Layout;
+void ParserItem;
+void ServiceItem;
+void GeoChecker;
+void GlobalAssets;
+void APPS;
+void appCount;
+void aiRuleNames;
+void categories;
+void totalServices;
+void totalRules;
+void buildTime;
 ---
 
 <Layout title="Status Board">

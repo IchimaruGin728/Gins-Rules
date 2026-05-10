@@ -21,10 +21,6 @@
       "recommended": true,
       "suspicious": {
         "noExplicitAny": "off"
-      },
-      "correctness": {
-        "noUnusedVariables": "off",
-        "noUnusedImports": "off"
       }
     }
   },
@@ -35,6 +31,10 @@
         "rules": {
           "style": {
             "useConst": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
           }
         }
       },
