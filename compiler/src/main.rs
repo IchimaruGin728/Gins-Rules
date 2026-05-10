@@ -60,6 +60,10 @@ struct SingBoxRule {
     domain_regex: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     ip_cidr: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    process_name: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    user_agent: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -841,6 +845,8 @@ fn compile_singbox_json(name: &str, rules: &Rules, out_dir: &Path) -> Result<Pat
             domain_keyword: rules.domain_keyword.clone(),
             domain_regex: rules.domain_regex.clone(),
             ip_cidr: rules.ip_cidr.clone(),
+            process_name: rules.process_name.clone(),
+            user_agent: rules.user_agent.clone(),
         }],
     };
     let path = out_dir.join(format!("{}.json", name));
@@ -1031,25 +1037,28 @@ fn compile_quanx_list(
     };
     let mut lines = Vec::new();
     for d in &rules.domain_suffix {
-        lines.push(format!("host-suffix,{},{}", d, policy));
+        lines.push(format!("HOST-SUFFIX,{},{}", d, policy));
     }
     for d in &rules.domain {
-        lines.push(format!("host,{},{}", d, policy));
+        lines.push(format!("HOST,{},{}", d, policy));
     }
     for d in &rules.domain_keyword {
-        lines.push(format!("host-keyword,{},{}", d, policy));
+        lines.push(format!("HOST-KEYWORD,{},{}", d, policy));
     }
     for cidr in &rules.ip_cidr {
         lines.push(format!(
             "{},{},{}",
             if cidr.contains(':') {
-                "ip6-cidr"
+                "IP6-CIDR"
             } else {
-                "ip-cidr"
+                "IP-CIDR"
             },
             cidr,
             policy
         ));
+    }
+    for u in &rules.user_agent {
+        lines.push(format!("USER-AGENT,{},{}", u, policy));
     }
     fs::write(
         out_dir.join(format!(
@@ -1063,20 +1072,29 @@ fn compile_quanx_list(
 }
 
 fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
-    let mut lines = vec!["rules:".to_string()];
+    let mut lines = Vec::new();
     for d in &rules.domain_suffix {
-        lines.push(format!("  - DOMAIN-SUFFIX,{},Direct", d));
+        lines.push(format!("DOMAIN-SUFFIX,{}", d));
     }
     for d in &rules.domain {
-        lines.push(format!("  - DOMAIN,{},Direct", d));
+        lines.push(format!("DOMAIN,{}", d));
     }
     for cidr in &rules.ip_cidr {
-        let prefix = if cidr.contains(':') {
-            "IP-CIDR6"
-        } else {
-            "IP-CIDR"
-        };
-        lines.push(format!("  - {},{},Direct", prefix, cidr));
+        lines.push(format!(
+            "{},{}",
+            if cidr.contains(':') {
+                "IP-CIDR6"
+            } else {
+                "IP-CIDR"
+            },
+            cidr
+        ));
+    }
+    for p in &rules.process_name {
+        lines.push(format!("PROCESS-NAME,{}", p));
+    }
+    for u in &rules.user_agent {
+        lines.push(format!("USER-AGENT,{}", u));
     }
     fs::write(
         out_dir.join(format!("{}.yaml", name)),
@@ -1104,12 +1122,21 @@ fn compile_loon_list(
         lines.push(format!("DOMAIN,{}", d));
     }
     for cidr in &rules.ip_cidr {
-        let prefix = if cidr.contains(':') {
-            "IP-CIDR6"
-        } else {
-            "IP-CIDR"
-        };
-        lines.push(format!("{},{}", prefix, cidr));
+        lines.push(format!(
+            "{},{}",
+            if cidr.contains(':') {
+                "IP-CIDR6"
+            } else {
+                "IP-CIDR"
+            },
+            cidr
+        ));
+    }
+    for p in &rules.process_name {
+        lines.push(format!("PROCESS-NAME,{}", p));
+    }
+    for u in &rules.user_agent {
+        lines.push(format!("USER-AGENT,{}", u));
     }
     fs::write(
         out_dir.join(format!("{}{}", name, ext)),
@@ -1174,6 +1201,12 @@ fn compile_exclave_route(name: &str, rules: &Rules, out_dir: &Path) -> Result<()
     for cidr in &rules.ip_cidr {
         routes.push(cidr.clone());
     }
+    for d in &rules.domain_suffix {
+        routes.push(format!("+.{}", d));
+    }
+    for d in &rules.domain {
+        routes.push(d.clone());
+    }
     if !routes.is_empty() {
         fs::write(
             out_dir.join(format!("{}.json", name)),
@@ -1211,7 +1244,6 @@ fn generate_manifests(ruleset_dir: &Path, format_dirs: &[&str]) -> Result<()> {
         let fmt_path = ruleset_dir.join(fmt);
         let mut manifest: HashMap<String, Vec<String>> = HashMap::new();
         let categories = ["proxy", "direct", "reject", "ip", "asn", "ai"];
-
         for cat in &categories {
             let cat_path = fmt_path.join(cat);
             if cat_path.exists() {
@@ -1237,13 +1269,11 @@ fn generate_manifests(ruleset_dir: &Path, format_dirs: &[&str]) -> Result<()> {
 fn copy_parsers_js(root: &Path, compiled_dir: &Path) -> Result<()> {
     let source_dir = root.join("source");
     let dashboard_public = root.join("dashboard").join("public");
-
     let files = [
         "QX-Resource-Parser.js",
         "Loon-Resource-Parser.js",
         "geo_location_checker.js",
     ];
-
     for file in &files {
         let src = source_dir.join(file);
         if src.exists() {
