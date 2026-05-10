@@ -446,6 +446,7 @@ fn compile_to_all_formats(
         &ruleset_dir.join("loon").join(category),
         true,
         ".lsr",
+        false, // Loon: No PROCESS-NAME/USER-AGENT
     )?;
     compile_loon_list(
         name,
@@ -453,6 +454,7 @@ fn compile_to_all_formats(
         &ruleset_dir.join("shadowrocket").join(category),
         true,
         ".list",
+        true, // Shadowrocket: Supports all
     )?;
     compile_shadowrocket_domainset(
         name,
@@ -465,6 +467,7 @@ fn compile_to_all_formats(
         &ruleset_dir.join("surge").join(category),
         true,
         ".list",
+        true, // Surge: Supports all
     )?;
     compile_surge_domainset(name, rules, &ruleset_dir.join("surge").join(category))?;
     compile_loon_list(
@@ -473,6 +476,7 @@ fn compile_to_all_formats(
         &ruleset_dir.join("surfboard").join(category),
         false,
         ".list",
+        false, // Surfboard: No PROCESS-NAME/USER-AGENT
     )?;
     compile_surfboard_domainset(name, rules, &ruleset_dir.join("surfboard").join(category))?;
     compile_exclave_route(name, rules, &ruleset_dir.join("exclave").join(category))?;
@@ -1109,6 +1113,7 @@ fn compile_loon_list(
     out_dir: &Path,
     is_suffix: bool,
     ext: &str,
+    include_other: bool,
 ) -> Result<()> {
     let mut lines = Vec::new();
     for d in &rules.domain_suffix {
@@ -1122,21 +1127,20 @@ fn compile_loon_list(
         lines.push(format!("DOMAIN,{}", d));
     }
     for cidr in &rules.ip_cidr {
-        lines.push(format!(
-            "{},{}",
-            if cidr.contains(':') {
-                "IP-CIDR6"
-            } else {
-                "IP-CIDR"
-            },
-            cidr
-        ));
+        let prefix = if cidr.contains(':') {
+            "IP-CIDR6"
+        } else {
+            "IP-CIDR"
+        };
+        lines.push(format!("{},{}", prefix, cidr));
     }
-    for p in &rules.process_name {
-        lines.push(format!("PROCESS-NAME,{}", p));
-    }
-    for u in &rules.user_agent {
-        lines.push(format!("USER-AGENT,{}", u));
+    if include_other {
+        for p in &rules.process_name {
+            lines.push(format!("PROCESS-NAME,{}", p));
+        }
+        for u in &rules.user_agent {
+            lines.push(format!("USER-AGENT,{}", u));
+        }
     }
     fs::write(
         out_dir.join(format!("{}{}", name, ext)),
