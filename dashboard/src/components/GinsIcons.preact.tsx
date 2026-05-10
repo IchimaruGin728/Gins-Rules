@@ -1,6 +1,6 @@
 import { useMemo, useState } from "preact/hooks";
 
-interface Icon {
+export interface Icon {
   name: string;
   url: string;
   source: string;
