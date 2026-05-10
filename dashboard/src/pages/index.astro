@@ -20,10 +20,15 @@ const aiRuleNames = new Set([
   "openai",
 ]);
 
-function getServices(
-  category: string,
-): { name: string; lines: number; classical?: boolean }[] {
-  // ASN rules are stored in /source/ip/ with "asn-" prefix, not in /source/asn/
+interface Service {
+  name: string;
+  lines: number;
+  classical?: boolean;
+  pureDomain?: boolean;
+  hasIP?: boolean;
+}
+
+function getServices(category: string): Service[] {
   const dirs = [
     category === "asn"
       ? path.join(sourceDir, "ip")
@@ -36,75 +41,104 @@ function getServices(
         ? path.join(sourceDir, "upstream", "proxy")
         : path.join(sourceDir, "upstream", category),
   ];
-  const services = new Map<string, number>();
+  const services = new Map<string, { lines: number; content: string }>();
 
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) continue;
-    for (const file of fs.readdirSync(dir).filter((file: string) => {
+    const files = fs.readdirSync(dir).filter((file: string) => {
       if (!file.endsWith(".txt")) return false;
       if (category === "ip") return !file.startsWith("asn-");
       if (category === "asn") return file.startsWith("asn-");
       if (category === "ai")
         return aiRuleNames.has(path.basename(file, ".txt"));
       return true;
-    })) {
+    });
+
+    for (const file of files) {
       const content = fs.readFileSync(path.join(dir, file), "utf-8");
-      const lines = content
+      const validLines = content
         .split("\n")
-        .filter((line: string) => line.trim() && !line.startsWith("#")).length;
-      services.set(file, Math.max(services.get(file) ?? 0, lines));
+        .filter((l) => l.trim() && !l.startsWith("#"));
+      const current = services.get(file);
+      if (!current || validLines.length > current.lines) {
+        services.set(file, { lines: validLines.length, content });
+      }
     }
   }
 
-  const result = Array.from(services, ([name, lines]) => {
-    const isClassical = category === "ai" || category === "reject";
-    return { name, lines, classical: isClassical };
+  const result = Array.from(services, ([name, data]) => {
+    const isClassical =
+      category === "ai" ||
+      category === "reject" ||
+      data.content.includes("process:") ||
+      data.content.includes("user-agent:") ||
+      data.content.includes("regexp:") ||
+      data.content.includes("keyword:");
+
+    const hasIP =
+      data.content.includes("/") ||
+      data.content.includes("asn:") ||
+      category === "ip" ||
+      category === "asn";
+    const pureDomain = !hasIP && !isClassical;
+
+    return {
+      name,
+      lines: data.lines,
+      classical: isClassical,
+      pureDomain,
+      hasIP,
+    };
   });
 
-  // For categories that support splitting (non-IP ones)
-  // and when building for Mihomo/Stash, we want to show both parts.
-  // However, since this is a static build, we'll just ensure the list has everything.
+  // For categories that support splitting, we'll ensure the list has everything.
   const splitResult = [];
   for (const item of result) {
     splitResult.push(item);
     const clean = item.name.replace(".txt", "");
-    // If it's a category that usually has IPs (like proxy/direct/ai),
-    // we've generated a -ip.mrs version in the compiler.
-    // We'll add a virtual entry for the dashboard to pick up.
     if (
       ["ai", "proxy", "direct"].includes(category) &&
       !item.name.includes("-ip")
     ) {
-      // We don't know the exact lines, but we can guess or just mark it
+      // Add a virtual entry for the -ip version (ipcidr behavior)
       splitResult.push({
         name: `${clean}-ip.txt`,
         lines: item.lines,
         classical: false,
+        pureDomain: false,
+        hasIP: true,
       });
     }
   }
 
   const sortedResult = splitResult.sort((a, b) => a.name.localeCompare(b.name));
 
-  // Inject "Full Merge" bundle
+  // Inject "Full Merge" bundle at the top
   if (["ai", "reject", "proxy", "direct"].includes(category)) {
     const totalLines = result.reduce((sum, s) => sum + s.lines, 0);
+    // Categorized bundle root is always classical (mixed)
     sortedResult.unshift({
       name: `${category}.txt`,
       lines: totalLines,
       classical: true,
+      pureDomain: false,
+      hasIP: true,
     });
+    // Add the -ip version for the bundle too (except reject which is domain-heavy)
     if (category !== "reject") {
       sortedResult.unshift({
         name: `${category}-ip.txt`,
         lines: totalLines,
         classical: false,
+        pureDomain: false,
+        hasIP: true,
       });
     }
   }
 
   return sortedResult;
 }
+
 const baseCategories = [
   {
     id: "proxy",
@@ -197,22 +231,6 @@ const buildTime =
     .slice(0, 19) + " SGT";
 import { APPS } from "../store.preact";
 const appCount = APPS.length;
-
-void Layout;
-void AppSwitcher;
-void CopyCard;
-void ParserItem;
-void ServiceItem;
-import DatCard from "../components/DatCard.preact";
-void DatCard;
-void GeoChecker;
-void apiBase;
-void resourceParsers;
-void sourceProviders;
-void totalServices;
-void totalRules;
-void buildTime;
-void appCount;
 ---
 
 <Layout title="Status Board">
@@ -246,8 +264,7 @@ void appCount;
               class="mt-4 max-w-xl text-sm md:text-base text-gray-400 leading-relaxed"
             >
               Unified distribution for rule providers, client-specific formats,
-              and parser entrypoints in the same glass language as the Blog
-              family.
+              and parser entrypoints.
             </p>
           </div>
         </div>
@@ -319,9 +336,7 @@ void appCount;
             >
               Last Build
             </div>
-            <div class="mt-2 font-mono text-sm text-gray-300">
-              {buildTime}
-            </div>
+            <div class="mt-2 font-mono text-sm text-gray-300">{buildTime}</div>
           </div>
         </div>
 
@@ -336,9 +351,9 @@ void appCount;
               class="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/40"
             >
             </div>
-            <span class="font-outfit font-extrabold text-lg text-white">
-              Operational
-            </span>
+            <span class="font-outfit font-extrabold text-lg text-white"
+              >Operational</span
+            >
           </div>
           <div class="mt-5 grid grid-cols-2 gap-3">
             <div
@@ -348,8 +363,9 @@ void appCount;
                 class="text-[9px] font-black uppercase tracking-[0.24em] text-gray-500"
               >
                 Formats
-              </div>
-              <div class="mt-2 font-outfit text-2xl font-black text-white">
+              </div><div
+                class="mt-2 font-outfit text-2xl font-black text-white"
+              >
                 12
               </div>
             </div>
@@ -361,8 +377,9 @@ void appCount;
                 class="text-[9px] font-black uppercase tracking-[0.24em] text-gray-500"
               >
                 Spec
-              </div>
-              <div class="mt-2 font-outfit text-2xl font-black text-white">
+              </div><div
+                class="mt-2 font-outfit text-2xl font-black text-white"
+              >
                 v5
               </div>
             </div>
@@ -393,9 +410,8 @@ void appCount;
         <div class="i-ph-shapes-bold text-brand-primary"></div>
         <span
           class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+          >Select Your Platform</span
         >
-          Select Your Platform
-        </span>
       </div>
       <AppSwitcher client:load />
     </section>
@@ -407,9 +423,8 @@ void appCount;
         <div class="i-ph-link-bold text-brand-primary"></div>
         <span
           class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+          >Quick Copy Bundle</span
         >
-          Quick Copy Bundle
-        </span>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {
@@ -436,9 +451,8 @@ void appCount;
           <div class="i-ph-terminal-window-bold text-brand-primary"></div>
           <span
             class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+            >Resource Parsers</span
           >
-            Resource Parsers
-          </span>
         </div>
         <div class="grid grid-cols-1 gap-3">
           {
@@ -459,17 +473,14 @@ void appCount;
         <div class="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
           <div class="i-ph-git-branch-duotone text-6xl"></div>
         </div>
-
         <div class="relative space-y-4">
           <div class="flex items-center gap-2">
             <div class="i-ph-git-branch-bold text-brand-primary"></div>
             <span
               class="font-outfit font-black text-sm tracking-widest uppercase"
+              >Upstream Sources</span
             >
-              Upstream Sources
-            </span>
           </div>
-
           <div class="flex flex-wrap gap-2.5">
             {
               sourceProviders.map((source) => (
@@ -479,7 +490,6 @@ void appCount;
               ))
             }
           </div>
-
           <div
             class="text-[10px] text-gray-500 pt-2 font-bold uppercase tracking-[0.15em] flex items-center gap-2"
           >
@@ -497,9 +507,8 @@ void appCount;
         </h2>
         <span
           class="text-[10px] text-gray-500 font-bold uppercase tracking-widest"
+          >Click to copy URL</span
         >
-          Click to copy URL
-        </span>
       </div>
 
       {
@@ -531,6 +540,8 @@ void appCount;
                     lines={service.lines}
                     apiBase={apiBase}
                     classical={service.classical}
+                    pureDomain={service.pureDomain}
+                    hasIP={service.hasIP}
                   />
                 ))}
               </div>

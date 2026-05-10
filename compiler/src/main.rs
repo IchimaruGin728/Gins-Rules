@@ -444,7 +444,7 @@ fn compile_to_all_formats(
 
     compile_text_list(name, rules, &ruleset_dir.join("text").join(category), is_ip)?;
 
-    // QX: Special prefix naming
+    // QX: HOST-SUFFIX, IP6-CIDR, USER-AGENT
     compile_quanx_list(
         name,
         rules,
@@ -453,9 +453,10 @@ fn compile_to_all_formats(
         category,
     )?;
 
+    // Egern: lower_case keys, ip_cidr6
     compile_egern_yaml(name, rules, &ruleset_dir.join("egern").join(category))?;
 
-    // Loon: No PROCESS-NAME
+    // Loon: DOMAIN-SUFFIX, IP-CIDR6, USER-AGENT. No PROCESS-NAME.
     compile_loon_list(
         name,
         rules,
@@ -523,6 +524,7 @@ fn compile_mihomo_mrs_split(
     is_ip_category: bool,
     mihomo_path: &Path,
 ) -> Result<()> {
+    // 1. Domain MRS
     let mut domain_rules = Rules::default();
     domain_rules.domain_suffix = rules.domain_suffix.clone();
     domain_rules.domain = rules.domain.clone();
@@ -558,6 +560,7 @@ fn compile_mihomo_mrs_split(
         fs::remove_file(tmp_path)?;
     }
 
+    // 2. IP MRS
     let mut ip_rules = Rules::default();
     ip_rules.ip_cidr = rules.ip_cidr.clone();
     ip_rules.ip_asn = rules.ip_asn.clone();
@@ -1125,27 +1128,39 @@ fn compile_quanx_list(
 fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
     let mut lines = vec!["rules:".to_string()];
     for d in &rules.domain_suffix {
-        lines.push(format!("  - DOMAIN-SUFFIX,{},Direct", d));
+        lines.push(format!(
+            "  - domain_suffix: {{ match: \"{}\", policy: Direct }}",
+            d
+        ));
     }
     for d in &rules.domain {
-        lines.push(format!("  - DOMAIN,{},Direct", d));
+        lines.push(format!(
+            "  - domain: {{ match: \"{}\", policy: Direct }}",
+            d
+        ));
     }
     for cidr in &rules.ip_cidr {
+        let prefix = if cidr.contains(':') {
+            "ip_cidr6"
+        } else {
+            "ip_cidr"
+        };
         lines.push(format!(
-            "  - {},{},Direct",
-            if cidr.contains(':') {
-                "IP-CIDR6"
-            } else {
-                "IP-CIDR"
-            },
-            cidr
+            "  - {}: {{ match: \"{}\", policy: Direct }}",
+            prefix, cidr
         ));
     }
     for p in &rules.process_name {
-        lines.push(format!("  - PROCESS-NAME,{},Direct", p));
+        lines.push(format!(
+            "  - process_name: {{ match: \"{}\", policy: Direct }}",
+            p
+        ));
     }
     for u in &rules.user_agent {
-        lines.push(format!("  - USER-AGENT,{},Direct", u));
+        lines.push(format!(
+            "  - user_agent: {{ match: \"{}\", policy: Direct }}",
+            u
+        ));
     }
     fs::write(
         out_dir.join(format!("{}.yaml", name)),
