@@ -842,7 +842,7 @@ fn sanitize_rules(mut rules: Rules) -> Rules {
 
 fn compile_singbox_json(name: &str, rules: &Rules, out_dir: &Path) -> Result<PathBuf> {
     let rs = SingBoxRuleSet {
-        version: 2,
+        version: 5, // Upgraded to v5 for Sing-box 1.14.0+
         rules: vec![SingBoxRule {
             domain_suffix: rules.domain_suffix.clone(),
             domain: rules.domain.clone(),
