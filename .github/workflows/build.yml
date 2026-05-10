@@ -105,11 +105,10 @@ jobs:
 
       - name: Sync Data (Rules, Icons, ASN, Geo)
         run: |
-          cd tools
-          swift run gins-rules-syncer --root .. sync
-          swift run gins-rules-syncer --root .. icons
-          swift run gins-rules-syncer --root .. he
-          swift run gins-rules-syncer --root .. geo
+          swift run --package-path tools gins-rules-syncer --root . sync
+          swift run --package-path tools gins-rules-syncer --root . icons
+          swift run --package-path tools gins-rules-syncer --root . he
+          swift run --package-path tools gins-rules-syncer --root . geo
 
       - name: Commit Synced Rules
         id: sync
@@ -148,9 +147,7 @@ jobs:
         id: compile
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
-          cd tools
-          swift run gins-rules-compiler --root ..
-          cd ..
+          swift run --package-path tools gins-rules-compiler --root .
           ls -lh compiled/ruleset/mihomo/proxy/ || true
 
       - name: Build SwiftWasm
