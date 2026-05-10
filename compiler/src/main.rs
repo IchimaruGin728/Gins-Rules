@@ -54,6 +54,25 @@ fn main() -> Result<()> {
     let mihomo_path = find_binary("mihomo", &bin_dir);
     let singbox_path = find_binary("sing-box", &bin_dir);
 
+    if let Some(ref path) = mihomo_path {
+        let out = Command::new(path).arg("-v").output()?;
+        println!(
+            "  [Binary] Mihomo version: {}",
+            String::from_utf8_lossy(&out.stdout).trim()
+        );
+    }
+    if let Some(ref path) = singbox_path {
+        let out = Command::new(path).arg("version").output()?;
+        println!(
+            "  [Binary] Sing-box version: {}",
+            String::from_utf8_lossy(&out.stdout)
+                .trim()
+                .split('\n')
+                .next()
+                .unwrap_or("")
+        );
+    }
+
     let output_categories = vec!["proxy", "direct", "reject", "ip", "asn", "ai"];
     let format_dirs = vec![
         "singbox",

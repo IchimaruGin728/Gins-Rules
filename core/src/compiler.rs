@@ -1,6 +1,6 @@
 use crate::models::{AnywhereRule, MihomoRuleMode, Rules, SingBoxRule, SingBoxRuleSet};
 use crate::parser::unique;
-use anyhow::Result;
+use anyhow::{anyhow, Context, Result};
 use std::fs;
 use std::path::Path;
 use std::process::Command;
@@ -28,7 +28,7 @@ pub fn compile_singbox_json(
 }
 
 pub fn compile_singbox_srs(json_path: &Path, singbox_path: &Path) -> Result<()> {
-    Command::new(singbox_path)
+    let output = Command::new(singbox_path)
         .args([
             "rule-set",
             "compile",
@@ -36,7 +36,16 @@ pub fn compile_singbox_srs(json_path: &Path, singbox_path: &Path) -> Result<()> 
             "-o",
             json_path.with_extension("srs").to_str().unwrap(),
         ])
-        .output()?;
+        .output()
+        .context("Failed to execute sing-box compiler")?;
+
+    if !output.status.success() {
+        return Err(anyhow!(
+            "sing-box conversion failed for {:?}: {}",
+            json_path,
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
     Ok(())
 }
 
@@ -131,6 +140,52 @@ pub fn detect_mihomo_rule_mode(rules: &Rules, is_ip_category: bool) -> MihomoRul
     }
 }
 
+fn run_convert_ruleset(
+    mihomo_path: &Path,
+    behavior: &str,
+    input: &Path,
+    output_path: &Path,
+) -> Result<()> {
+    let output = Command::new(mihomo_path)
+        .args([
+            "convert-ruleset",
+            behavior,
+            "yaml",
+            input.to_str().unwrap(),
+            output_path.to_str().unwrap(),
+        ])
+        .output()
+        .context(format!(
+            "Failed to execute mihomo converter for {:?}",
+            input
+        ))?;
+
+    if !output.status.success() {
+        return Err(anyhow!(
+            "mihomo conversion failed for {:?} (behavior: {}): {}",
+            input,
+            behavior,
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
+
+    // Verify output file exists and is not zero bytes
+    if !output_path.exists() {
+        return Err(anyhow!(
+            "mihomo converter failed to create {:?}",
+            output_path
+        ));
+    }
+    if fs::metadata(output_path)?.len() == 0 {
+        return Err(anyhow!(
+            "mihomo converter produced zero-byte file for {:?}",
+            output_path
+        ));
+    }
+
+    Ok(())
+}
+
 pub fn compile_mihomo_mrs_split(
     name: &str,
     rules: &Rules,
@@ -157,83 +212,48 @@ pub fn compile_mihomo_mrs_split(
     // 2. Generate MRS files based on content
     if has_non_ip && has_ip {
         // CASE: Mixed content - SPLIT
-        // Main MRS (Domains/Process/etc)
         let mode = detect_mihomo_rule_mode(&non_ip_rules, false);
         let tmp_name = format!(".{}.mrs-main", name);
+        let tmp_path = out_dir.join(format!("{}.yaml", tmp_name));
         compile_mihomo_yaml(&tmp_name, &non_ip_rules, out_dir, &mode)?;
-        let _ = Command::new(mihomo_path)
-            .args([
-                "convert-ruleset",
-                &mode.behavior,
-                "yaml",
-                out_dir.join(format!("{}.yaml", tmp_name)).to_str().unwrap(),
-                out_dir.join(format!("{}.mrs", name)).to_str().unwrap(),
-            ])
-            .output()?;
-        let _ = fs::remove_file(out_dir.join(format!("{}.yaml", tmp_name)));
+
+        let output_mrs = out_dir.join(format!("{}.mrs", name));
+        run_convert_ruleset(mihomo_path, &mode.behavior, &tmp_path, &output_mrs)?;
+        let _ = fs::remove_file(&tmp_path);
 
         // IP MRS (Split out)
         let mode_ip = detect_mihomo_rule_mode(&ip_rules, true);
         let tmp_name_ip = format!(".{}.mrs-ip", name);
+        let tmp_path_ip = out_dir.join(format!("{}.yaml", tmp_name_ip));
         compile_mihomo_yaml(&tmp_name_ip, &ip_rules, out_dir, &mode_ip)?;
-        let _ = Command::new(mihomo_path)
-            .args([
-                "convert-ruleset",
-                &mode_ip.behavior,
-                "yaml",
-                out_dir
-                    .join(format!("{}.yaml", tmp_name_ip))
-                    .to_str()
-                    .unwrap(),
-                out_dir.join(format!("{}-ip.mrs", name)).to_str().unwrap(),
-            ])
-            .output()?;
-        let _ = fs::remove_file(out_dir.join(format!("{}.yaml", tmp_name_ip)));
+
+        let output_mrs_ip = out_dir.join(format!("{}-ip.mrs", name));
+        run_convert_ruleset(mihomo_path, &mode_ip.behavior, &tmp_path_ip, &output_mrs_ip)?;
+        let _ = fs::remove_file(&tmp_path_ip);
     } else if has_non_ip {
         // CASE: Domain only - SINGLE
         let mode = detect_mihomo_rule_mode(&non_ip_rules, false);
         let tmp_name = format!(".{}.mrs-single", name);
+        let tmp_path = out_dir.join(format!("{}.yaml", tmp_name));
         compile_mihomo_yaml(&tmp_name, &non_ip_rules, out_dir, &mode)?;
-        let _ = Command::new(mihomo_path)
-            .args([
-                "convert-ruleset",
-                &mode.behavior,
-                "yaml",
-                out_dir.join(format!("{}.yaml", tmp_name)).to_str().unwrap(),
-                out_dir.join(format!("{}.mrs", name)).to_str().unwrap(),
-            ])
-            .output()?;
-        let _ = fs::remove_file(out_dir.join(format!("{}.yaml", tmp_name)));
+
+        let output_mrs = out_dir.join(format!("{}.mrs", name));
+        run_convert_ruleset(mihomo_path, &mode.behavior, &tmp_path, &output_mrs)?;
+        let _ = fs::remove_file(&tmp_path);
     } else if has_ip {
         // CASE: IP only - SINGLE
         let mode = detect_mihomo_rule_mode(&ip_rules, true);
         let tmp_name = format!(".{}.mrs-single", name);
+        let tmp_path = out_dir.join(format!("{}.yaml", tmp_name));
         compile_mihomo_yaml(&tmp_name, &ip_rules, out_dir, &mode)?;
 
-        // If it's an IP category, we name it name.mrs
-        // If it's a proxy category but only has IPs, we still name it name.mrs to avoid 404
-        let output_mrs = if is_ip_category {
-            out_dir.join(format!("{}.mrs", name))
-        } else {
-            // For proxy rules that are purely IP, generate both for safety?
-            // Actually, just generate the main name.mrs so the link works.
-            out_dir.join(format!("{}.mrs", name))
-        };
-
-        let _ = Command::new(mihomo_path)
-            .args([
-                "convert-ruleset",
-                &mode.behavior,
-                "yaml",
-                out_dir.join(format!("{}.yaml", tmp_name)).to_str().unwrap(),
-                output_mrs.to_str().unwrap(),
-            ])
-            .output()?;
-        let _ = fs::remove_file(out_dir.join(format!("{}.yaml", tmp_name)));
+        let output_mrs = out_dir.join(format!("{}.mrs", name));
+        run_convert_ruleset(mihomo_path, &mode.behavior, &tmp_path, &output_mrs)?;
+        let _ = fs::remove_file(&tmp_path);
 
         // If not in IP category, also generate the -ip.mrs version so the virtual entry works
         if !is_ip_category {
-            fs::copy(output_mrs, out_dir.join(format!("{}-ip.mrs", name)))?;
+            fs::copy(&output_mrs, out_dir.join(format!("{}-ip.mrs", name)))?;
         }
     }
 
