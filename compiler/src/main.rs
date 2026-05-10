@@ -977,15 +977,6 @@ fn compile_mihomo_mrs(
         return Ok(());
     }
 
-    // Mihomo binary MRS format DOES NOT support classical behavior
-    if mode.behavior == "classical" {
-        println!(
-            "    [Skip  ] {} (MRS binary not supported for classical behavior)",
-            name
-        );
-        return Ok(());
-    }
-
     let tmp_path = out_dir.join(format!(".{}.mrs-input.yaml", name));
     compile_mihomo_yaml(&format!(".{}.mrs-input", name), rules, out_dir, &mode)?;
     Command::new(mihomo_path)
