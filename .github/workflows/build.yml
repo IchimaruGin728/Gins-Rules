@@ -158,6 +158,7 @@ jobs:
           cd compiler
           cargo run --release -- --root ..
           cd ..
+          ls -lh compiled/ruleset/mihomo/proxy/ || true
 
       - name: Build Dashboard
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
