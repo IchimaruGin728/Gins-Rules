@@ -422,10 +422,18 @@ fn compile_to_all_formats(
         &mode,
     )?;
     if let Some(mh) = mihomo_path {
-        compile_mihomo_mrs(
+        compile_mihomo_mrs_split(
             name,
             rules,
             &ruleset_dir.join("stash").join(category),
+            is_ip,
+            mh,
+        )?;
+        // Also generate for mihomo directory
+        compile_mihomo_mrs_split(
+            name,
+            rules,
+            &ruleset_dir.join("mihomo").join(category),
             is_ip,
             mh,
         )?;
@@ -965,49 +973,83 @@ fn detect_mihomo_rule_mode(rules: &Rules, is_ip_category: bool) -> MihomoRuleMod
     }
 }
 
-fn compile_mihomo_mrs(
+fn compile_mihomo_mrs_split(
     name: &str,
     rules: &Rules,
     out_dir: &Path,
     is_ip_category: bool,
     mihomo_path: &Path,
 ) -> Result<()> {
-    let mode = detect_mihomo_rule_mode(rules, is_ip_category);
-    if mode.is_empty {
-        return Ok(());
+    // 1. Domain MRS (pure domains/suffixes/keywords/regex)
+    let mut domain_rules = Rules::default();
+    domain_rules.domain_suffix = rules.domain_suffix.clone();
+    domain_rules.domain = rules.domain.clone();
+    domain_rules.domain_keyword = rules.domain_keyword.clone();
+    domain_rules.domain_regex = rules.domain_regex.clone();
+
+    if !domain_rules.domain_suffix.is_empty()
+        || !domain_rules.domain.is_empty()
+        || !domain_rules.domain_keyword.is_empty()
+        || !domain_rules.domain_regex.is_empty()
+    {
+        let tmp_path = out_dir.join(format!(".{}.mrs-domain.yaml", name));
+        let mode = MihomoRuleMode {
+            behavior: "domain".to_string(),
+            is_empty: false,
+        };
+        compile_mihomo_yaml(
+            &format!(".{}.mrs-domain", name),
+            &domain_rules,
+            out_dir,
+            &mode,
+        )?;
+
+        let output_mrs = out_dir.join(format!("{}.mrs", name));
+        Command::new(mihomo_path)
+            .args([
+                "convert-ruleset",
+                "domain",
+                "yaml",
+                tmp_path.to_str().unwrap(),
+                output_mrs.to_str().unwrap(),
+            ])
+            .output()?;
+        fs::remove_file(tmp_path)?;
     }
 
-    // CRITICAL: Mihomo binary MRS format DOES NOT support classical behavior.
-    // Reference: https://github.com/MetaCubeX/mihomo/issues/1442
-    // We only convert to MRS if it's a optimized domain or ipcidr set.
-    if mode.behavior == "classical" {
-        // Skip binary conversion, only rely on the .yaml version generated elsewhere
-        return Ok(());
+    // 2. IP MRS (pure IP CIDRs and ASNs)
+    let mut ip_rules = Rules::default();
+    ip_rules.ip_cidr = rules.ip_cidr.clone();
+    ip_rules.ip_asn = rules.ip_asn.clone();
+
+    if !ip_rules.ip_cidr.is_empty() || !ip_rules.ip_asn.is_empty() {
+        let tmp_path = out_dir.join(format!(".{}.mrs-ip.yaml", name));
+        let mode = MihomoRuleMode {
+            behavior: "ipcidr".to_string(),
+            is_empty: false,
+        };
+        compile_mihomo_yaml(&format!(".{}.mrs-ip", name), &ip_rules, out_dir, &mode)?;
+
+        // If it's already an IP category, we don't need the -ip suffix
+        let output_name = if is_ip_category {
+            name.to_string()
+        } else {
+            format!("{}-ip", name)
+        };
+        let output_mrs = out_dir.join(format!("{}.mrs", output_name));
+
+        Command::new(mihomo_path)
+            .args([
+                "convert-ruleset",
+                "ipcidr",
+                "yaml",
+                tmp_path.to_str().unwrap(),
+                output_mrs.to_str().unwrap(),
+            ])
+            .output()?;
+        fs::remove_file(tmp_path)?;
     }
 
-    let tmp_path = out_dir.join(format!(".{}.mrs-input.yaml", name));
-    compile_mihomo_yaml(&format!(".{}.mrs-input", name), rules, out_dir, &mode)?;
-
-    let output_mrs = out_dir.join(format!("{}.mrs", name));
-    let status = Command::new(mihomo_path)
-        .args([
-            "convert-ruleset",
-            &mode.behavior,
-            "yaml",
-            tmp_path.to_str().unwrap(),
-            output_mrs.to_str().unwrap(),
-        ])
-        .output()?;
-
-    if !status.status.success() {
-        println!(
-            "    [Error] MRS conversion failed for {}: {}",
-            name,
-            String::from_utf8_lossy(&status.stderr)
-        );
-    }
-
-    fs::remove_file(tmp_path)?;
     Ok(())
 }
 

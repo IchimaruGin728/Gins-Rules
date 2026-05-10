@@ -57,25 +57,54 @@ function getServices(
   }
 
   const result = Array.from(services, ([name, lines]) => {
-    // Simple heuristic: AI category or specific names are likely classical
     const isClassical = category === "ai" || category === "reject";
     return { name, lines, classical: isClassical };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  });
+
+  // For categories that support splitting (non-IP ones)
+  // and when building for Mihomo/Stash, we want to show both parts.
+  // However, since this is a static build, we'll just ensure the list has everything.
+  const splitResult = [];
+  for (const item of result) {
+    splitResult.push(item);
+    const clean = item.name.replace(".txt", "");
+    // If it's a category that usually has IPs (like proxy/direct/ai),
+    // we've generated a -ip.mrs version in the compiler.
+    // We'll add a virtual entry for the dashboard to pick up.
+    if (
+      ["ai", "proxy", "direct"].includes(category) &&
+      !item.name.includes("-ip")
+    ) {
+      // We don't know the exact lines, but we can guess or just mark it
+      splitResult.push({
+        name: `${clean}-ip.txt`,
+        lines: item.lines,
+        classical: false,
+      });
+    }
+  }
+
+  const sortedResult = splitResult.sort((a, b) => a.name.localeCompare(b.name));
 
   // Inject "Full Merge" bundle
   if (["ai", "reject", "proxy", "direct"].includes(category)) {
     const totalLines = result.reduce((sum, s) => sum + s.lines, 0);
-    // Category root files (ai.mrs, reject.mrs) are almost always classical
-    result.unshift({
+    sortedResult.unshift({
       name: `${category}.txt`,
       lines: totalLines,
       classical: true,
     });
+    if (category !== "reject") {
+      sortedResult.unshift({
+        name: `${category}-ip.txt`,
+        lines: totalLines,
+        classical: false,
+      });
+    }
   }
 
-  return result;
+  return sortedResult;
 }
-
 const baseCategories = [
   {
     id: "proxy",
