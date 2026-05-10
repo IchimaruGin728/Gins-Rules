@@ -414,6 +414,8 @@ fn compile_to_all_formats(
         compile_singbox_srs(&json_path, sb)?;
         fs::remove_file(json_path)?;
     }
+
+    // Mihomo: Generate full YAML (always)
     let mode = detect_mihomo_rule_mode(rules, is_ip);
     compile_mihomo_yaml(
         name,
@@ -421,6 +423,8 @@ fn compile_to_all_formats(
         &ruleset_dir.join("mihomo").join(category),
         &mode,
     )?;
+
+    // Mihomo/Stash: Generate split binary MRS for performance
     if let Some(mh) = mihomo_path {
         compile_mihomo_mrs_split(
             name,
@@ -429,7 +433,6 @@ fn compile_to_all_formats(
             is_ip,
             mh,
         )?;
-        // Also generate for mihomo directory
         compile_mihomo_mrs_split(
             name,
             rules,
@@ -440,6 +443,8 @@ fn compile_to_all_formats(
     }
 
     compile_text_list(name, rules, &ruleset_dir.join("text").join(category), is_ip)?;
+
+    // QX: Special prefix naming
     compile_quanx_list(
         name,
         rules,
@@ -447,49 +452,140 @@ fn compile_to_all_formats(
         is_ip,
         category,
     )?;
+
     compile_egern_yaml(name, rules, &ruleset_dir.join("egern").join(category))?;
+
+    // Loon: No PROCESS-NAME
     compile_loon_list(
         name,
         rules,
         &ruleset_dir.join("loon").join(category),
         true,
         ".lsr",
-        false, // Loon: No PROCESS-NAME/USER-AGENT
+        "DOMAIN",
+        "IP-CIDR6",
+        false,
     )?;
+
+    // Shadowrocket: DOMAIN, IP-CIDR6, supports all
     compile_loon_list(
         name,
         rules,
         &ruleset_dir.join("shadowrocket").join(category),
         true,
         ".list",
-        true, // Shadowrocket: Supports all
+        "DOMAIN",
+        "IP-CIDR6",
+        true,
     )?;
     compile_shadowrocket_domainset(
         name,
         rules,
         &ruleset_dir.join("shadowrocket").join(category),
     )?;
+
+    // Surge: DOMAIN, IP-CIDR6, supports all
     compile_loon_list(
         name,
         rules,
         &ruleset_dir.join("surge").join(category),
         true,
         ".list",
-        true, // Surge: Supports all
+        "DOMAIN",
+        "IP-CIDR6",
+        true,
     )?;
     compile_surge_domainset(name, rules, &ruleset_dir.join("surge").join(category))?;
+
+    // Surfboard: No PROCESS-NAME
     compile_loon_list(
         name,
         rules,
         &ruleset_dir.join("surfboard").join(category),
         false,
         ".list",
-        false, // Surfboard: No PROCESS-NAME/USER-AGENT
+        "DOMAIN",
+        "IP-CIDR6",
+        false,
     )?;
     compile_surfboard_domainset(name, rules, &ruleset_dir.join("surfboard").join(category))?;
+
     compile_exclave_route(name, rules, &ruleset_dir.join("exclave").join(category))?;
     compile_anywhere_json(name, rules, &ruleset_dir.join("anywhere").join(category))?;
 
+    Ok(())
+}
+
+fn compile_mihomo_mrs_split(
+    name: &str,
+    rules: &Rules,
+    out_dir: &Path,
+    is_ip_category: bool,
+    mihomo_path: &Path,
+) -> Result<()> {
+    let mut domain_rules = Rules::default();
+    domain_rules.domain_suffix = rules.domain_suffix.clone();
+    domain_rules.domain = rules.domain.clone();
+    domain_rules.domain_keyword = rules.domain_keyword.clone();
+    domain_rules.domain_regex = rules.domain_regex.clone();
+
+    if !domain_rules.domain_suffix.is_empty()
+        || !domain_rules.domain.is_empty()
+        || !domain_rules.domain_keyword.is_empty()
+        || !domain_rules.domain_regex.is_empty()
+    {
+        let tmp_path = out_dir.join(format!(".{}.mrs-domain.yaml", name));
+        let mode = MihomoRuleMode {
+            behavior: "domain".to_string(),
+            is_empty: false,
+        };
+        compile_mihomo_yaml(
+            &format!(".{}.mrs-domain", name),
+            &domain_rules,
+            out_dir,
+            &mode,
+        )?;
+        let output_mrs = out_dir.join(format!("{}.mrs", name));
+        Command::new(mihomo_path)
+            .args([
+                "convert-ruleset",
+                "domain",
+                "yaml",
+                tmp_path.to_str().unwrap(),
+                output_mrs.to_str().unwrap(),
+            ])
+            .output()?;
+        fs::remove_file(tmp_path)?;
+    }
+
+    let mut ip_rules = Rules::default();
+    ip_rules.ip_cidr = rules.ip_cidr.clone();
+    ip_rules.ip_asn = rules.ip_asn.clone();
+
+    if !ip_rules.ip_cidr.is_empty() || !ip_rules.ip_asn.is_empty() {
+        let tmp_path = out_dir.join(format!(".{}.mrs-ip.yaml", name));
+        let mode = MihomoRuleMode {
+            behavior: "ipcidr".to_string(),
+            is_empty: false,
+        };
+        compile_mihomo_yaml(&format!(".{}.mrs-ip", name), &ip_rules, out_dir, &mode)?;
+        let output_name = if is_ip_category {
+            name.to_string()
+        } else {
+            format!("{}-ip", name)
+        };
+        let output_mrs = out_dir.join(format!("{}.mrs", output_name));
+        Command::new(mihomo_path)
+            .args([
+                "convert-ruleset",
+                "ipcidr",
+                "yaml",
+                tmp_path.to_str().unwrap(),
+                output_mrs.to_str().unwrap(),
+            ])
+            .output()?;
+        fs::remove_file(tmp_path)?;
+    }
     Ok(())
 }
 
@@ -502,7 +598,6 @@ fn pack_binary_assets(
     let mut geoip_list = GeoIpList::default();
     let mut geoasn_list = GeoIpList::default();
 
-    // 1. Prepare MMDB Writers
     let mut mmdb_geoip = Database::default();
     mmdb_geoip.metadata.database_type = "GeoLite2-Country".to_string();
     mmdb_geoip.metadata.languages = vec!["en".to_string()];
@@ -517,9 +612,7 @@ fn pack_binary_assets(
     mmdb_geoasn.metadata.binary_format_major_version = 2;
     mmdb_geoasn.metadata.build_epoch = chrono::Utc::now().timestamp() as u64;
 
-    // 2. Load Full Data from Syncer
     let compiled_dir = root.join("compiled");
-
     let country_index_path = compiled_dir.join("full-country-index.json");
     let full_country_index: BTreeMap<String, Vec<String>> = if country_index_path.exists() {
         serde_json::from_str(&fs::read_to_string(country_index_path)?)?
@@ -541,16 +634,12 @@ fn pack_binary_assets(
         full_asn_index.len()
     );
 
-    // 3. Value Caches for Deduplication
     let mut geoip_value_cache = HashMap::new();
     let mut geoasn_value_cache = HashMap::new();
 
-    // 4. Process all categories for Geosite and Custom GeoIP/GeoASN tags
     for (category, rules_map) in all_rules {
         for (name, rules) in rules_map {
             let tag = name.to_uppercase();
-
-            // Geosite logic
             if category != "ip" && category != "asn" {
                 let mut site = GeoSite {
                     country_code: tag.clone(),
@@ -584,8 +673,6 @@ fn pack_binary_assets(
                     geosite_list.entry.push(site);
                 }
             }
-
-            // Custom GeoIP tags (e.g. from local ip/*.txt)
             if category == "ip" {
                 let mut geo_ip = GeoIp {
                     country_code: tag.clone(),
@@ -600,7 +687,6 @@ fn pack_binary_assets(
                         })
                         .unwrap()
                 });
-
                 for cidr_str in &rules.ip_cidr {
                     if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
                         geo_ip.cidr.push(Cidr {
@@ -623,8 +709,6 @@ fn pack_binary_assets(
                     geoip_list.entry.push(geo_ip);
                 }
             }
-
-            // Custom GeoASN tags (e.g. from local asn/*.txt)
             if category == "asn" {
                 let mut geo_asn = GeoIp {
                     country_code: tag.clone(),
@@ -648,7 +732,6 @@ fn pack_binary_assets(
         }
     }
 
-    // 5. Insert ALL standardized Country Data into geoip.mmdb and geoip_list (DAT)
     let mut geoip_node_count = 0;
     for (code, cidrs) in full_country_index {
         let code_upper = code.to_uppercase();
@@ -663,12 +746,10 @@ fn pack_binary_assets(
                     })
                     .unwrap()
             });
-
         let mut geo_ip_dat = GeoIp {
             country_code: code_upper.clone(),
             cidr: Vec::new(),
         };
-
         for cidr_str in cidrs {
             if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
                 geo_ip_dat.cidr.push(Cidr {
@@ -695,15 +776,12 @@ fn pack_binary_assets(
         geoip_node_count
     );
 
-    // 6. Insert ALL ASN Data into geoasn.mmdb and geoasn_list (DAT)
     let mut dat_asn_map: BTreeMap<u32, Vec<Cidr>> = BTreeMap::new();
     let mut geoasn_node_count = 0;
-
     for r in full_asn_index {
         if let Ok(net) = r.cidr.parse::<IpAddrWithMask>() {
             let org = r.org.clone().unwrap_or_else(|| format!("AS{}", r.asn));
             let cache_key = format!("{}-{}", r.asn, org);
-
             let data_ref = *geoasn_value_cache.entry(cache_key).or_insert_with(|| {
                 mmdb_geoasn
                     .insert_value(&AsnRecord {
@@ -712,14 +790,12 @@ fn pack_binary_assets(
                     })
                     .unwrap()
             });
-
             let mmdb_net = match net.addr {
                 IpAddr::V4(a) => IpAddrWithMask::new(IpAddr::V6(a.to_ipv6_mapped()), net.mask + 96),
                 IpAddr::V6(_) => net,
             };
             mmdb_geoasn.insert_node(mmdb_net, data_ref);
             geoasn_node_count += 1;
-
             dat_asn_map.entry(r.asn).or_default().push(Cidr {
                 ip: match net.addr {
                     IpAddr::V4(a) => a.octets().to_vec(),
@@ -733,7 +809,6 @@ fn pack_binary_assets(
         "  [Binary] GeoASN: Inserted {} nodes into MMDB",
         geoasn_node_count
     );
-
     for (asn, cidrs) in dat_asn_map {
         geoasn_list.entry.push(GeoIp {
             country_code: format!("AS{}", asn),
@@ -741,22 +816,15 @@ fn pack_binary_assets(
         });
     }
 
-    // 7. Write Final Assets
     let xray_dir = out_dir.join("xray");
     fs::create_dir_all(&xray_dir)?;
     fs::write(xray_dir.join("geosite.dat"), geosite_list.encode_to_vec())?;
     fs::write(xray_dir.join("geoip.dat"), geoip_list.encode_to_vec())?;
     fs::write(xray_dir.join("geoasn.dat"), geoasn_list.encode_to_vec())?;
-    println!("  [Binary] Written 3 DAT files to {:?}", xray_dir);
-
     let out_geoip = fs::File::create(out_dir.join("geoip.mmdb"))?;
     mmdb_geoip.write_to(out_geoip).unwrap();
-    println!("  [Binary] Written geoip.mmdb to {:?}", out_dir);
-
     let out_geoasn = fs::File::create(out_dir.join("geoasn.mmdb"))?;
     mmdb_geoasn.write_to(out_geoasn).unwrap();
-    println!("  [Binary] Written geoasn.mmdb to {:?}", out_dir);
-
     Ok(())
 }
 
@@ -850,7 +918,7 @@ fn sanitize_rules(mut rules: Rules) -> Rules {
 
 fn compile_singbox_json(name: &str, rules: &Rules, out_dir: &Path) -> Result<PathBuf> {
     let rs = SingBoxRuleSet {
-        version: 5, // Upgraded to v5 for Sing-box 1.14.0+
+        version: 5,
         rules: vec![SingBoxRule {
             domain_suffix: rules.domain_suffix.clone(),
             domain: rules.domain.clone(),
@@ -931,12 +999,10 @@ fn compile_mihomo_yaml(
     } else {
         let mut domains = rules.domain_suffix.clone();
         domains.extend(rules.domain.clone());
-        let domains = unique(domains);
-        for d in domains {
-            if d.matches('.').count() > 5 {
-                continue;
+        for d in unique(domains) {
+            if d.matches('.').count() <= 5 {
+                lines.push(format!("  - '{}'", d));
             }
-            lines.push(format!("  - '{}'", d));
         }
     }
     fs::write(
@@ -954,7 +1020,6 @@ fn detect_mihomo_rule_mode(rules: &Rules, is_ip_category: bool) -> MihomoRuleMod
         || !rules.domain_keyword.is_empty()
         || !rules.domain_regex.is_empty();
     let has_other = !rules.process_name.is_empty() || !rules.user_agent.is_empty();
-
     if has_other || has_asn || (has_ip && has_domain) {
         return MihomoRuleMode {
             behavior: "classical".to_string(),
@@ -971,86 +1036,6 @@ fn detect_mihomo_rule_mode(rules: &Rules, is_ip_category: bool) -> MihomoRuleMod
         behavior: "domain".to_string(),
         is_empty: !has_domain,
     }
-}
-
-fn compile_mihomo_mrs_split(
-    name: &str,
-    rules: &Rules,
-    out_dir: &Path,
-    is_ip_category: bool,
-    mihomo_path: &Path,
-) -> Result<()> {
-    // 1. Domain MRS (pure domains/suffixes/keywords/regex)
-    let mut domain_rules = Rules::default();
-    domain_rules.domain_suffix = rules.domain_suffix.clone();
-    domain_rules.domain = rules.domain.clone();
-    domain_rules.domain_keyword = rules.domain_keyword.clone();
-    domain_rules.domain_regex = rules.domain_regex.clone();
-
-    if !domain_rules.domain_suffix.is_empty()
-        || !domain_rules.domain.is_empty()
-        || !domain_rules.domain_keyword.is_empty()
-        || !domain_rules.domain_regex.is_empty()
-    {
-        let tmp_path = out_dir.join(format!(".{}.mrs-domain.yaml", name));
-        let mode = MihomoRuleMode {
-            behavior: "domain".to_string(),
-            is_empty: false,
-        };
-        compile_mihomo_yaml(
-            &format!(".{}.mrs-domain", name),
-            &domain_rules,
-            out_dir,
-            &mode,
-        )?;
-
-        let output_mrs = out_dir.join(format!("{}.mrs", name));
-        Command::new(mihomo_path)
-            .args([
-                "convert-ruleset",
-                "domain",
-                "yaml",
-                tmp_path.to_str().unwrap(),
-                output_mrs.to_str().unwrap(),
-            ])
-            .output()?;
-        fs::remove_file(tmp_path)?;
-    }
-
-    // 2. IP MRS (pure IP CIDRs and ASNs)
-    let mut ip_rules = Rules::default();
-    ip_rules.ip_cidr = rules.ip_cidr.clone();
-    ip_rules.ip_asn = rules.ip_asn.clone();
-
-    if !ip_rules.ip_cidr.is_empty() || !ip_rules.ip_asn.is_empty() {
-        let tmp_path = out_dir.join(format!(".{}.mrs-ip.yaml", name));
-        let mode = MihomoRuleMode {
-            behavior: "ipcidr".to_string(),
-            is_empty: false,
-        };
-        compile_mihomo_yaml(&format!(".{}.mrs-ip", name), &ip_rules, out_dir, &mode)?;
-
-        // If it's already an IP category, we don't need the -ip suffix
-        let output_name = if is_ip_category {
-            name.to_string()
-        } else {
-            format!("{}-ip", name)
-        };
-        let output_mrs = out_dir.join(format!("{}.mrs", output_name));
-
-        Command::new(mihomo_path)
-            .args([
-                "convert-ruleset",
-                "ipcidr",
-                "yaml",
-                tmp_path.to_str().unwrap(),
-                output_mrs.to_str().unwrap(),
-            ])
-            .output()?;
-        fs::remove_file(tmp_path)?;
-    }
-
-    Ok(())
 }
 
 fn compile_text_list(name: &str, rules: &Rules, out_dir: &Path, is_ip: bool) -> Result<()> {
@@ -1138,16 +1123,16 @@ fn compile_quanx_list(
 }
 
 fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
-    let mut lines = Vec::new();
+    let mut lines = vec!["rules:".to_string()];
     for d in &rules.domain_suffix {
-        lines.push(format!("DOMAIN-SUFFIX,{}", d));
+        lines.push(format!("  - DOMAIN-SUFFIX,{},Direct", d));
     }
     for d in &rules.domain {
-        lines.push(format!("DOMAIN,{}", d));
+        lines.push(format!("  - DOMAIN,{},Direct", d));
     }
     for cidr in &rules.ip_cidr {
         lines.push(format!(
-            "{},{}",
+            "  - {},{},Direct",
             if cidr.contains(':') {
                 "IP-CIDR6"
             } else {
@@ -1157,10 +1142,10 @@ fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
         ));
     }
     for p in &rules.process_name {
-        lines.push(format!("PROCESS-NAME,{}", p));
+        lines.push(format!("  - PROCESS-NAME,{},Direct", p));
     }
     for u in &rules.user_agent {
-        lines.push(format!("USER-AGENT,{}", u));
+        lines.push(format!("  - USER-AGENT,{},Direct", u));
     }
     fs::write(
         out_dir.join(format!("{}.yaml", name)),
@@ -1175,26 +1160,31 @@ fn compile_loon_list(
     out_dir: &Path,
     is_suffix: bool,
     ext: &str,
+    domain_prefix: &str,
+    ip6_prefix: &str,
     include_other: bool,
 ) -> Result<()> {
     let mut lines = Vec::new();
     for d in &rules.domain_suffix {
         lines.push(if is_suffix {
-            format!("DOMAIN-SUFFIX,{}", d)
+            format!("{}-SUFFIX,{}", domain_prefix, d)
         } else {
             d.clone()
         });
     }
     for d in &rules.domain {
-        lines.push(format!("DOMAIN,{}", d));
+        lines.push(format!("{},{}", domain_prefix, d));
     }
     for cidr in &rules.ip_cidr {
-        let prefix = if cidr.contains(':') {
-            "IP-CIDR6"
-        } else {
-            "IP-CIDR"
-        };
-        lines.push(format!("{},{}", prefix, cidr));
+        lines.push(format!(
+            "{},{}",
+            if cidr.contains(':') {
+                ip6_prefix
+            } else {
+                "IP-CIDR"
+            },
+            cidr
+        ));
     }
     if include_other {
         for p in &rules.process_name {
