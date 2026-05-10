@@ -91,7 +91,6 @@ struct BuildStats {
 
 struct MihomoRuleMode {
     behavior: String,
-    is_empty: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -539,7 +538,6 @@ fn compile_mihomo_mrs_split(
         let tmp_path = out_dir.join(format!(".{}.mrs-domain.yaml", name));
         let mode = MihomoRuleMode {
             behavior: "domain".to_string(),
-            is_empty: false,
         };
         compile_mihomo_yaml(
             &format!(".{}.mrs-domain", name),
@@ -569,7 +567,6 @@ fn compile_mihomo_mrs_split(
         let tmp_path = out_dir.join(format!(".{}.mrs-ip.yaml", name));
         let mode = MihomoRuleMode {
             behavior: "ipcidr".to_string(),
-            is_empty: false,
         };
         compile_mihomo_yaml(&format!(".{}.mrs-ip", name), &ip_rules, out_dir, &mode)?;
         let output_name = if is_ip_category {
@@ -1026,18 +1023,15 @@ fn detect_mihomo_rule_mode(rules: &Rules, is_ip_category: bool) -> MihomoRuleMod
     if has_other || has_asn || (has_ip && has_domain) {
         return MihomoRuleMode {
             behavior: "classical".to_string(),
-            is_empty: false,
         };
     }
     if is_ip_category || (has_ip && !has_domain) {
         return MihomoRuleMode {
             behavior: "ipcidr".to_string(),
-            is_empty: !has_ip,
         };
     }
     MihomoRuleMode {
         behavior: "domain".to_string(),
-        is_empty: !has_domain,
     }
 }
 
