@@ -64,7 +64,9 @@ export default function ServiceItem({
         ext = "txt";
     }
 
-    // Manual YAML override
+    // The URL Format: ruleset/:app/:category/:name.ext
+    // For Mihomo/Stash, ext is already 'mrs' from config.
+    // If forceYaml is true (YAML button clicked), we override to 'yaml'.
     if (forceYaml) {
       ext = "yaml";
     }
