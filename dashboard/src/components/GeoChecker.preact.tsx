@@ -30,9 +30,10 @@ export default function GeoChecker({ apiBase }: Props) {
           Node Geo Location Checker
         </span>
       </div>
-      
+
       <p class="text-xs text-gray-400">
-        Injects a beautifully-formatted, pure English IP risk and location UI into your Quantumult X nodes panel.
+        Injects a beautifully-formatted, pure English IP risk and location UI
+        into your Quantumult X nodes panel.
       </p>
 
       <button
@@ -50,7 +51,7 @@ export default function GeoChecker({ apiBase }: Props) {
             {codeString}
           </code>
         </div>
-        
+
         <div
           class={`
           absolute right-4 p-2 rounded-lg border transition-all duration-300
@@ -61,7 +62,9 @@ export default function GeoChecker({ apiBase }: Props) {
           }
         `}
         >
-          <div class={`${copied ? "i-ph-check-bold" : "i-ph-copy-bold"} text-xs`}></div>
+          <div
+            class={`${copied ? "i-ph-check-bold" : "i-ph-copy-bold"} text-xs`}
+          ></div>
         </div>
 
         {copied && (

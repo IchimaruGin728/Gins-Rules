@@ -1,5 +1,9 @@
 import { useState } from "preact/hooks";
-import { activeApp, getActiveConfig, optimizedDomainSet } from "../store.preact";
+import {
+  activeApp,
+  getActiveConfig,
+  optimizedDomainSet,
+} from "../store.preact";
 import AppLogo from "./AppLogo.preact";
 
 interface Props {
@@ -17,10 +21,14 @@ export default function CopyCard({ label, category, icon, baseUrl }: Props) {
     // Optimized Domain Set logic - ONLY for non-IP categories
     const isIPCategory = category === "ip" || category === "asn";
     let ext = config.ext;
-    
+
     if (optimizedDomainSet.value && !isIPCategory) {
-        if (activeApp.value === "surge") ext = "domainset";
-        else if (activeApp.value === "surfboard" || activeApp.value === "shadowrocket") ext = "txt";
+      if (activeApp.value === "surge") ext = "domainset";
+      else if (
+        activeApp.value === "surfboard" ||
+        activeApp.value === "shadowrocket"
+      )
+        ext = "txt";
     }
 
     // URL Format: ruleset/:app/:category.ext

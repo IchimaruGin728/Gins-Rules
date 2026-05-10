@@ -29,7 +29,9 @@ export default function DatCard({ name, url }: { name: string; url: string }) {
               {name}
             </div>
             <div class="text-[8px] font-black uppercase tracking-widest text-gray-500 mt-0.5">
-              {name.endsWith(".dat") ? "V2Ray / Xray Binary" : "MaxMind Database / GeoIP"}
+              {name.endsWith(".dat")
+                ? "V2Ray / Xray Binary"
+                : "MaxMind Database / GeoIP"}
             </div>
           </div>
         </div>
@@ -40,10 +42,12 @@ export default function DatCard({ name, url }: { name: string; url: string }) {
           href={url}
           target="_blank"
           class="flex-1 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-brand-primary/10 hover:border-brand-primary/30 text-[9px] font-black uppercase tracking-[0.2em] text-center transition-all duration-300"
+          rel="noopener"
         >
           Download
         </a>
         <button
+          type="button"
           onClick={handleCopy}
           class={`
             px-3 py-2.5 rounded-xl border transition-all duration-300
@@ -54,7 +58,9 @@ export default function DatCard({ name, url }: { name: string; url: string }) {
             }
           `}
         >
-          <div class={`text-sm ${copied ? "i-ph-check-bold" : "i-ph-copy-bold"}`}></div>
+          <div
+            class={`text-sm ${copied ? "i-ph-check-bold" : "i-ph-copy-bold"}`}
+          ></div>
         </button>
       </div>
     </div>

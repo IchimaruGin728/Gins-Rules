@@ -138,6 +138,7 @@ export default function ServiceItem({
         {/* Classical YAML Fallback Button for Mihomo/Stash */}
         {isMihomoLike && classical && !isDisabled && (
           <button
+            type="button"
             onClick={(e) => handleCopy(e, true)}
             title="Copy full Classical YAML"
             class={`text-[9px] font-black px-1.5 py-1 rounded-md border transition-all duration-300 ${

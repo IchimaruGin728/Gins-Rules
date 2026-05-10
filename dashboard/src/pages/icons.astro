@@ -1,19 +1,17 @@
 ---
-import Layout from "../components/Layout.astro";
-import GinsIcons from "../components/GinsIcons.preact";
 import fs from "node:fs";
 import path from "node:path";
 
-let icons = [];
+let _icons = [];
 const catalogPath = path.resolve("public", "icons-catalog.json");
 
 if (fs.existsSync(catalogPath)) {
-    try {
-        const data = fs.readFileSync(catalogPath, "utf-8");
-        icons = JSON.parse(data);
-    } catch (e) {
-        console.error("Failed to parse icons-catalog.json", e);
-    }
+  try {
+    const data = fs.readFileSync(catalogPath, "utf-8");
+    _icons = JSON.parse(data);
+  } catch (e) {
+    console.error("Failed to parse icons-catalog.json", e);
+  }
 }
 ---
 

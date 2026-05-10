@@ -1,8 +1,10 @@
-import { activeApp, APPS, optimizedDomainSet } from "../store.preact";
+import { APPS, activeApp, optimizedDomainSet } from "../store.preact";
 import AppLogo from "./AppLogo.preact";
 
 export default function AppSwitcher() {
-  const showOptimizedToggle = ["surfboard", "surge", "shadowrocket"].includes(activeApp.value);
+  const showOptimizedToggle = ["surfboard", "surge", "shadowrocket"].includes(
+    activeApp.value,
+  );
   const extension = activeApp.value === "surge" ? ".domainset" : ".txt";
 
   return (
@@ -44,7 +46,7 @@ export default function AppSwitcher() {
             )}
           </button>
         ))}
-        
+
         {/* Divider */}
         <div class="w-px h-6 bg-white/10 mx-2 hidden sm:block"></div>
 
@@ -64,7 +66,10 @@ export default function AppSwitcher() {
         <div class="flex items-center gap-4 px-2 animate-in fade-in slide-in-from-top-2 duration-300">
           <div class="i-ph-arrow-bend-down-right-bold text-gray-600 text-xl ml-4"></div>
           <button
-            onClick={() => (optimizedDomainSet.value = !optimizedDomainSet.value)}
+            type="button"
+            onClick={() =>
+              (optimizedDomainSet.value = !optimizedDomainSet.value)
+            }
             class={`
               flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all duration-300
               ${
@@ -76,7 +81,9 @@ export default function AppSwitcher() {
           >
             <div
               class={`text-lg ${
-                optimizedDomainSet.value ? "i-ph-check-square-fill" : "i-ph-square-bold"
+                optimizedDomainSet.value
+                  ? "i-ph-check-square-fill"
+                  : "i-ph-square-bold"
               }`}
             ></div>
             <span class="text-[10px] font-black uppercase tracking-[0.2em]">

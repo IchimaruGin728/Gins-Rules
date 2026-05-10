@@ -1,16 +1,11 @@
 ---
 import fs from "node:fs";
 import path from "node:path";
-import AppSwitcher from "../components/AppSwitcher.preact";
-import CopyCard from "../components/CopyCard.preact";
-import Layout from "../components/Layout.astro";
-import ParserItem from "../components/ParserItem.preact";
-import ServiceItem from "../components/ServiceItem.preact";
-import GeoChecker from "../components/GeoChecker.preact";
-import GlobalAssets from "../components/GlobalAssets.preact";
+import { APPS } from "../store.preact";
 
 const sourceDir = path.resolve("..", "source");
 const apiBase = "https://rules.ichimarugin728.dev";
+const _appCount = APPS.length;
 const aiRuleNames = new Set([
   "ai-other",
   "apple-intelligence",
@@ -98,7 +93,8 @@ function getServices(category: string): Service[] {
     const clean = item.name.replace(".txt", "");
     if (
       ["ai", "proxy", "direct"].includes(category) &&
-      !item.name.includes("-ip")
+      !item.name.includes("-ip") &&
+      item.hasIP
     ) {
       // Add a virtual entry for the -ip version (ipcidr behavior)
       splitResult.push({
@@ -179,9 +175,9 @@ const aiCategory = {
   services: getServices("ai"),
 };
 
-const categories = [...baseCategories, aiCategory];
+const _categories = [...baseCategories, aiCategory];
 
-const resourceParsers = [
+const _resourceParsers = [
   {
     name: "QuantumultX",
     url: `${apiBase}/QX-Resource-Parser.js`,
@@ -196,7 +192,7 @@ const resourceParsers = [
   },
 ];
 
-const sourceProviders = [
+const _sourceProviders = [
   "Loyalsoldier",
   "MetaCubeX",
   "Yuu518",
@@ -215,22 +211,19 @@ const sourceProviders = [
   "Centralmatrix3/Matrix-io",
 ];
 
-const totalServices = baseCategories.reduce((sum, category) => {
+const _totalServices = baseCategories.reduce((sum, category) => {
   return sum + category.services.length;
 }, 0);
-const totalRules = baseCategories.reduce((sum, category) => {
+const _totalRules = baseCategories.reduce((sum, category) => {
   return (
     sum +
     category.services.reduce((nested, service) => nested + service.lines, 0)
   );
 }, 0);
-const buildTime =
-  new Date(new Date().getTime() + 8 * 60 * 60 * 1000)
-    .toISOString()
-    .replace("T", " ")
-    .slice(0, 19) + " SGT";
-import { APPS } from "../store.preact";
-const appCount = APPS.length;
+const _buildTime = `${new Date(Date.now() + 8 * 60 * 60 * 1000)
+  .toISOString()
+  .replace("T", " ")
+  .slice(0, 19)} SGT`;
 ---
 
 <Layout title="Status Board">
