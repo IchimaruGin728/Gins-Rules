@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -32,7 +32,7 @@ jobs:
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@latest --activate
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: "26"
           cache: "pnpm"
@@ -105,7 +105,7 @@ jobs:
 
       - name: Cache Binaries
         id: cache-bin
-        uses: actions/cache@v6
+        uses: actions/cache@v4
         with:
           path: bin/
           key: ${{ runner.os }}-binaries-${{ steps.tool-versions.outputs.cache_key }}
