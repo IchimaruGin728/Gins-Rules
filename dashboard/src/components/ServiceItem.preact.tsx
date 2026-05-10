@@ -29,6 +29,12 @@ export default function ServiceItem({
   const cleanName = name.replace(".txt", "");
   const config = getActiveConfig();
 
+  const isMihomoLike = ["mihomo", "stash"].includes(activeApp.value);
+  const isIPPart = name.includes("-ip");
+
+  // Logic: Sing-box and others don't use split -ip files
+  if (isIPPart && !isMihomoLike) return null;
+
   // Logic to determine if this service supports Domain-Set
   const isDomainSetSupported =
     pureDomain ||
@@ -61,10 +67,7 @@ export default function ServiceItem({
     }
 
     // SMART DOWNGRADE: Mihomo/Stash MRS doesn't support classical behavior
-    if (
-      classical &&
-      (activeApp.value === "mihomo" || activeApp.value === "stash")
-    ) {
+    if (classical && isMihomoLike) {
       ext = "yaml";
     }
 
@@ -79,6 +82,9 @@ export default function ServiceItem({
     }
   };
 
+  // Badge logic: Only show IP badges on the IP part in Mihomo, or on combined items in Sing-box
+  const showIPBadges = hasIP && (!isMihomoLike || isIPPart);
+
   return (
     <button
       type="button"
@@ -91,7 +97,7 @@ export default function ServiceItem({
             ? "bg-white/[0.01] border-white/5 opacity-40 cursor-not-allowed grayscale"
             : "bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06] hover:border-white/20 active:scale-[0.98]"
         }
-        ${copied ? "bg-brand-primary/10! border-brand-primary/30!" : ""}
+        ${copied ? "border-brand-primary/40!" : ""}
       `}
     >
       <div class="flex items-center gap-3 overflow-hidden">
@@ -99,12 +105,12 @@ export default function ServiceItem({
           class="w-1.5 h-1.5 rounded-full transition-transform duration-500 group-hover/item:scale-150"
           style={{ backgroundColor: isDisabled ? "#444" : config.color }}
         ></div>
-        <div class="flex flex-col items-start overflow-hidden">
+        <div class="flex flex-col items-start overflow-hidden text-left">
           <div class="flex items-center gap-1.5 truncate w-full">
             <span class="text-gray-300 font-mono text-[11px] font-bold truncate group-hover/item:text-white transition-colors">
               {cleanName}
             </span>
-            {hasIP && !isDisabled && (
+            {showIPBadges && !isDisabled && (
               <div class="flex gap-0.5">
                 <span
                   class="text-[7px] px-1 py-0 bg-white/10 text-white/60 rounded font-black uppercase tracking-tighter"
@@ -121,8 +127,8 @@ export default function ServiceItem({
               </div>
             )}
           </div>
-          <span class="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-0.5 text-left">
-            {isDisabled ? "Unsupported in Domain-Set" : `${lines} Rules`}
+          <span class="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
+            {isDisabled ? "Incompatible" : `${lines} Rules`}
           </span>
         </div>
       </div>
@@ -141,16 +147,15 @@ export default function ServiceItem({
         `}
         >
           {copied ? (
-            <div class="i-ph-check-bold text-xs transition-transform duration-500"></div>
+            <div class="i-ph-check-bold text-xs"></div>
           ) : (
             <div
-              class={`text-xs transition-transform duration-500 group-hover/item:scale-105 ${isDisabled ? "i-ph-prohibit-bold" : "i-ph-copy-bold"}`}
+              class={`text-xs ${isDisabled ? "i-ph-prohibit-bold" : "i-ph-copy-bold"}`}
             ></div>
           )}
         </div>
       </div>
 
-      {/* Mini Feedback */}
       {copied && (
         <div class="absolute -top-1 -right-1 px-1.5 py-0.5 bg-brand-primary text-white text-[7px] font-black uppercase tracking-widest rounded-md shadow-lg animate-bounce">
           Copied
