@@ -159,6 +159,17 @@ const MMDB_SOURCES: &[MmdbSource] = &[
         url: "https://github.com/xream/geoip/releases/latest/download/ip2location.asn.mmdb",
         r#type: "asn",
     },
+    MmdbSource {
+        name: "loyalsoldier.country",
+        url:
+            "https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country-without-asn.mmdb",
+        r#type: "country",
+    },
+    MmdbSource {
+        name: "loyalsoldier.asn",
+        url: "https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-ASN.mmdb",
+        r#type: "asn",
+    },
 ];
 
 #[derive(Clone)]
