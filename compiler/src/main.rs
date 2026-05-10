@@ -327,6 +327,25 @@ fn main() -> Result<()> {
                         &singbox_path,
                         &mihomo_path,
                     )?;
+
+                    stats.services += 1;
+                    stats.rules += count;
+                    if category == "ip" || category == "asn" {
+                        stats.ip_rules += count;
+                    }
+                    if name.starts_with("asn-") {
+                        stats.asn_files += 1;
+                    }
+                    *stats
+                        .category_counts
+                        .entry(category.to_string())
+                        .or_default() += count;
+                    if singbox_path.is_some() {
+                        stats.srs += 1;
+                    }
+                    if mihomo_path.is_some() {
+                        stats.mrs += 1;
+                    }
                 } else {
                     println!("  [Skip  ] {:<20} (ruleset generation disabled)", name);
                 }
@@ -336,6 +355,7 @@ fn main() -> Result<()> {
             if is_ai_rule_name(&name) {
                 let ai_rules = category_merged_rules.get_mut("ai").unwrap();
                 *ai_rules = merge_rules(ai_rules.clone(), rules.clone());
+                // AI rules always compiled for now
                 compile_to_all_formats(
                     &name,
                     "ai",
@@ -344,24 +364,6 @@ fn main() -> Result<()> {
                     &singbox_path,
                     &mihomo_path,
                 )?;
-            }
-            stats.services += 1;
-            stats.rules += count;
-            if category == "ip" || category == "asn" {
-                stats.ip_rules += count;
-            }
-            if name.starts_with("asn-") {
-                stats.asn_files += 1;
-            }
-            *stats
-                .category_counts
-                .entry(category.to_string())
-                .or_default() += count;
-            if singbox_path.is_some() {
-                stats.srs += 1;
-            }
-            if mihomo_path.is_some() {
-                stats.mrs += 1;
             }
             println!("  [{:<6}] {:<20} {} rules", category, name, count);
         }
@@ -511,7 +513,8 @@ fn pack_binary_assets(
 
     let asn_index_path = compiled_dir.join("full-asn-index.json");
     let full_asn_index: Vec<AsnPrefixRecord> = if asn_index_path.exists() {
-        serde_json::from_str(&fs::read_to_string(asn_index_path)?)?
+        let content = fs::read_to_string(&asn_index_path)?;
+        serde_json::from_str(&content)?
     } else {
         Vec::new()
     };
