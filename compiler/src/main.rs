@@ -313,14 +313,23 @@ fn main() -> Result<()> {
 
             if count > 0 {
                 category_rules_map.insert(name.clone(), rules.clone());
-                compile_to_all_formats(
-                    &name,
-                    category,
-                    &rules,
-                    &ruleset_dir,
-                    &singbox_path,
-                    &mihomo_path,
-                )?;
+
+                // Filter out specific countries from ruleset generation
+                let skip_ruleset =
+                    category == "ip" && ["de", "fr", "kr", "us"].contains(&name.as_str());
+
+                if !skip_ruleset {
+                    compile_to_all_formats(
+                        &name,
+                        category,
+                        &rules,
+                        &ruleset_dir,
+                        &singbox_path,
+                        &mihomo_path,
+                    )?;
+                } else {
+                    println!("  [Skip  ] {:<20} (ruleset generation disabled)", name);
+                }
             }
             let cat_rules = category_merged_rules.get_mut(category).unwrap();
             *cat_rules = merge_rules(cat_rules.clone(), rules.clone());
@@ -372,7 +381,9 @@ fn main() -> Result<()> {
             &mihomo_path,
         )?;
     }
+    println!("  [Diagnostic] Packing binary assets...");
     pack_binary_assets(&all_rules, &ruleset_dir, &root)?;
+    println!("  [Diagnostic] Packing binary assets finished");
     generate_manifests(&ruleset_dir, &format_dirs)?;
     copy_parsers_js(&root, &compiled_dir)?;
     fs::write(
@@ -390,20 +401,14 @@ fn compile_to_all_formats(
     singbox_path: &Option<PathBuf>,
     mihomo_path: &Option<PathBuf>,
 ) -> Result<()> {
-    println!(
-        "    [Diagnostic] compile_to_all_formats starting for: {}",
-        name
-    );
     let is_ip = category == "ip" || category == "asn";
     if let Some(sb) = singbox_path {
-        println!("    [Diagnostic] Compiling singbox srs for: {}", name);
         let json_path =
             compile_singbox_json(name, rules, &ruleset_dir.join("singbox").join(category))?;
         compile_singbox_srs(&json_path, sb)?;
         fs::remove_file(json_path)?;
     }
     let mode = detect_mihomo_rule_mode(rules, is_ip);
-    println!("    [Diagnostic] Compiling mihomo mrs for: {}", name);
     compile_mihomo_yaml(
         name,
         rules,
@@ -411,7 +416,6 @@ fn compile_to_all_formats(
         &mode,
     )?;
     if let Some(mh) = mihomo_path {
-        println!("    [Diagnostic] Compiling stash mrs for: {}", name);
         compile_mihomo_mrs(
             name,
             rules,
@@ -421,7 +425,6 @@ fn compile_to_all_formats(
         )?;
     }
 
-    println!("    [Diagnostic] Compiling text lists for: {}", name);
     compile_text_list(name, rules, &ruleset_dir.join("text").join(category), is_ip)?;
     compile_quanx_list(
         name,
@@ -469,10 +472,6 @@ fn compile_to_all_formats(
     compile_exclave_route(name, rules, &ruleset_dir.join("exclave").join(category))?;
     compile_anywhere_json(name, rules, &ruleset_dir.join("anywhere").join(category))?;
 
-    println!(
-        "    [Diagnostic] compile_to_all_formats finished for: {}",
-        name
-    );
     Ok(())
 }
 
@@ -516,6 +515,12 @@ fn pack_binary_assets(
     } else {
         Vec::new()
     };
+
+    println!(
+        "  [Binary] Loaded {} countries and {} ASN records",
+        full_country_index.len(),
+        full_asn_index.len()
+    );
 
     // 3. Value Caches for Deduplication
     let mut geoip_value_cache = HashMap::new();
@@ -625,6 +630,7 @@ fn pack_binary_assets(
     }
 
     // 5. Insert ALL standardized Country Data into geoip.mmdb and geoip_list (DAT)
+    let mut geoip_node_count = 0;
     for (code, cidrs) in full_country_index {
         let code_upper = code.to_uppercase();
         let data_ref = *geoip_value_cache
@@ -660,13 +666,19 @@ fn pack_binary_assets(
                     IpAddr::V6(_) => net,
                 };
                 mmdb_geoip.insert_node(mmdb_net, data_ref);
+                geoip_node_count += 1;
             }
         }
         geoip_list.entry.push(geo_ip_dat);
     }
+    println!(
+        "  [Binary] GeoIP: Inserted {} nodes into MMDB",
+        geoip_node_count
+    );
 
     // 6. Insert ALL ASN Data into geoasn.mmdb and geoasn_list (DAT)
     let mut dat_asn_map: BTreeMap<u32, Vec<Cidr>> = BTreeMap::new();
+    let mut geoasn_node_count = 0;
 
     for r in full_asn_index {
         if let Ok(net) = r.cidr.parse::<IpAddrWithMask>() {
@@ -687,6 +699,7 @@ fn pack_binary_assets(
                 IpAddr::V6(_) => net,
             };
             mmdb_geoasn.insert_node(mmdb_net, data_ref);
+            geoasn_node_count += 1;
 
             dat_asn_map.entry(r.asn).or_default().push(Cidr {
                 ip: match net.addr {
@@ -697,6 +710,10 @@ fn pack_binary_assets(
             });
         }
     }
+    println!(
+        "  [Binary] GeoASN: Inserted {} nodes into MMDB",
+        geoasn_node_count
+    );
 
     for (asn, cidrs) in dat_asn_map {
         geoasn_list.entry.push(GeoIp {
@@ -711,12 +728,15 @@ fn pack_binary_assets(
     fs::write(xray_dir.join("geosite.dat"), geosite_list.encode_to_vec())?;
     fs::write(xray_dir.join("geoip.dat"), geoip_list.encode_to_vec())?;
     fs::write(xray_dir.join("geoasn.dat"), geoasn_list.encode_to_vec())?;
+    println!("  [Binary] Written 3 DAT files to {:?}", xray_dir);
 
     let out_geoip = fs::File::create(out_dir.join("geoip.mmdb"))?;
     mmdb_geoip.write_to(out_geoip).unwrap();
+    println!("  [Binary] Written geoip.mmdb to {:?}", out_dir);
 
     let out_geoasn = fs::File::create(out_dir.join("geoasn.mmdb"))?;
     mmdb_geoasn.write_to(out_geoasn).unwrap();
+    println!("  [Binary] Written geoasn.mmdb to {:?}", out_dir);
 
     Ok(())
 }

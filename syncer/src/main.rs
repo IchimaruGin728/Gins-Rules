@@ -431,10 +431,9 @@ async fn run_geo(root: &Path) -> Result<()> {
         }
     }
     let mut not_cn = HashSet::new();
-    let common_regions: HashSet<&str> =
-        vec!["CN", "SG", "TW", "JP", "US", "HK", "KR", "UK", "DE", "FR"]
-            .into_iter()
-            .collect();
+    let common_regions: HashSet<&str> = vec!["CN", "SG", "TW", "JP", "HK", "UK"] // Removed US, KR, DE, FR
+        .into_iter()
+        .collect();
     for (code, nets) in &country_cidrs {
         if code != "CN" {
             for net in nets {
@@ -454,6 +453,10 @@ async fn run_geo(root: &Path) -> Result<()> {
     for (code, nets) in &country_cidrs {
         full_country_index.insert(code.clone(), aggregate_networks(nets));
     }
+    println!(
+        "  [Geo] Exporting {} countries to full-country-index.json",
+        full_country_index.len()
+    );
     fs::write(
         compiled_dir.join("full-country-index.json"),
         serde_json::to_vec_pretty(&full_country_index)?,
@@ -511,6 +514,13 @@ async fn run_geo(root: &Path) -> Result<()> {
             });
         }
     }
+    // Sort for deterministic build and MMDB efficiency
+    full_asn_index.sort_by(|a, b| a.cidr.cmp(&b.cidr));
+
+    println!(
+        "  [Geo] Exporting {} ASN CIDR records to full-asn-index.json",
+        full_asn_index.len()
+    );
     fs::write(
         compiled_dir.join("full-asn-index.json"),
         serde_json::to_vec_pretty(&full_asn_index)?,
@@ -518,7 +528,6 @@ async fn run_geo(root: &Path) -> Result<()> {
 
     Ok(())
 }
-
 fn discover_asn_targets(root: &Path) -> Result<BTreeMap<String, BTreeSet<u32>>> {
     let mut targets: BTreeMap<String, BTreeSet<u32>> = BTreeMap::new();
     let asn_map_path = root.join("source").join("asn-map.json");
