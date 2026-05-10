@@ -110,14 +110,13 @@ jobs:
           path: bin/
           key: ${{ runner.os }}-binaries-${{ steps.tool-versions.outputs.cache_key }}
 
-      - name: Sync Upstream Rules
-        run: cd syncer && cargo run --release -- sync
-
-      - name: Sync Icon Libraries (Gins-Icons)
-        run: cd syncer && cargo run --release -- icons
-
-      - name: Sync HE/RIPE BGP + Official CIDR (ASN Prefixes)
-        run: cd syncer && cargo run --release -- he
+      - name: Sync Data (Rules, Icons, ASN, Geo)
+        run: |
+          cd syncer
+          cargo run --release -- sync
+          cargo run --release -- icons
+          cargo run --release -- he
+          cargo run --release -- geo
 
       - name: Commit Synced Rules
         id: sync
