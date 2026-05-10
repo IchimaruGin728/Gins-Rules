@@ -119,6 +119,20 @@
     "enabled": true
   },
   {
+    "name": "WeChat (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/WeChat/WeChat.list",
+    "category": "direct",
+    "target": "tencent",
+    "enabled": true
+  },
+  {
+    "name": "QQ (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/QQ/QQ.list",
+    "category": "direct",
+    "target": "tencent",
+    "enabled": true
+  },
+  {
     "name": "CN Additional",
     "url": "https://static-file-global.353355.xyz/rules/cn-additional-list.txt",
     "category": "direct",
