@@ -11,142 +11,145 @@ import GlobalAssets from "../components/GlobalAssets.preact";
 
 const sourceDir = path.resolve("..", "source");
 const apiBase = "https://rules.ichimarugin728.dev";
-const aiRuleNames = new Set(["ai-other", "apple-intelligence", "claude", "copilot", "gemini", "openai"]);
+const aiRuleNames = new Set([
+  "ai-other",
+  "apple-intelligence",
+  "claude",
+  "copilot",
+  "gemini",
+  "openai",
+]);
 
 function getServices(category: string): { name: string; lines: number }[] {
-    // ASN rules are stored in /source/ip/ with "asn-" prefix, not in /source/asn/
-    const dirs = [
-        category === "asn"
-            ? path.join(sourceDir, "ip")
-            : category === "ai"
-                ? path.join(sourceDir, "proxy")
-                : path.join(sourceDir, category),
-        category === "asn"
-            ? path.join(sourceDir, "upstream", "ip")
-            : category === "ai"
-                ? path.join(sourceDir, "upstream", "proxy")
-                : path.join(sourceDir, "upstream", category),
-    ];
-    const services = new Map<string, number>();
+  // ASN rules are stored in /source/ip/ with "asn-" prefix, not in /source/asn/
+  const dirs = [
+    category === "asn"
+      ? path.join(sourceDir, "ip")
+      : category === "ai"
+        ? path.join(sourceDir, "proxy")
+        : path.join(sourceDir, category),
+    category === "asn"
+      ? path.join(sourceDir, "upstream", "ip")
+      : category === "ai"
+        ? path.join(sourceDir, "upstream", "proxy")
+        : path.join(sourceDir, "upstream", category),
+  ];
+  const services = new Map<string, number>();
 
-    for (const dir of dirs) {
-        if (!fs.existsSync(dir)) continue;
-        for (const file of fs.readdirSync(dir)
-        .filter((file: string) => {
-            if (!file.endsWith(".txt")) return false;
-            // IP category: exclude asn-* files
-            if (category === "ip") return !file.startsWith("asn-");
-            // ASN category: only include asn-* files
-            if (category === "asn") return file.startsWith("asn-");
-            if (category === "ai") return aiRuleNames.has(path.basename(file, ".txt"));
-            return true;
-        })) {
-            const content = fs.readFileSync(path.join(dir, file), "utf-8");
-            const lines = content
-                .split("\n")
-                .filter(
-                    (line: string) => line.trim() && !line.startsWith("#"),
-                ).length;
-            services.set(file, Math.max(services.get(file) ?? 0, lines));
-        }
+  for (const dir of dirs) {
+    if (!fs.existsSync(dir)) continue;
+    for (const file of fs.readdirSync(dir).filter((file: string) => {
+      if (!file.endsWith(".txt")) return false;
+      // IP category: exclude asn-* files
+      if (category === "ip") return !file.startsWith("asn-");
+      // ASN category: only include asn-* files
+      if (category === "asn") return file.startsWith("asn-");
+      if (category === "ai")
+        return aiRuleNames.has(path.basename(file, ".txt"));
+      return true;
+    })) {
+      const content = fs.readFileSync(path.join(dir, file), "utf-8");
+      const lines = content
+        .split("\n")
+        .filter((line: string) => line.trim() && !line.startsWith("#")).length;
+      services.set(file, Math.max(services.get(file) ?? 0, lines));
     }
+  }
 
-    return Array.from(services, ([name, lines]) => ({ name, lines }))
-        .sort((a: { name: string }, b: { name: string }) =>
-            a.name.localeCompare(b.name),
-        );
+  return Array.from(services, ([name, lines]) => ({ name, lines })).sort(
+    (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name),
+  );
 }
 
 const baseCategories = [
-    {
-        id: "proxy",
-        label: "Proxy",
-        icon: "i-ph-globe-bold",
-        services: getServices("proxy"),
-    },
-    {
-        id: "direct",
-        label: "Direct",
-        icon: "i-ph-house-bold",
-        services: getServices("direct"),
-    },
-    {
-        id: "reject",
-        label: "Reject",
-        icon: "i-ph-shield-warning-bold",
-        services: getServices("reject"),
-    },
-    {
-        id: "ip",
-        label: "IP / GeoIP",
-        icon: "i-ph-map-pin-bold",
-        services: getServices("ip"),
-    },
-    {
-        id: "asn",
-        label: "ASN / Network",
-        icon: "i-ph-network-bold",
-        services: getServices("asn"),
-    },
-];
-
-const aiCategory = {
+  {
+    id: "proxy",
+    label: "Proxy",
+    icon: "i-ph-globe-bold",
+    services: getServices("proxy"),
+  },
+  {
+    id: "direct",
+    label: "Direct",
+    icon: "i-ph-house-bold",
+    services: getServices("direct"),
+  },
+  {
+    id: "reject",
+    label: "Reject",
+    icon: "i-ph-shield-warning-bold",
+    services: getServices("reject"),
+  },
+  {
     id: "ai",
-    label: "AI",
+    label: "AI Bundle",
     icon: "i-ph-sparkle-bold",
     services: getServices("ai"),
-};
+  },
+  {
+    id: "ip",
+    label: "IP / GeoIP",
+    icon: "i-ph-map-pin-bold",
+    services: getServices("ip"),
+  },
+  {
+    id: "asn",
+    label: "ASN / Network",
+    icon: "i-ph-network-bold",
+    services: getServices("asn"),
+  },
+];
 
-const categories = [...baseCategories, aiCategory];
+const categories = baseCategories;
 
 const resourceParsers = [
-    {
-        name: "QuantumultX",
-        url: `${apiBase}/QX-Resource-Parser.js`,
-        appIcon: "/icons/quantumultx.jpg",
-        appAccent: "#f44336",
-    },
-    {
-        name: "Loon",
-        url: `${apiBase}/Loon-Resource-Parser.js`,
-        appIcon: "/icons/loon.jpg",
-        appAccent: "#03A9F4",
-    },
+  {
+    name: "QuantumultX",
+    url: `${apiBase}/QX-Resource-Parser.js`,
+    appIcon: "/icons/quantumultx.jpg",
+    appAccent: "#f44336",
+  },
+  {
+    name: "Loon",
+    url: `${apiBase}/Loon-Resource-Parser.js`,
+    appIcon: "/icons/loon.jpg",
+    appAccent: "#03A9F4",
+  },
 ];
 
 const sourceProviders = [
-    "Loyalsoldier",
-    "MetaCubeX",
-    "Yuu518",
-    "Blackmatrix7",
-    "Nice (fmz200)",
-    "xream/geoip (ipinfo)",
-    "xream/geoip (ip2location)",
-    "RIPE NCC (BGP)",
-    "HE BGP (bgp.he.net)",
-    "Telegram Official",
-    "Cloudflare Official",
-    "Google gstatic",
-    "Amazon ip-ranges",
-    "GitHub meta API",
-    "Rabbit-Spec/Surge",
-    "Centralmatrix3/Matrix-io",
+  "Loyalsoldier",
+  "MetaCubeX",
+  "Yuu518",
+  "Blackmatrix7",
+  "Nice (fmz200)",
+  "xream/geoip (ipinfo)",
+  "xream/geoip (ip2location)",
+  "RIPE NCC (BGP)",
+  "HE BGP (bgp.he.net)",
+  "Telegram Official",
+  "Cloudflare Official",
+  "Google gstatic",
+  "Amazon ip-ranges",
+  "GitHub meta API",
+  "Rabbit-Spec/Surge",
+  "Centralmatrix3/Matrix-io",
 ];
 
 const totalServices = baseCategories.reduce((sum, category) => {
-    return sum + category.services.length;
+  return sum + category.services.length;
 }, 0);
 const totalRules = baseCategories.reduce((sum, category) => {
-    return (
-        sum +
-        category.services.reduce((nested, service) => nested + service.lines, 0)
-    );
+  return (
+    sum +
+    category.services.reduce((nested, service) => nested + service.lines, 0)
+  );
 }, 0);
 const buildTime =
-    new Date(new Date().getTime() + 8 * 60 * 60 * 1000)
-        .toISOString()
-        .replace("T", " ")
-        .slice(0, 19) + " SGT";
+  new Date(new Date().getTime() + 8 * 60 * 60 * 1000)
+    .toISOString()
+    .replace("T", " ")
+    .slice(0, 19) + " SGT";
 import { APPS } from "../store.preact";
 const appCount = APPS.length;
 
@@ -168,353 +171,324 @@ void appCount;
 ---
 
 <Layout title="Status Board">
-    <div class="mt-4 space-y-8">
-        <section class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+  <div class="mt-4 space-y-8">
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+      <div
+        class="xl:col-span-8 glass-panel p-0! overflow-hidden relative group"
+      >
+        <div
+          class="absolute inset-0 bg-linear-to-br from-brand-secondary/20 via-transparent to-brand-primary/6 opacity-80 pointer-events-none"
+        >
+        </div>
+        <div
+          class="absolute top-[-18%] right-[-6%] h-72 w-72 rounded-full bg-brand-primary/10 blur-[92px] pointer-events-none"
+        >
+        </div>
+
+        <div class="relative p-6 md:p-8 lg:p-10 border-b border-white/5">
+          <div class="max-w-2xl">
             <div
-                class="xl:col-span-8 glass-panel p-0! overflow-hidden relative group"
+              class="text-[10px] font-black uppercase tracking-[0.35em] text-brand-accent/80 mb-4"
             >
-                <div
-                    class="absolute inset-0 bg-linear-to-br from-brand-secondary/20 via-transparent to-brand-primary/6 opacity-80 pointer-events-none"
-                >
-                </div>
-                <div
-                    class="absolute top-[-18%] right-[-6%] h-72 w-72 rounded-full bg-brand-primary/10 blur-[92px] pointer-events-none"
-                >
-                </div>
-
-                <div
-                    class="relative p-6 md:p-8 lg:p-10 border-b border-white/5"
-                >
-                    <div class="max-w-2xl">
-                        <div
-                            class="text-[10px] font-black uppercase tracking-[0.35em] text-brand-accent/80 mb-4"
-                        >
-                            Rules Control Plane
-                        </div>
-                        <h1
-                            class="font-outfit font-black text-3xl md:text-5xl tracking-tight leading-[0.96] text-white"
-                        >
-                            Global rules, one copy surface.
-                        </h1>
-                        <p
-                            class="mt-4 max-w-xl text-sm md:text-base text-gray-400 leading-relaxed"
-                        >
-                            Unified distribution for rule providers,
-                            client-specific formats, and parser entrypoints in
-                            the same glass language as the Blog family.
-                        </p>
-                    </div>
-                </div>
-
-                <div
-                    class="relative grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/5 bg-white/[0.02]"
-                >
-                    <div class="px-6 py-5">
-                        <div
-                            class="text-[9px] font-black uppercase tracking-[0.28em] text-gray-500"
-                        >
-                            Services
-                        </div>
-                        <div
-                            class="mt-2 text-4xl font-outfit font-black text-gradient"
-                        >
-                            {totalServices}
-                        </div>
-                    </div>
-                    <div class="px-6 py-5">
-                        <div
-                            class="text-[9px] font-black uppercase tracking-[0.28em] text-gray-500"
-                        >
-                            Rules
-                        </div>
-                        <div
-                            class="mt-2 text-4xl font-outfit font-black text-gradient"
-                        >
-                            {(totalRules / 1000).toFixed(0)}K
-                        </div>
-                    </div>
-                    <div class="px-6 py-5">
-                        <div
-                            class="text-[9px] font-black uppercase tracking-[0.28em] text-gray-500"
-                        >
-                            Apps
-                        </div>
-                        <div
-                            class="mt-2 text-4xl font-outfit font-black text-gradient"
-                        >
-                            {appCount}
-                        </div>
-                    </div>
-                </div>
+              Rules Control Plane
             </div>
+            <h1
+              class="font-outfit font-black text-3xl md:text-5xl tracking-tight leading-[0.96] text-white"
+            >
+              Global rules, one copy surface.
+            </h1>
+            <p
+              class="mt-4 max-w-xl text-sm md:text-base text-gray-400 leading-relaxed"
+            >
+              Unified distribution for rule providers, client-specific formats,
+              and parser entrypoints in the same glass language as the Blog
+              family.
+            </p>
+          </div>
+        </div>
 
+        <div
+          class="relative grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/5 bg-white/[0.02]"
+        >
+          <div class="px-6 py-5">
             <div
-                class="xl:col-span-4 grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 gap-4"
+              class="text-[9px] font-black uppercase tracking-[0.28em] text-gray-500"
             >
-                <div class="glass-panel p-6! relative overflow-hidden">
-                    <div
-                        class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-brand-accent/30 to-transparent"
-                    >
-                    </div>
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <div
-                                class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
-                            >
-                                Build Snapshot
-                            </div>
-                            <div
-                                class="mt-2 font-outfit font-extrabold text-xl tracking-tight"
-                            >
-                                Global Ruleset v2
-                            </div>
-                        </div>
-                        <div
-                            class="i-ph-activity-bold text-2xl text-brand-primary"
-                        >
-                        </div>
-                    </div>
-                    <div
-                        class="mt-5 rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-4"
-                    >
-                        <div
-                            class="text-[9px] font-black uppercase tracking-[0.28em] text-gray-500"
-                        >
-                            Last Build
-                        </div>
-                        <div class="mt-2 font-mono text-sm text-gray-300">
-                            {buildTime}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass-panel p-6!">
-                    <div
-                        class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
-                    >
-                        Status
-                    </div>
-                    <div class="mt-3 flex items-center gap-2">
-                        <div
-                            class="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/40"
-                        >
-                        </div>
-                        <span
-                            class="font-outfit font-extrabold text-lg text-white"
-                        >
-                            Operational
-                        </span>
-                    </div>
-                    <div class="mt-5 grid grid-cols-2 gap-3">
-                        <div
-                            class="rounded-2xl border border-white/8 bg-black/20 px-4 py-4"
-                        >
-                            <div
-                                class="text-[9px] font-black uppercase tracking-[0.24em] text-gray-500"
-                            >
-                                Formats
-                            </div>
-                            <div
-                                class="mt-2 font-outfit text-2xl font-black text-white"
-                            >
-                                12
-                            </div>
-                        </div>
-                        <div
-                            class="rounded-2xl border border-white/8 bg-black/20 px-4 py-4"
-                        >
-                            <div
-                                class="text-[9px] font-black uppercase tracking-[0.24em] text-gray-500"
-                            >
-                                Deploy
-                            </div>
-                            <div
-                                class="mt-2 font-outfit text-2xl font-black text-white"
-                            >
-                                CDN
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass-panel p-6!">
-                    <div
-                        class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
-                    >
-                        Refresh Window
-                    </div>
-                    <div class="mt-3 font-mono text-sm text-gray-300">
-                        07:28 / 17:16 SGT
-                    </div>
-                    <div
-                        class="mt-5 text-[10px] text-gray-500 font-bold uppercase tracking-[0.15em] flex items-center gap-2"
-                    >
-                        <div class="w-1 h-1 rounded-full bg-brand-primary">
-                        </div>
-                        Auto-merged daily across every client profile.
-                    </div>
-                </div>
+              Services
             </div>
-        </section>
-
-        <section class="glass-panel p-5! md:p-6! space-y-4">
-            <div class="flex items-center gap-2">
-                <div class="i-ph-shapes-bold text-brand-primary"></div>
-                <span
-                    class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
-                >
-                    Select Your Platform
-                </span>
+            <div class="mt-2 text-4xl font-outfit font-black text-gradient">
+              {totalServices}
             </div>
-            <AppSwitcher client:load />
-        </section>
-
-        <GeoChecker client:load apiBase={apiBase} />
-
-        <section class="space-y-4">
-            <div class="flex items-center gap-2 px-1">
-                <div class="i-ph-link-bold text-brand-primary"></div>
-                <span
-                    class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
-                >
-                    Quick Copy Bundle
-                </span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                {
-                    categories.map((category) => (
-                        <CopyCard
-                            client:load
-                            label={category.label}
-                            category={category.id}
-                            icon={category.icon}
-                            baseUrl={apiBase}
-                        />
-                    ))
-                }
-            </div>
-        </section>
-
-        <GlobalAssets client:load apiBase={apiBase} />
-
-        <section class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-            <div class="xl:col-span-5 glass-panel p-6! space-y-4">
-                <div class="flex items-center gap-2">
-                    <div class="i-ph-terminal-window-bold text-brand-primary">
-                    </div>
-                    <span
-                        class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
-                    >
-                        Resource Parsers
-                    </span>
-                </div>
-                <div class="grid grid-cols-1 gap-3">
-                    {
-                        resourceParsers.map((parser) => (
-                            <ParserItem
-                                client:load
-                                name={parser.name}
-                                url={parser.url}
-                                appIcon={parser.appIcon}
-                                appAccent={parser.appAccent}
-                            />
-                        ))
-                    }
-                </div>
-            </div>
-
+          </div>
+          <div class="px-6 py-5">
             <div
-                class="xl:col-span-7 glass-panel p-6! relative overflow-hidden"
+              class="text-[9px] font-black uppercase tracking-[0.28em] text-gray-500"
             >
-                <div
-                    class="absolute top-0 right-0 p-6 opacity-10 pointer-events-none"
-                >
-                    <div class="i-ph-git-branch-duotone text-6xl"></div>
-                </div>
-
-                <div class="relative space-y-4">
-                    <div class="flex items-center gap-2">
-                        <div class="i-ph-git-branch-bold text-brand-primary">
-                        </div>
-                        <span
-                            class="font-outfit font-black text-sm tracking-widest uppercase"
-                        >
-                            Upstream Sources
-                        </span>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2.5">
-                        {
-                            sourceProviders.map((source) => (
-                                <span class="px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 font-bold text-[10px] uppercase tracking-wider hover:border-brand-primary/30 hover:text-gray-300 transition-colors cursor-default">
-                                    {source}
-                                </span>
-                            ))
-                        }
-                    </div>
-
-                    <div
-                        class="text-[10px] text-gray-500 pt-2 font-bold uppercase tracking-[0.15em] flex items-center gap-2"
-                    >
-                        <div class="w-1 h-1 rounded-full bg-brand-primary">
-                        </div>
-                        All sources auto-merged and distributed across {appCount} formats.
-                    </div>
-                </div>
+              Rules
             </div>
-        </section>
-
-        <section class="space-y-4">
-            <div class="flex items-center justify-between px-1">
-                <h2
-                    class="font-outfit font-black text-lg tracking-tight text-white/90"
-                >
-                    Detailed Lists
-                </h2>
-                <span
-                    class="text-[10px] text-gray-500 font-bold uppercase tracking-widest"
-                >
-                    Click to copy URL
-                </span>
+            <div class="mt-2 text-4xl font-outfit font-black text-gradient">
+              {(totalRules / 1000).toFixed(0)}K
             </div>
+          </div>
+          <div class="px-6 py-5">
+            <div
+              class="text-[9px] font-black uppercase tracking-[0.28em] text-gray-500"
+            >
+              Apps
+            </div>
+            <div class="mt-2 text-4xl font-outfit font-black text-gradient">
+              {appCount}
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div
+        class="xl:col-span-4 grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 gap-4"
+      >
+        <div class="glass-panel p-6! relative overflow-hidden">
+          <div
+            class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-brand-accent/30 to-transparent"
+          >
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div
+                class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+              >
+                Build Snapshot
+              </div>
+              <div
+                class="mt-2 font-outfit font-extrabold text-xl tracking-tight"
+              >
+                Global Ruleset v2
+              </div>
+            </div>
+            <div class="i-ph-activity-bold text-2xl text-brand-primary"></div>
+          </div>
+          <div
+            class="mt-5 rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-4"
+          >
+            <div
+              class="text-[9px] font-black uppercase tracking-[0.28em] text-gray-500"
+            >
+              Last Build
+            </div>
+            <div class="mt-2 font-mono text-sm text-gray-300">
+              {buildTime}
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-panel p-6!">
+          <div
+            class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+          >
+            Status
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <div
+              class="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/40"
+            >
+            </div>
+            <span class="font-outfit font-extrabold text-lg text-white">
+              Operational
+            </span>
+          </div>
+          <div class="mt-5 grid grid-cols-2 gap-3">
+            <div
+              class="rounded-2xl border border-white/8 bg-black/20 px-4 py-4"
+            >
+              <div
+                class="text-[9px] font-black uppercase tracking-[0.24em] text-gray-500"
+              >
+                Formats
+              </div>
+              <div class="mt-2 font-outfit text-2xl font-black text-white">
+                12
+              </div>
+            </div>
+            <div
+              class="rounded-2xl border border-white/8 bg-black/20 px-4 py-4"
+            >
+              <div
+                class="text-[9px] font-black uppercase tracking-[0.24em] text-gray-500"
+              >
+                Deploy
+              </div>
+              <div class="mt-2 font-outfit text-2xl font-black text-white">
+                CDN
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-panel p-6!">
+          <div
+            class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+          >
+            Refresh Window
+          </div>
+          <div class="mt-3 font-mono text-sm text-gray-300">
+            07:28 / 17:16 SGT
+          </div>
+          <div
+            class="mt-5 text-[10px] text-gray-500 font-bold uppercase tracking-[0.15em] flex items-center gap-2"
+          >
+            <div class="w-1 h-1 rounded-full bg-brand-primary"></div>
+            Auto-merged daily across every client profile.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-panel p-5! md:p-6! space-y-4">
+      <div class="flex items-center gap-2">
+        <div class="i-ph-shapes-bold text-brand-primary"></div>
+        <span
+          class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+        >
+          Select Your Platform
+        </span>
+      </div>
+      <AppSwitcher client:load />
+    </section>
+
+    <GeoChecker client:load apiBase={apiBase} />
+
+    <section class="space-y-4">
+      <div class="flex items-center gap-2 px-1">
+        <div class="i-ph-link-bold text-brand-primary"></div>
+        <span
+          class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+        >
+          Quick Copy Bundle
+        </span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {
+          categories.map((category) => (
+            <CopyCard
+              client:load
+              label={category.label}
+              category={category.id}
+              icon={category.icon}
+              baseUrl={apiBase}
+            />
+          ))
+        }
+      </div>
+    </section>
+
+    <GlobalAssets client:load apiBase={apiBase} />
+
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      <div class="xl:col-span-5 glass-panel p-6! space-y-4">
+        <div class="flex items-center gap-2">
+          <div class="i-ph-terminal-window-bold text-brand-primary"></div>
+          <span
+            class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40"
+          >
+            Resource Parsers
+          </span>
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+          {
+            resourceParsers.map((parser) => (
+              <ParserItem
+                client:load
+                name={parser.name}
+                url={parser.url}
+                appIcon={parser.appIcon}
+                appAccent={parser.appAccent}
+              />
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="xl:col-span-7 glass-panel p-6! relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+          <div class="i-ph-git-branch-duotone text-6xl"></div>
+        </div>
+
+        <div class="relative space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="i-ph-git-branch-bold text-brand-primary"></div>
+            <span
+              class="font-outfit font-black text-sm tracking-widest uppercase"
+            >
+              Upstream Sources
+            </span>
+          </div>
+
+          <div class="flex flex-wrap gap-2.5">
             {
-                categories.map((category, index) => (
-                    <details
-                        class="glass-panel p-0! overflow-hidden group/details"
-                        open={index === 0}
-                    >
-                        <summary class="p-5 md:p-6 cursor-pointer select-none flex items-center justify-between hover:bg-white/[0.02] transition-colors list-none [&::-webkit-details-marker]:hidden">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class={`${category.icon} text-xl text-brand-primary`}
-                                />
-                                <span class="font-outfit font-extrabold text-lg tracking-tight">
-                                    {category.label}
-                                </span>
-                                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 bg-white/5 px-2.5 py-0.5 rounded-full">
-                                    {category.services.length}
-                                </span>
-                            </div>
-                            <div class="i-ph-caret-down-bold text-gray-500 transition-transform duration-300 group-open:rotate-180" />
-                        </summary>
-
-                        <div class="border-t border-white/5 p-4 md:p-5">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                                {category.services.map((service) => (
-                                    <ServiceItem
-                                        client:load
-                                        name={service.name}
-                                        category={category.id}
-                                        lines={service.lines}
-                                        apiBase={apiBase}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </details>
-                ))
+              sourceProviders.map((source) => (
+                <span class="px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 font-bold text-[10px] uppercase tracking-wider hover:border-brand-primary/30 hover:text-gray-300 transition-colors cursor-default">
+                  {source}
+                </span>
+              ))
             }
-        </section>
-    </div>
+          </div>
+
+          <div
+            class="text-[10px] text-gray-500 pt-2 font-bold uppercase tracking-[0.15em] flex items-center gap-2"
+          >
+            <div class="w-1 h-1 rounded-full bg-brand-primary"></div>
+            All sources auto-merged and distributed across {appCount} formats.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="font-outfit font-black text-lg tracking-tight text-white/90">
+          Detailed Lists
+        </h2>
+        <span
+          class="text-[10px] text-gray-500 font-bold uppercase tracking-widest"
+        >
+          Click to copy URL
+        </span>
+      </div>
+
+      {
+        categories.map((category, index) => (
+          <details
+            class="glass-panel p-0! overflow-hidden group/details"
+            open={index === 0}
+          >
+            <summary class="p-5 md:p-6 cursor-pointer select-none flex items-center justify-between hover:bg-white/[0.02] transition-colors list-none [&::-webkit-details-marker]:hidden">
+              <div class="flex items-center gap-3">
+                <div class={`${category.icon} text-xl text-brand-primary`} />
+                <span class="font-outfit font-extrabold text-lg tracking-tight">
+                  {category.label}
+                </span>
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 bg-white/5 px-2.5 py-0.5 rounded-full">
+                  {category.services.length}
+                </span>
+              </div>
+              <div class="i-ph-caret-down-bold text-gray-500 transition-transform duration-300 group-open:rotate-180" />
+            </summary>
+
+            <div class="border-t border-white/5 p-4 md:p-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {category.services.map((service) => (
+                  <ServiceItem
+                    client:load
+                    name={service.name}
+                    category={category.id}
+                    lines={service.lines}
+                    apiBase={apiBase}
+                  />
+                ))}
+              </div>
+            </div>
+          </details>
+        ))
+      }
+    </section>
+  </div>
 </Layout>

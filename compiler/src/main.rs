@@ -1258,6 +1258,12 @@ fn is_ai_rule_name(name: &str) -> bool {
         "copilot",
         "ai-other",
         "apple-intelligence",
+        "mistral",
+        "deepseek",
+        "character",
+        "perplexity",
+        "groq",
+        "anthropic",
     ];
     ai_keywords.iter().any(|&k| name.contains(k))
 }
