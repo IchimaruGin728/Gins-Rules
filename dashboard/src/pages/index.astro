@@ -56,9 +56,25 @@ function getServices(category: string): { name: string; lines: number }[] {
     }
   }
 
-  return Array.from(services, ([name, lines]) => ({ name, lines })).sort(
-    (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name),
+  const result = Array.from(services, ([name, lines]) => ({
+    name,
+    lines,
+  })).sort((a: { name: string }, b: { name: string }) =>
+    a.name.localeCompare(b.name),
   );
+
+  // Inject "Full Merge" bundle for specific categories
+  if (
+    category === "ai" ||
+    category === "reject" ||
+    category === "proxy" ||
+    category === "direct"
+  ) {
+    const totalLines = result.reduce((sum, s) => sum + s.lines, 0);
+    result.unshift({ name: `${category} (Full Merge).txt`, lines: totalLines });
+  }
+
+  return result;
 }
 
 const baseCategories = [
@@ -81,12 +97,6 @@ const baseCategories = [
     services: getServices("reject"),
   },
   {
-    id: "ai",
-    label: "AI Bundle",
-    icon: "i-ph-sparkle-bold",
-    services: getServices("ai"),
-  },
-  {
     id: "ip",
     label: "IP / GeoIP",
     icon: "i-ph-map-pin-bold",
@@ -100,7 +110,14 @@ const baseCategories = [
   },
 ];
 
-const categories = baseCategories;
+const aiCategory = {
+  id: "ai",
+  label: "AI",
+  icon: "i-ph-sparkle-bold",
+  services: getServices("ai"),
+};
+
+const categories = [...baseCategories, aiCategory];
 
 const resourceParsers = [
   {
