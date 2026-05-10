@@ -29118,7 +29118,6 @@ asset-us-store.msi.com
 asset-vendor-event.msi.com
 asset.msi.com
 assets-global.viveport.com
-assets.uxengine.net
 assist.net.cn
 assistantkt.com
 assmadmin.com
@@ -96425,6 +96424,7 @@ maiyadi.com
 maiyanju.com
 maiyaole.com
 maiyariji.com
+maiyatian.com
 maiyayk.com
 maiyptbtk.com
 maiyuesoft.com
@@ -116454,7 +116454,6 @@ safetyvod.com
 safiya.com.cn
 safround.com
 sagepub.com
-sagetrc.com
 sagewc-exp.com
 sagigame.net
 sagsaas.com
@@ -120056,7 +120055,6 @@ shenda-group.com
 shendatong.com
 shendiaoqzj.com
 shendoow.com
-shendu.cc
 shendu.com
 shendu123.com
 shendugho.com
@@ -133492,7 +133490,6 @@ tv20806.com
 tv321.cn
 tv373.com
 tvandnet.com
-tvants.com
 tvapk.com
 tvapk.net
 tvascopeo.com
@@ -140726,7 +140723,6 @@ wk-china.com
 wk2.com
 wk515.com
 wk78.com
-wka8.com
 wkai.cc
 wkandian.com
 wkangg.com
@@ -151301,7 +151297,6 @@ yinsfinance.com
 yinsha.com
 yinshenxia.com
 yinshua.cc
-yinshuahangyewang.mobi
 yinshuiyu.com
 yinsuwl.com
 yintai.com
