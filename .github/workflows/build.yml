@@ -15,22 +15,12 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust Cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: |
-            syncer -> target
-            compiler -> target
-
       - name: Install pnpm
-        run: corepack enable && corepack prepare pnpm@latest --activate
+        run: corepack enable && corepack prepare pnpm@11.0.9 --activate
 
       - uses: actions/setup-node@v6
         with:
@@ -71,7 +61,7 @@ jobs:
           SINGBOX_URL=$(jq -r '
             map(select(.prerelease == true))
             | .[0].assets[]
-            | select(.name | contains("linux-amd64") and endswith(".tar.gz"))
+            | select(.name | contains("darwin-arm64") and endswith(".tar.gz"))
             | .browser_download_url
           ' singbox-releases.json | head -n 1)
 
@@ -81,14 +71,14 @@ jobs:
                 .[]
                 | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha")
                 | .assets[]
-                | select(.name | test("^mihomo-linux-amd64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$"))
+                | select(.name | test("^mihomo-darwin-arm64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$"))
                 | .browser_download_url
               ] +
               [
                 .[]
                 | select(.prerelease == false)
                 | .assets[]
-                | select(.name | test("^mihomo-linux-amd64-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$"))
+                | select(.name | test("^mihomo-darwin-arm64-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$"))
                 | .browser_download_url
               ]
             )[0] // empty
@@ -101,7 +91,7 @@ jobs:
 
           echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
           echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
-          echo "cache_key=$(echo -n "$SINGBOX_URL-$MIHOMO_URL" | sha256sum | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "cache_key=$(echo -n "$SINGBOX_URL-$MIHOMO_URL" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Cache Binaries
         id: cache-bin
@@ -112,11 +102,11 @@ jobs:
 
       - name: Sync Data (Rules, Icons, ASN, Geo)
         run: |
-          cd syncer
-          cargo run --release -- sync
-          cargo run --release -- icons
-          cargo run --release -- he
-          cargo run --release -- geo
+          cd tools
+          swift run gins-rules-syncer -- sync
+          swift run gins-rules-syncer -- icons
+          swift run gins-rules-syncer -- he
+          swift run gins-rules-syncer -- geo
 
       - name: Commit Synced Rules
         id: sync
@@ -147,7 +137,7 @@ jobs:
           elif [[ "$MIHOMO_URL" == *.zip ]]; then
             curl -sL -o mihomo.zip "$MIHOMO_URL"
             unzip -o mihomo.zip
-            mv mihomo-linux-amd64* bin/mihomo
+            mv mihomo-darwin-arm64* bin/mihomo
           fi
           chmod +x bin/sing-box bin/mihomo
 
@@ -155,10 +145,19 @@ jobs:
         id: compile
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
-          cd compiler
-          cargo run --release -- --root ..
+          cd tools
+          swift run gins-rules-compiler --root ..
           cd ..
           ls -lh compiled/ruleset/mihomo/proxy/ || true
+
+      - name: Build SwiftWasm
+        run: |
+          cd dashboard/swift-wasm
+          # Install Wasm SDK using Swift 6.3 native tool
+          swift sdk install https://github.com/swiftwasm/swift/releases/download/swift-wasm-DEVELOPMENT-SNAPSHOT-2026-05-05-a/swift-wasm-DEVELOPMENT-SNAPSHOT-2026-05-05-a-wasm32-unknown-wasi.artifactbundle.zip
+          swift build --swift-sdk wasm32-unknown-wasi
+          mkdir -p ../public/wasm
+          cp .build/wasm32-unknown-wasi/debug/GinsRulesWasm.wasm ../public/wasm/
 
       - name: Build Dashboard
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'

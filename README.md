@@ -4,8 +4,8 @@ Comprehensive, self-maintained proxy rule list repository with high-performance 
 
 ## ✨ Features
 
-- **Extreme Rust Performance**: Entire toolchain rewritten in highly-concurrent Rust using `rayon` for sub-second compilation.
-- **Dynamic ASN Routing**: Native support for **Autonomous System Numbers (ASN)** across all platforms (Sing-box, Mihomo, Loon, QX, etc.).
+- **Extreme Swift Performance**: Entire toolchain rewritten in highly-concurrent Swift using `async/await` and modern primitives for sub-second compilation.
+- **macos-latest Optimization**: Native macOS toolchain integration for maximum performance and reliability in CI/CD.
 - **AI Rule-sets**: Dedicated high-priority routing for **Claude**, **Gemini**, and **Copilot** (merged into `ai-other`).
 - **Rolling Xray Kernel**: Automatically tracks and compiles with the latest **xtls/xray-core** (Pinned by Commit SHA) for dev-release feature parity.
 - **Cloudflare Native Delivery**: Powered by **R2 Storage** and **Workers KV** edge caching. Real-time observability via **Cloudflare Analytics Engine** and fully automated CI/CD via **Cloudflare Workflows**.
@@ -69,23 +69,23 @@ Access the premium, searchable icon collection at: **[rules.ichimarugin728.dev/i
 - `source/`: Plain text core rule lists.
   - `source/[category]/`: Domain lists.
   - `source/ip/`: Source for both **IP CIDR** and **ASN** rules.
-- **syncer/**: Rust upstream rule and icon fetcher (Supports ASN & Domain mapping).
-- **compiler/**: Rust parallel compiler for multi-format output. Features native Xray .dat bundling.
+- **tools/**: Unified Swift toolchain for syncing, icon fetching, and rule compilation.
+- **dashboard/swift-wasm/**: Experimental SwiftWasm components for the web dashboard.
 - **cmd/scanner/**: High-performance CF Worker gateway and dashboard.
 - `bin/`: Local workspace for Alpha/Beta binary compilers.
 
 ## ⚙️ Development
 
 ```bash
-# 1. Sync upstream rules & icons (Unified Rust Syncer)
-cd syncer
-cargo run --release -- sync
-cargo run --release -- icons
-cargo run --release -- he
+# 1. Sync upstream rules & icons (Unified Swift Toolchain)
+cd tools
+swift run gins-rules-syncer -- sync
+swift run gins-rules-syncer -- icons
+swift run gins-rules-syncer -- he
 
-# 2. Compile rules locally (Parallel Rust Compiler)
-cd ../compiler
-cargo run --release -- --root ..
+# 2. Compile rules locally (High-Performance Swift Compiler)
+cd tools
+swift run gins-rules-compiler --root ..
 
 # 3. Dashboard Development (pnpm)
 cd ../dashboard
