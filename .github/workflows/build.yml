@@ -15,9 +15,12 @@ env:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v6
+
+      - name: Select Xcode 26.4
+        run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer
 
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@11.0.9 --activate
