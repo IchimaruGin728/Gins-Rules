@@ -453,7 +453,12 @@ fn compile_to_all_formats(
     )?;
 
     // Egern: lower_case keys, ip_cidr6
-    compile_egern_yaml(name, rules, &ruleset_dir.join("egern").join(category))?;
+    compile_egern_yaml(
+        name,
+        rules,
+        &ruleset_dir.join("egern").join(category),
+        category,
+    )?;
 
     // Loon: DOMAIN-SUFFIX, IP-CIDR6, USER-AGENT. No PROCESS-NAME.
     compile_loon_list(
@@ -1119,18 +1124,23 @@ fn compile_quanx_list(
     Ok(())
 }
 
-fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
+fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path, category: &str) -> Result<()> {
+    let policy = match category {
+        "direct" => "Direct",
+        "reject" => "Reject",
+        _ => "Proxy",
+    };
     let mut lines = vec!["rules:".to_string()];
     for d in &rules.domain_suffix {
         lines.push(format!(
-            "  - domain_suffix: {{ match: \"{}\", policy: Direct }}",
-            d
+            "  - domain_suffix: {{ match: \"{}\", policy: {} }}",
+            d, policy
         ));
     }
     for d in &rules.domain {
         lines.push(format!(
-            "  - domain: {{ match: \"{}\", policy: Direct }}",
-            d
+            "  - domain: {{ match: \"{}\", policy: {} }}",
+            d, policy
         ));
     }
     for cidr in &rules.ip_cidr {
@@ -1140,20 +1150,20 @@ fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
             "ip_cidr"
         };
         lines.push(format!(
-            "  - {}: {{ match: \"{}\", policy: Direct }}",
-            prefix, cidr
+            "  - {}: {{ match: \"{}\", policy: {} }}",
+            prefix, cidr, policy
         ));
     }
     for p in &rules.process_name {
         lines.push(format!(
-            "  - process_name: {{ match: \"{}\", policy: Direct }}",
-            p
+            "  - process_name: {{ match: \"{}\", policy: {} }}",
+            p, policy
         ));
     }
     for u in &rules.user_agent {
         lines.push(format!(
-            "  - user_agent: {{ match: \"{}\", policy: Direct }}",
-            u
+            "  - user_agent: {{ match: \"{}\", policy: {} }}",
+            u, policy
         ));
     }
     fs::write(
