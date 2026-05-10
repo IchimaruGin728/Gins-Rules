@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE26: true
 
 jobs:
   build:
@@ -32,7 +32,7 @@ jobs:
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@latest --activate
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "26"
           cache: "pnpm"
@@ -105,7 +105,7 @@ jobs:
 
       - name: Cache Binaries
         id: cache-bin
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: bin/
           key: ${{ runner.os }}-binaries-${{ steps.tool-versions.outputs.cache_key }}
