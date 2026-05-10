@@ -118,8 +118,9 @@ jobs:
           git add .
           if ! git diff --cached --quiet; then
             git commit -m "chore: auto sync upstream rules and parsers [skip ci]"
-            git pull --rebase origin main
-            git push
+            for i in {1..5}; do
+              git pull --rebase -X theirs origin main && git push && break || sleep 5
+            done
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
@@ -157,9 +158,9 @@ jobs:
           curl -L "$SDK_URL" -o wasm-sdk.tar.gz
           CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
           swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
-          swift build --swift-sdk wasm32-unknown-wasi
+          swift build --swift-sdk wasm32-unknown-wasi -c release
           mkdir -p ../public/wasm
-          cp .build/wasm32-unknown-wasi/debug/GinsRulesWasm.wasm ../public/wasm/
+          cp .build/release/GinsRulesWasm.wasm ../public/wasm/
 
       - name: Build Dashboard
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
