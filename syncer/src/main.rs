@@ -441,23 +441,39 @@ async fn run_geo(root: &Path) -> Result<()> {
     if !not_cn.is_empty() {
         write_aggregated_ip_list(&ip_dir.join("!cn.txt"), &not_cn)?;
     }
+
+    // Export ALL country CIDRs to a single index for the compiler
+    let mut full_country_index: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for (code, nets) in &country_cidrs {
+        full_country_index.insert(code.clone(), aggregate_networks(nets));
+    }
+    fs::write(
+        compiled_dir.join("full-country-index.json"),
+        serde_json::to_vec_pretty(&full_country_index)?,
+    )?;
+
     let targets = discover_asn_targets(root)?;
     let mut prefix_index: BTreeMap<String, Vec<AsnPrefixRecord>> = BTreeMap::new();
+
+    // Track ALL ASNs with their names and CIDRs
+    let mut all_asns_full: BTreeMap<u32, (Option<String>, Vec<IpNetwork>)> = BTreeMap::new();
+    for (asn, networks) in &asn_cidrs {
+        let org = networks.first().and_then(|n| n.org.clone());
+        let nets: Vec<IpNetwork> = networks.iter().map(|n| n.net).collect();
+        all_asns_full.insert(*asn, (org, nets));
+    }
+
     for (target_name, target_asns) in targets {
         let mut merged = HashSet::new();
         let mut records = Vec::new();
         for asn in target_asns {
-            let Some(nets) = asn_cidrs.get(&asn) else {
+            let Some((org, nets)) = all_asns_full.get(&asn) else {
                 continue;
             };
             let mut per_asn = HashSet::new();
-            let mut org: Option<String> = None;
-            for entry in nets {
-                merged.insert(entry.net);
-                per_asn.insert(entry.net);
-                if org.is_none() {
-                    org = entry.org.clone();
-                }
+            for net in nets {
+                merged.insert(*net);
+                per_asn.insert(*net);
             }
             for cidr in aggregate_networks(&per_asn) {
                 records.push(AsnPrefixRecord {
@@ -475,18 +491,24 @@ async fn run_geo(root: &Path) -> Result<()> {
     }
     let index_json = serde_json::to_vec_pretty(&prefix_index)?;
     fs::write(compiled_dir.join("asn-prefix-index.json"), index_json)?;
-    let mut raw_asn_index: HashMap<u32, Vec<String>> = HashMap::new();
-    for (asn, networks) in asn_cidrs {
-        let mut nets = HashSet::new();
-        for n in networks {
-            nets.insert(n.net);
+
+    // Export ALL ASNs to a full index for geoasn.mmdb
+    let mut full_asn_index: Vec<AsnPrefixRecord> = Vec::new();
+    for (asn, (org, nets)) in all_asns_full {
+        let net_set: HashSet<IpNetwork> = nets.into_iter().collect();
+        for cidr in aggregate_networks(&net_set) {
+            full_asn_index.push(AsnPrefixRecord {
+                asn,
+                cidr,
+                org: org.clone(),
+            });
         }
-        raw_asn_index.insert(asn, aggregate_networks(&nets));
     }
     fs::write(
-        compiled_dir.join("raw-asn-index.json"),
-        serde_json::to_vec_pretty(&raw_asn_index)?,
+        compiled_dir.join("full-asn-index.json"),
+        serde_json::to_vec_pretty(&full_asn_index)?,
     )?;
+
     Ok(())
 }
 

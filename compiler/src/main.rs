@@ -502,6 +502,8 @@ fn pack_binary_assets(
 ) -> Result<()> {
     let mut geosite_list = GeoSiteList::default();
     let mut geoip_list = GeoIpList::default();
+
+    // 1. Prepare MMDB Writers
     let mut mmdb_geoip = Database::default();
     mmdb_geoip.metadata.database_type = "GeoLite2-Country".to_string();
     mmdb_geoip.metadata.languages = vec!["en".to_string()];
@@ -515,16 +517,42 @@ fn pack_binary_assets(
     mmdb_geoasn.metadata.ip_version = IpVersion::V6;
     mmdb_geoasn.metadata.binary_format_major_version = 2;
     mmdb_geoasn.metadata.build_epoch = chrono::Utc::now().timestamp() as u64;
-    let asn_prefix_index_path = root.join("compiled").join("asn-prefix-index.json");
+
+    // 2. Load Full Data from Syncer
+    let compiled_dir = root.join("compiled");
+
+    let country_index_path = compiled_dir.join("full-country-index.json");
+    let full_country_index: HashMap<String, Vec<String>> = if country_index_path.exists() {
+        serde_json::from_str(&fs::read_to_string(country_index_path)?)?
+    } else {
+        HashMap::new()
+    };
+
+    let asn_index_path = compiled_dir.join("full-asn-index.json");
+    let full_asn_index: Vec<AsnPrefixRecord> = if asn_index_path.exists() {
+        serde_json::from_str(&fs::read_to_string(asn_index_path)?)?
+    } else {
+        Vec::new()
+    };
+
+    let asn_prefix_index_path = compiled_dir.join("asn-prefix-index.json");
     let asn_prefix_index: HashMap<String, Vec<AsnPrefixRecord>> = if asn_prefix_index_path.exists()
     {
         serde_json::from_str(&fs::read_to_string(asn_prefix_index_path)?)?
     } else {
         HashMap::new()
     };
+
+    // 3. Value Caches for Deduplication
+    let mut geoip_value_cache = HashMap::new();
+    let mut geoasn_value_cache = HashMap::new();
+
+    // 4. Process all categories for Geosite and GeoIP (custom tags)
     for (category, rules_map) in all_rules {
         for (name, rules) in rules_map {
             let tag = name.to_uppercase();
+
+            // Geosite logic
             if category != "ip" && category != "asn" {
                 let mut site = GeoSite {
                     country_code: tag.clone(),
@@ -558,95 +586,115 @@ fn pack_binary_assets(
                     geosite_list.entry.push(site);
                 }
             }
-            if category == "ip" || category == "asn" {
-                let mut cidrs = rules.ip_cidr.clone();
-                if category == "asn" {
-                    if let Some(records) = asn_prefix_index.get(name) {
-                        for r in records {
-                            cidrs.push(r.cidr.clone());
-                        }
-                    }
-                }
-                cidrs.sort();
-                cidrs.dedup();
 
-                let mut geoip_tag = tag.clone();
-                if category == "asn" {
-                    geoip_tag = name.strip_prefix("asn-").unwrap_or(name).to_uppercase();
-                }
+            // Custom GeoIP tags from local files (non-ASN)
+            if category == "ip" {
+                let geoip_tag = tag.clone();
+                let mut geo_ip = GeoIp {
+                    country_code: geoip_tag.clone(),
+                    cidr: Vec::new(),
+                };
 
-                if !cidrs.is_empty() {
-                    let mut geo_ip = GeoIp {
-                        country_code: geoip_tag.clone(),
-                        cidr: Vec::new(),
-                    };
-                    for cidr_str in &cidrs {
-                        if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
-                            let ip_bytes = match net.addr {
+                let data_ref = *geoip_value_cache
+                    .entry(geoip_tag.clone())
+                    .or_insert_with(|| {
+                        mmdb_geoip
+                            .insert_value(&CountryRecord {
+                                country: CountryIso {
+                                    iso_code: geoip_tag.clone(),
+                                },
+                            })
+                            .unwrap()
+                    });
+
+                for cidr_str in &rules.ip_cidr {
+                    if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
+                        geo_ip.cidr.push(Cidr {
+                            ip: match net.addr {
                                 IpAddr::V4(a) => a.octets().to_vec(),
                                 IpAddr::V6(a) => a.octets().to_vec(),
-                            };
-                            geo_ip.cidr.push(Cidr {
-                                ip: ip_bytes,
-                                prefix: net.mask as u32,
-                            });
-
-                            let mmdb_net = match net.addr {
-                                IpAddr::V4(a) => IpAddrWithMask::new(
-                                    IpAddr::V6(a.to_ipv6_mapped()),
-                                    net.mask + 96,
-                                ),
-                                IpAddr::V6(_) => net,
-                            };
-
-                            let data_ref = mmdb_geoip
-                                .insert_value(&CountryRecord {
-                                    country: CountryIso {
-                                        iso_code: geoip_tag.clone(),
-                                    },
-                                })
-                                .unwrap();
-                            mmdb_geoip.insert_node(mmdb_net, data_ref);
-                        }
-                    }
-                    if !geo_ip.cidr.is_empty() {
-                        geoip_list.entry.push(geo_ip);
+                            },
+                            prefix: net.mask as u32,
+                        });
+                        let mmdb_net = match net.addr {
+                            IpAddr::V4(a) => {
+                                IpAddrWithMask::new(IpAddr::V6(a.to_ipv6_mapped()), net.mask + 96)
+                            }
+                            IpAddr::V6(_) => net,
+                        };
+                        mmdb_geoip.insert_node(mmdb_net, data_ref);
                     }
                 }
-            }
-            if category == "asn" {
-                if let Some(records) = asn_prefix_index.get(name) {
-                    for r in records {
-                        if let Ok(net) = r.cidr.parse::<IpAddrWithMask>() {
-                            let mmdb_net = match net.addr {
-                                IpAddr::V4(a) => IpAddrWithMask::new(
-                                    IpAddr::V6(a.to_ipv6_mapped()),
-                                    net.mask + 96,
-                                ),
-                                IpAddr::V6(_) => net,
-                            };
-                            let org = r.org.clone().unwrap_or_else(|| format!("AS{}", r.asn));
-                            let data_ref = mmdb_geoasn
-                                .insert_value(&AsnRecord {
-                                    autonomous_system_number: r.asn,
-                                    autonomous_system_organization: org,
-                                })
-                                .unwrap();
-                            mmdb_geoasn.insert_node(mmdb_net, data_ref);
-                        }
-                    }
+                if !geo_ip.cidr.is_empty() {
+                    geoip_list.entry.push(geo_ip);
                 }
             }
         }
     }
+
+    // 5. Insert ALL standardized Country Data into geoip.mmdb
+    for (code, cidrs) in full_country_index {
+        let code_upper = code.to_uppercase();
+        let data_ref = *geoip_value_cache
+            .entry(code_upper.clone())
+            .or_insert_with(|| {
+                mmdb_geoip
+                    .insert_value(&CountryRecord {
+                        country: CountryIso {
+                            iso_code: code_upper.clone(),
+                        },
+                    })
+                    .unwrap()
+            });
+
+        for cidr_str in cidrs {
+            if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
+                let mmdb_net = match net.addr {
+                    IpAddr::V4(a) => {
+                        IpAddrWithMask::new(IpAddr::V6(a.to_ipv6_mapped()), net.mask + 96)
+                    }
+                    IpAddr::V6(_) => net,
+                };
+                mmdb_geoip.insert_node(mmdb_net, data_ref);
+            }
+        }
+    }
+
+    // 6. Insert ALL ASN Data into geoasn.mmdb
+    for r in full_asn_index {
+        if let Ok(net) = r.cidr.parse::<IpAddrWithMask>() {
+            let org = r.org.clone().unwrap_or_else(|| format!("AS{}", r.asn));
+            let cache_key = format!("{}-{}", r.asn, org);
+
+            let data_ref = *geoasn_value_cache.entry(cache_key).or_insert_with(|| {
+                mmdb_geoasn
+                    .insert_value(&AsnRecord {
+                        autonomous_system_number: r.asn,
+                        autonomous_system_organization: org,
+                    })
+                    .unwrap()
+            });
+
+            let mmdb_net = match net.addr {
+                IpAddr::V4(a) => IpAddrWithMask::new(IpAddr::V6(a.to_ipv6_mapped()), net.mask + 96),
+                IpAddr::V6(_) => net,
+            };
+            mmdb_geoasn.insert_node(mmdb_net, data_ref);
+        }
+    }
+
+    // 7. Write Final Assets
     let xray_dir = out_dir.join("xray");
     fs::create_dir_all(&xray_dir)?;
     fs::write(xray_dir.join("geosite.dat"), geosite_list.encode_to_vec())?;
     fs::write(xray_dir.join("geoip.dat"), geoip_list.encode_to_vec())?;
+
     let out_geoip = fs::File::create(out_dir.join("geoip.mmdb"))?;
     mmdb_geoip.write_to(out_geoip).unwrap();
+
     let out_geoasn = fs::File::create(out_dir.join("geoasn.mmdb"))?;
     mmdb_geoasn.write_to(out_geoasn).unwrap();
+
     Ok(())
 }
 
