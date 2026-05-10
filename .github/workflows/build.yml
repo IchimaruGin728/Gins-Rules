@@ -19,8 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Select Xcode 26.4
-        run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer
+      - uses: shogo82148/actions-setup-swift@v3
+        with:
+          swift-version: "6.3"
 
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@11.0.9 --activate
@@ -153,8 +154,10 @@ jobs:
       - name: Build SwiftWasm
         run: |
           cd dashboard/swift-wasm
-          # Install Wasm SDK using Swift 6.3 native tool
-          swift sdk install https://github.com/swiftwasm/swift/releases/download/swift-wasm-DEVELOPMENT-SNAPSHOT-2026-05-05-a/swift-wasm-DEVELOPMENT-SNAPSHOT-2026-05-05-a-wasm32-unknown-wasi.artifactbundle.zip
+          SDK_URL="https://github.com/swiftwasm/swift/releases/download/swift-wasm-DEVELOPMENT-SNAPSHOT-2026-05-05-a/swift-wasm-DEVELOPMENT-SNAPSHOT-2026-05-05-a-wasm32-unknown-wasi.artifactbundle.zip"
+          curl -L "$SDK_URL" -o wasm-sdk.zip
+          CHECKSUM=$(shasum -a 256 wasm-sdk.zip | awk '{print $1}')
+          swift sdk install wasm-sdk.zip --checksum "$CHECKSUM"
           swift build --swift-sdk wasm32-unknown-wasi
           mkdir -p ../public/wasm
           cp .build/wasm32-unknown-wasi/debug/GinsRulesWasm.wasm ../public/wasm/
