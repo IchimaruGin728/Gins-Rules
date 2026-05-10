@@ -1071,7 +1071,12 @@ fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
         lines.push(format!("  - DOMAIN,{},Direct", d));
     }
     for cidr in &rules.ip_cidr {
-        lines.push(format!("  - IP-CIDR,{},Direct", cidr));
+        let prefix = if cidr.contains(':') {
+            "IP-CIDR6"
+        } else {
+            "IP-CIDR"
+        };
+        lines.push(format!("  - {},{},Direct", prefix, cidr));
     }
     fs::write(
         out_dir.join(format!("{}.yaml", name)),
@@ -1099,7 +1104,12 @@ fn compile_loon_list(
         lines.push(format!("DOMAIN,{}", d));
     }
     for cidr in &rules.ip_cidr {
-        lines.push(format!("IP-CIDR,{}", cidr));
+        let prefix = if cidr.contains(':') {
+            "IP-CIDR6"
+        } else {
+            "IP-CIDR"
+        };
+        lines.push(format!("{},{}", prefix, cidr));
     }
     fs::write(
         out_dir.join(format!("{}{}", name, ext)),
