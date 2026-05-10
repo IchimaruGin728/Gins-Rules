@@ -158,7 +158,9 @@ jobs:
           curl -L "$SDK_URL" -o wasm-sdk.tar.gz
           CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
           swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
-          swift build --swift-sdk wasm32-unknown-wasi -c release
+          swift sdk list
+          # The SDK name is derived from the artifact bundle name
+          swift build --swift-sdk swift-6.3-DEVELOPMENT-SNAPSHOT-2026-05-05-a_wasm -c release
           mkdir -p ../public/wasm
           cp .build/release/GinsRulesWasm.wasm ../public/wasm/
 
