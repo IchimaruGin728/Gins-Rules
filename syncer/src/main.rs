@@ -121,7 +121,14 @@ struct CountryRecord {
 
 #[derive(Deserialize)]
 struct AsnRecord {
+    #[serde(alias = "asn", alias = "autonomous_system_number")]
     autonomous_system_number: Option<u32>,
+    #[serde(
+        alias = "name",
+        alias = "asn_org",
+        alias = "organization",
+        alias = "autonomous_system_organization"
+    )]
     autonomous_system_organization: Option<String>,
 }
 

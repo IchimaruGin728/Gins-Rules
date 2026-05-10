@@ -158,6 +158,7 @@ struct CountryRecord {
 
 #[derive(Serialize)]
 struct CountryIso {
+    #[serde(rename = "iso_code")]
     iso_code: String,
 }
 
