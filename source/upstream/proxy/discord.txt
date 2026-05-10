@@ -27,9 +27,3 @@ discordsays.com
 discordstatus.com
 hammerandchisel.ssl.zendesk.com
 watchanimeattheoffice.com
-discord.co
-discord.com
-discord.gg
-discord.media
-discordapp.com
-discordapp.net

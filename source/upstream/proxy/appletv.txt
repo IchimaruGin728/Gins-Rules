@@ -7,6 +7,3 @@ full:uts-api.itunes.apple.com
 tv.apple.com
 user-agent:AppleTV*
 user-agent:com.apple.tv*
-full:np-edge.itunes.apple.com
-full:play-edge.itunes.apple.com
-tv.apple.com

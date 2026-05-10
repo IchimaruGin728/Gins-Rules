@@ -1,4 +1,3 @@
-full:venmo.s3.amazonaws.com
 account-paypal.info
 account-paypal.net
 account-paypal.org
@@ -34,6 +33,7 @@ cashify.net
 devtools-paypal.com
 experiencebillmelater.com
 filipino-music.net
+full:venmo.s3.amazonaws.com
 fundpaypal.com
 getbraintree.com
 gmoney.org
