@@ -6,7 +6,7 @@ use maxminddb_writer::Database;
 use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::net::IpAddr;
 use std::path::{Path, PathBuf};
@@ -90,7 +90,7 @@ struct MihomoRuleMode {
     is_empty: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct AsnPrefixRecord {
     asn: u32,
     cidr: String,
@@ -99,41 +99,25 @@ struct AsnPrefixRecord {
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GeoIp {
-    #[prost(string, tag = "1")]
-    pub country_code: String,
-    #[prost(message, repeated, tag = "2")]
-    pub cidr: Vec<Cidr>,
-}
-
-#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Cidr {
-    #[prost(bytes = "vec", tag = "1")]
-    pub ip: Vec<u8>,
+    #[prost(bytes, tag = "1")]
+    pub ip: ::prost::alloc::vec::Vec<u8>,
     #[prost(uint32, tag = "2")]
     pub prefix: u32,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GeoIp {
+    #[prost(string, tag = "1")]
+    pub country_code: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "2")]
+    pub cidr: ::prost::alloc::vec::Vec<Cidr>,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GeoIpList {
     #[prost(message, repeated, tag = "1")]
-    pub entry: Vec<GeoIp>,
-}
-
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GeoSite {
-    #[prost(string, tag = "1")]
-    pub country_code: String,
-    #[prost(message, repeated, tag = "2")]
-    pub domain: Vec<Domain>,
-}
-
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct Domain {
-    #[prost(enumeration = "DomainType", tag = "1")]
-    pub r#type: i32,
-    #[prost(string, tag = "2")]
-    pub value: String,
+    pub entry: ::prost::alloc::vec::Vec<GeoIp>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
@@ -146,9 +130,25 @@ pub enum DomainType {
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Domain {
+    #[prost(enumeration = "DomainType", tag = "1")]
+    pub r#type: i32,
+    #[prost(string, tag = "2")]
+    pub value: ::prost::alloc::string::String,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GeoSite {
+    #[prost(string, tag = "1")]
+    pub country_code: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "2")]
+    pub domain: ::prost::alloc::vec::Vec<Domain>,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GeoSiteList {
     #[prost(message, repeated, tag = "1")]
-    pub entry: Vec<GeoSite>,
+    pub entry: ::prost::alloc::vec::Vec<GeoSite>,
 }
 
 #[derive(Serialize)]
@@ -299,10 +299,7 @@ fn main() -> Result<()> {
             })
             .collect();
 
-        println!(
-            "  [Diagnostic] Parsed and merged rules for category: {}",
-            category
-        );
+        let mut category_rules_map = HashMap::new();
         for (name, rules) in processed_rules {
             let count = rules.domain_suffix.len()
                 + rules.domain.len()
@@ -312,21 +309,18 @@ fn main() -> Result<()> {
                 + rules.ip_asn.len()
                 + rules.process_name.len()
                 + rules.user_agent.len();
-            if count == 0 {
-                continue;
+
+            if count > 0 {
+                category_rules_map.insert(name.clone(), rules.clone());
+                compile_to_all_formats(
+                    &name,
+                    category,
+                    &rules,
+                    &ruleset_dir,
+                    &singbox_path,
+                    &mihomo_path,
+                )?;
             }
-            compile_to_all_formats(
-                &name,
-                category,
-                &rules,
-                &ruleset_dir,
-                &singbox_path,
-                &mihomo_path,
-            )?;
-            all_rules
-                .entry(category.to_string())
-                .or_default()
-                .insert(name.clone(), rules.clone());
             let cat_rules = category_merged_rules.get_mut(category).unwrap();
             *cat_rules = merge_rules(cat_rules.clone(), rules.clone());
             if is_ai_rule_name(&name) {
@@ -361,6 +355,7 @@ fn main() -> Result<()> {
             }
             println!("  [{:<6}] {:<20} {} rules", category, name, count);
         }
+        all_rules.insert(category.to_string(), category_rules_map);
     }
     for category in output_categories {
         let rules = category_merged_rules.get(category).unwrap();
@@ -399,34 +394,19 @@ fn compile_to_all_formats(
         name
     );
     let is_ip = category == "ip" || category == "asn";
-    let json_path = compile_singbox_json(name, rules, &ruleset_dir.join("singbox").join(category))?;
     if let Some(sb) = singbox_path {
         println!("    [Diagnostic] Compiling singbox srs for: {}", name);
+        let json_path =
+            compile_singbox_json(name, rules, &ruleset_dir.join("singbox").join(category))?;
         compile_singbox_srs(&json_path, sb)?;
+        fs::remove_file(json_path)?;
     }
-
     let mode = detect_mihomo_rule_mode(rules, is_ip);
+    println!("    [Diagnostic] Compiling mihomo mrs for: {}", name);
     compile_mihomo_yaml(
         name,
         rules,
         &ruleset_dir.join("mihomo").join(category),
-        &mode,
-    )?;
-    if let Some(mh) = mihomo_path {
-        println!("    [Diagnostic] Compiling mihomo mrs for: {}", name);
-        compile_mihomo_mrs(
-            name,
-            rules,
-            &ruleset_dir.join("mihomo").join(category),
-            is_ip,
-            mh,
-        )?;
-    }
-
-    compile_mihomo_yaml(
-        name,
-        rules,
-        &ruleset_dir.join("stash").join(category),
         &mode,
     )?;
     if let Some(mh) = mihomo_path {
@@ -502,6 +482,7 @@ fn pack_binary_assets(
 ) -> Result<()> {
     let mut geosite_list = GeoSiteList::default();
     let mut geoip_list = GeoIpList::default();
+    let mut geoasn_list = GeoIpList::default();
 
     // 1. Prepare MMDB Writers
     let mut mmdb_geoip = Database::default();
@@ -522,10 +503,10 @@ fn pack_binary_assets(
     let compiled_dir = root.join("compiled");
 
     let country_index_path = compiled_dir.join("full-country-index.json");
-    let full_country_index: HashMap<String, Vec<String>> = if country_index_path.exists() {
+    let full_country_index: BTreeMap<String, Vec<String>> = if country_index_path.exists() {
         serde_json::from_str(&fs::read_to_string(country_index_path)?)?
     } else {
-        HashMap::new()
+        BTreeMap::new()
     };
 
     let asn_index_path = compiled_dir.join("full-asn-index.json");
@@ -535,19 +516,11 @@ fn pack_binary_assets(
         Vec::new()
     };
 
-    let asn_prefix_index_path = compiled_dir.join("asn-prefix-index.json");
-    let asn_prefix_index: HashMap<String, Vec<AsnPrefixRecord>> = if asn_prefix_index_path.exists()
-    {
-        serde_json::from_str(&fs::read_to_string(asn_prefix_index_path)?)?
-    } else {
-        HashMap::new()
-    };
-
     // 3. Value Caches for Deduplication
     let mut geoip_value_cache = HashMap::new();
     let mut geoasn_value_cache = HashMap::new();
 
-    // 4. Process all categories for Geosite and GeoIP (custom tags)
+    // 4. Process all categories for Geosite and Custom GeoIP/GeoASN tags
     for (category, rules_map) in all_rules {
         for (name, rules) in rules_map {
             let tag = name.to_uppercase();
@@ -587,25 +560,21 @@ fn pack_binary_assets(
                 }
             }
 
-            // Custom GeoIP tags from local files (non-ASN)
+            // Custom GeoIP tags (e.g. from local ip/*.txt)
             if category == "ip" {
-                let geoip_tag = tag.clone();
                 let mut geo_ip = GeoIp {
-                    country_code: geoip_tag.clone(),
+                    country_code: tag.clone(),
                     cidr: Vec::new(),
                 };
-
-                let data_ref = *geoip_value_cache
-                    .entry(geoip_tag.clone())
-                    .or_insert_with(|| {
-                        mmdb_geoip
-                            .insert_value(&CountryRecord {
-                                country: CountryIso {
-                                    iso_code: geoip_tag.clone(),
-                                },
-                            })
-                            .unwrap()
-                    });
+                let data_ref = *geoip_value_cache.entry(tag.clone()).or_insert_with(|| {
+                    mmdb_geoip
+                        .insert_value(&CountryRecord {
+                            country: CountryIso {
+                                iso_code: tag.clone(),
+                            },
+                        })
+                        .unwrap()
+                });
 
                 for cidr_str in &rules.ip_cidr {
                     if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
@@ -629,10 +598,32 @@ fn pack_binary_assets(
                     geoip_list.entry.push(geo_ip);
                 }
             }
+
+            // Custom GeoASN tags (e.g. from local asn/*.txt)
+            if category == "asn" {
+                let mut geo_asn = GeoIp {
+                    country_code: tag.clone(),
+                    cidr: Vec::new(),
+                };
+                for cidr_str in &rules.ip_cidr {
+                    if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
+                        geo_asn.cidr.push(Cidr {
+                            ip: match net.addr {
+                                IpAddr::V4(a) => a.octets().to_vec(),
+                                IpAddr::V6(a) => a.octets().to_vec(),
+                            },
+                            prefix: net.mask as u32,
+                        });
+                    }
+                }
+                if !geo_asn.cidr.is_empty() {
+                    geoasn_list.entry.push(geo_asn);
+                }
+            }
         }
     }
 
-    // 5. Insert ALL standardized Country Data into geoip.mmdb
+    // 5. Insert ALL standardized Country Data into geoip.mmdb and geoip_list (DAT)
     for (code, cidrs) in full_country_index {
         let code_upper = code.to_uppercase();
         let data_ref = *geoip_value_cache
@@ -647,8 +638,20 @@ fn pack_binary_assets(
                     .unwrap()
             });
 
+        let mut geo_ip_dat = GeoIp {
+            country_code: code_upper.clone(),
+            cidr: Vec::new(),
+        };
+
         for cidr_str in cidrs {
             if let Ok(net) = cidr_str.parse::<IpAddrWithMask>() {
+                geo_ip_dat.cidr.push(Cidr {
+                    ip: match net.addr {
+                        IpAddr::V4(a) => a.octets().to_vec(),
+                        IpAddr::V6(a) => a.octets().to_vec(),
+                    },
+                    prefix: net.mask as u32,
+                });
                 let mmdb_net = match net.addr {
                     IpAddr::V4(a) => {
                         IpAddrWithMask::new(IpAddr::V6(a.to_ipv6_mapped()), net.mask + 96)
@@ -658,9 +661,12 @@ fn pack_binary_assets(
                 mmdb_geoip.insert_node(mmdb_net, data_ref);
             }
         }
+        geoip_list.entry.push(geo_ip_dat);
     }
 
-    // 6. Insert ALL ASN Data into geoasn.mmdb
+    // 6. Insert ALL ASN Data into geoasn.mmdb and geoasn_list (DAT)
+    let mut dat_asn_map: BTreeMap<u32, Vec<Cidr>> = BTreeMap::new();
+
     for r in full_asn_index {
         if let Ok(net) = r.cidr.parse::<IpAddrWithMask>() {
             let org = r.org.clone().unwrap_or_else(|| format!("AS{}", r.asn));
@@ -680,7 +686,22 @@ fn pack_binary_assets(
                 IpAddr::V6(_) => net,
             };
             mmdb_geoasn.insert_node(mmdb_net, data_ref);
+
+            dat_asn_map.entry(r.asn).or_default().push(Cidr {
+                ip: match net.addr {
+                    IpAddr::V4(a) => a.octets().to_vec(),
+                    IpAddr::V6(a) => a.octets().to_vec(),
+                },
+                prefix: net.mask as u32,
+            });
         }
+    }
+
+    for (asn, cidrs) in dat_asn_map {
+        geoasn_list.entry.push(GeoIp {
+            country_code: format!("AS{}", asn),
+            cidr: cidrs,
+        });
     }
 
     // 7. Write Final Assets
@@ -688,6 +709,7 @@ fn pack_binary_assets(
     fs::create_dir_all(&xray_dir)?;
     fs::write(xray_dir.join("geosite.dat"), geosite_list.encode_to_vec())?;
     fs::write(xray_dir.join("geoip.dat"), geoip_list.encode_to_vec())?;
+    fs::write(xray_dir.join("geoasn.dat"), geoasn_list.encode_to_vec())?;
 
     let out_geoip = fs::File::create(out_dir.join("geoip.mmdb"))?;
     mmdb_geoip.write_to(out_geoip).unwrap();
@@ -748,38 +770,22 @@ fn merge_rules(mut a: Rules, b: Rules) -> Rules {
     a.ip_asn.extend(b.ip_asn);
     a.process_name.extend(b.process_name);
     a.user_agent.extend(b.user_agent);
-    a.domain_suffix = unique(a.domain_suffix);
-    a.domain = unique(a.domain);
-    a.domain_keyword = unique(a.domain_keyword);
-    a.domain_regex = unique(a.domain_regex);
-    a.ip_cidr = unique(a.ip_cidr);
-    a.ip_asn = unique(a.ip_asn);
-    a.process_name = unique(a.process_name);
-    a.user_agent = unique(a.user_agent);
     a
 }
 
 fn unique(mut v: Vec<String>) -> Vec<String> {
-    let set: HashSet<_> = v.drain(..).collect();
-    let mut v: Vec<_> = set.into_iter().collect();
     v.sort();
+    v.dedup();
     v
 }
 
 fn sanitize_rules(mut rules: Rules) -> Rules {
     let force_proxy = vec![
-        "browserleaks.com",
-        "browserleaks.org",
-        "ipleak.net",
-        "ipleak.vip",
-        "ipinfo.io",
-        "ip.sb",
-        "whoer.net",
-        "dnsleaktest.com",
         "tiktok.com",
         "tiktokv.com",
         "tiktokcdn.com",
         "byteoversea.com",
+        "ibyteimg.com",
         "ibytedtos.com",
         "ipstatp.com",
         "muscdn.com",
@@ -828,59 +834,6 @@ fn compile_singbox_srs(json_path: &Path, singbox_path: &Path) -> Result<()> {
             json_path.with_extension("srs").to_str().unwrap(),
         ])
         .output()?;
-    Ok(())
-}
-
-fn detect_mihomo_rule_mode(rules: &Rules, is_ip_category: bool) -> MihomoRuleMode {
-    let has_ip = !rules.ip_cidr.is_empty();
-    let has_asn = !rules.ip_asn.is_empty();
-    let has_domain = !rules.domain_suffix.is_empty()
-        || !rules.domain.is_empty()
-        || !rules.domain_keyword.is_empty()
-        || !rules.domain_regex.is_empty();
-    let has_other = !rules.process_name.is_empty() || !rules.user_agent.is_empty();
-
-    if has_other || has_asn || (has_ip && has_domain) {
-        return MihomoRuleMode {
-            behavior: "classical".to_string(),
-            is_empty: false,
-        };
-    }
-    if is_ip_category || (has_ip && !has_domain) {
-        return MihomoRuleMode {
-            behavior: "ipcidr".to_string(),
-            is_empty: !has_ip,
-        };
-    }
-    MihomoRuleMode {
-        behavior: "domain".to_string(),
-        is_empty: !has_domain,
-    }
-}
-
-fn compile_mihomo_mrs(
-    name: &str,
-    rules: &Rules,
-    out_dir: &Path,
-    is_ip_category: bool,
-    mihomo_path: &Path,
-) -> Result<()> {
-    let mode = detect_mihomo_rule_mode(rules, is_ip_category);
-    if mode.is_empty {
-        return Ok(());
-    }
-    let tmp_path = out_dir.join(format!(".{}.mrs-input.yaml", name));
-    compile_mihomo_yaml(&format!(".{}.mrs-input", name), rules, out_dir, &mode)?;
-    Command::new(mihomo_path)
-        .args([
-            "convert-ruleset",
-            &mode.behavior,
-            "yaml",
-            tmp_path.to_str().unwrap(),
-            out_dir.join(format!("{}.mrs", name)).to_str().unwrap(),
-        ])
-        .output()?;
-    fs::remove_file(tmp_path)?;
     Ok(())
 }
 
@@ -948,6 +901,59 @@ fn compile_mihomo_yaml(
         out_dir.join(format!("{}.yaml", name)),
         lines.join("\n") + "\n",
     )?;
+    Ok(())
+}
+
+fn detect_mihomo_rule_mode(rules: &Rules, is_ip_category: bool) -> MihomoRuleMode {
+    let has_ip = !rules.ip_cidr.is_empty();
+    let has_asn = !rules.ip_asn.is_empty();
+    let has_domain = !rules.domain_suffix.is_empty()
+        || !rules.domain.is_empty()
+        || !rules.domain_keyword.is_empty()
+        || !rules.domain_regex.is_empty();
+    let has_other = !rules.process_name.is_empty() || !rules.user_agent.is_empty();
+
+    if has_other || has_asn || (has_ip && has_domain) {
+        return MihomoRuleMode {
+            behavior: "classical".to_string(),
+            is_empty: false,
+        };
+    }
+    if is_ip_category || (has_ip && !has_domain) {
+        return MihomoRuleMode {
+            behavior: "ipcidr".to_string(),
+            is_empty: !has_ip,
+        };
+    }
+    MihomoRuleMode {
+        behavior: "domain".to_string(),
+        is_empty: !has_domain,
+    }
+}
+
+fn compile_mihomo_mrs(
+    name: &str,
+    rules: &Rules,
+    out_dir: &Path,
+    is_ip_category: bool,
+    mihomo_path: &Path,
+) -> Result<()> {
+    let mode = detect_mihomo_rule_mode(rules, is_ip_category);
+    if mode.is_empty {
+        return Ok(());
+    }
+    let tmp_path = out_dir.join(format!(".{}.mrs-input.yaml", name));
+    compile_mihomo_yaml(&format!(".{}.mrs-input", name), rules, out_dir, &mode)?;
+    Command::new(mihomo_path)
+        .args([
+            "convert-ruleset",
+            &mode.behavior,
+            "yaml",
+            tmp_path.to_str().unwrap(),
+            out_dir.join(format!("{}.mrs", name)).to_str().unwrap(),
+        ])
+        .output()?;
+    fs::remove_file(tmp_path)?;
     Ok(())
 }
 
@@ -1021,12 +1027,6 @@ fn compile_quanx_list(
             policy
         ));
     }
-    for asn in &rules.ip_asn {
-        lines.push(format!("ip-asn,{},{}", asn, policy));
-    }
-    for ua in &rules.user_agent {
-        lines.push(format!("USER-AGENT,{},{}", ua, policy));
-    }
     fs::write(
         out_dir.join(format!(
             "{}{}",
@@ -1039,29 +1039,16 @@ fn compile_quanx_list(
 }
 
 fn compile_egern_yaml(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
-    let mut lines = vec![
-        format!("# Gins-Rules: {}", name),
-        "# Optimized Egern Rule Set".to_string(),
-        "".to_string(),
-    ];
-    let mut write_set = |key: &str, vals: &Vec<String>| {
-        if vals.is_empty() {
-            return;
-        }
-        lines.push(format!("{}:", key));
-        for v in vals {
-            lines.push(format!("  - \"{}\"", v));
-        }
-    };
-    write_set("domain_suffix_set", &rules.domain_suffix);
-    write_set("domain_set", &rules.domain);
-    write_set("domain_keyword_set", &rules.domain_keyword);
-    write_set("domain_regex_set", &rules.domain_regex);
-    let (v4, v6): (Vec<_>, Vec<_>) = rules.ip_cidr.iter().partition(|c| !c.contains(':'));
-    write_set("ip_cidr_set", &v4.into_iter().cloned().collect());
-    write_set("ip_cidr6_set", &v6.into_iter().cloned().collect());
-    write_set("ip_asn_set", &rules.ip_asn);
-    write_set("user_agent_set", &rules.user_agent);
+    let mut lines = vec!["rules:".to_string()];
+    for d in &rules.domain_suffix {
+        lines.push(format!("  - DOMAIN-SUFFIX,{},Direct", d));
+    }
+    for d in &rules.domain {
+        lines.push(format!("  - DOMAIN,{},Direct", d));
+    }
+    for cidr in &rules.ip_cidr {
+        lines.push(format!("  - IP-CIDR,{},Direct", cidr));
+    }
     fs::write(
         out_dir.join(format!("{}.yaml", name)),
         lines.join("\n") + "\n",
@@ -1073,55 +1060,37 @@ fn compile_loon_list(
     name: &str,
     rules: &Rules,
     out_dir: &Path,
-    include_special: bool,
-    suffix: &str,
+    is_suffix: bool,
+    ext: &str,
 ) -> Result<()> {
     let mut lines = Vec::new();
     for d in &rules.domain_suffix {
-        lines.push(format!("DOMAIN-SUFFIX,{}", d));
+        lines.push(if is_suffix {
+            format!("DOMAIN-SUFFIX,{}", d)
+        } else {
+            d.clone()
+        });
     }
     for d in &rules.domain {
         lines.push(format!("DOMAIN,{}", d));
     }
-    for d in &rules.domain_keyword {
-        lines.push(format!("DOMAIN-KEYWORD,{}", d));
-    }
     for cidr in &rules.ip_cidr {
-        lines.push(format!(
-            "{},{}",
-            if cidr.contains(':') {
-                "IP-CIDR6"
-            } else {
-                "IP-CIDR"
-            },
-            cidr
-        ));
-    }
-    for asn in &rules.ip_asn {
-        lines.push(format!("IP-ASN,{}", asn));
-    }
-    if include_special {
-        for p in &rules.process_name {
-            lines.push(format!("PROCESS-NAME,{}", p));
-        }
-        for ua in &rules.user_agent {
-            lines.push(format!("USER-AGENT,{}", ua));
-        }
+        lines.push(format!("IP-CIDR,{}", cidr));
     }
     fs::write(
-        out_dir.join(format!("{}{}", name, suffix)),
+        out_dir.join(format!("{}{}", name, ext)),
         lines.join("\n") + "\n",
     )?;
     Ok(())
 }
 
-fn compile_surge_domainset(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
+fn compile_shadowrocket_domainset(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
     let mut lines = Vec::new();
     for d in &rules.domain_suffix {
         lines.push(format!(".{}", d));
     }
     for d in &rules.domain {
-        lines.push(d.to_string());
+        lines.push(d.clone());
     }
     if !lines.is_empty() {
         fs::write(
@@ -1132,17 +1101,17 @@ fn compile_surge_domainset(name: &str, rules: &Rules, out_dir: &Path) -> Result<
     Ok(())
 }
 
-fn compile_shadowrocket_domainset(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
+fn compile_surge_domainset(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
     let mut lines = Vec::new();
     for d in &rules.domain_suffix {
         lines.push(format!(".{}", d));
     }
     for d in &rules.domain {
-        lines.push(d.to_string());
+        lines.push(d.clone());
     }
     if !lines.is_empty() {
         fs::write(
-            out_dir.join(format!("{}.txt", name)),
+            out_dir.join(format!("{}.domainset", name)),
             lines.join("\n") + "\n",
         )?;
     }
@@ -1155,11 +1124,11 @@ fn compile_surfboard_domainset(name: &str, rules: &Rules, out_dir: &Path) -> Res
         lines.push(format!(".{}", d));
     }
     for d in &rules.domain {
-        lines.push(d.to_string());
+        lines.push(d.clone());
     }
     if !lines.is_empty() {
         fs::write(
-            out_dir.join(format!("{}.txt", name)),
+            out_dir.join(format!("{}.domainset", name)),
             lines.join("\n") + "\n",
         )?;
     }
@@ -1167,56 +1136,37 @@ fn compile_surfboard_domainset(name: &str, rules: &Rules, out_dir: &Path) -> Res
 }
 
 fn compile_exclave_route(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
-    let mut lines = Vec::new();
-    for d in &rules.domain_suffix {
-        lines.push(format!("domain:{}", d));
+    let mut routes = Vec::new();
+    for cidr in &rules.ip_cidr {
+        routes.push(cidr.clone());
     }
-    for d in &rules.domain {
-        lines.push(format!("full:{}", d));
+    if !routes.is_empty() {
+        fs::write(
+            out_dir.join(format!("{}.json", name)),
+            serde_json::to_string_pretty(&routes)?,
+        )?;
     }
-    for d in &rules.domain_keyword {
-        lines.push(format!("keyword:{}", d));
-    }
-    for d in &rules.domain_regex {
-        lines.push(format!("regexp:{}", d));
-    }
-    for d in &rules.ip_cidr {
-        lines.push(format!("ip:{}", d));
-    }
-    for d in &rules.ip_asn {
-        lines.push(format!("asn:{}", d));
-    }
-    fs::write(
-        out_dir.join(format!("{}.list", name)),
-        lines.join("\n") + "\n",
-    )?;
     Ok(())
 }
 
 fn compile_anywhere_json(name: &str, rules: &Rules, out_dir: &Path) -> Result<()> {
-    let mut anywhere_rules = Vec::new();
-    for cidr in &rules.ip_cidr {
-        anywhere_rules.push(AnywhereRule {
-            rule_type: if cidr.contains(':') { 1 } else { 0 },
-            value: cidr.clone(),
-        });
-    }
-    for suffix in &rules.domain_suffix {
-        anywhere_rules.push(AnywhereRule {
+    let mut any_rules = Vec::new();
+    for d in &rules.domain_suffix {
+        any_rules.push(AnywhereRule {
             rule_type: 2,
-            value: suffix.clone(),
+            value: d.clone(),
         });
     }
-    for keyword in &rules.domain_keyword {
-        anywhere_rules.push(AnywhereRule {
+    for d in &rules.domain {
+        any_rules.push(AnywhereRule {
             rule_type: 3,
-            value: keyword.clone(),
+            value: d.clone(),
         });
     }
-    if !anywhere_rules.is_empty() {
+    if !any_rules.is_empty() {
         fs::write(
             out_dir.join(format!("{}.json", name)),
-            serde_json::to_string_pretty(&anywhere_rules)?,
+            serde_json::to_string_pretty(&any_rules)?,
         )?;
     }
     Ok(())
@@ -1224,41 +1174,52 @@ fn compile_anywhere_json(name: &str, rules: &Rules, out_dir: &Path) -> Result<()
 
 fn generate_manifests(ruleset_dir: &Path, format_dirs: &[&str]) -> Result<()> {
     for fmt in format_dirs {
-        for cat in &["proxy", "direct", "reject", "ip", "asn", "ai"] {
-            let dir = ruleset_dir.join(fmt).join(cat);
-            if let Ok(entries) = fs::read_dir(&dir) {
-                let mut files: Vec<_> = entries
-                    .filter_map(|e| e.ok())
-                    .map(|e| e.file_name().into_string().unwrap())
-                    .filter(|n| n != "manifest.json")
-                    .collect();
-                if !files.is_empty() {
-                    files.sort();
-                    fs::write(
-                        dir.join("manifest.json"),
-                        serde_json::to_string_pretty(&files)?,
-                    )?;
+        let fmt_path = ruleset_dir.join(fmt);
+        let mut manifest: HashMap<String, Vec<String>> = HashMap::new();
+        let categories = ["proxy", "direct", "reject", "ip", "asn", "ai"];
+
+        for cat in &categories {
+            let cat_path = fmt_path.join(cat);
+            if cat_path.exists() {
+                let mut files = Vec::new();
+                for entry in fs::read_dir(cat_path)? {
+                    let entry = entry?;
+                    if entry.path().is_file() {
+                        files.push(entry.file_name().to_str().unwrap().to_string());
+                    }
                 }
+                files.sort();
+                manifest.insert(cat.to_string(), files);
             }
         }
+        fs::write(
+            fmt_path.join("manifest.json"),
+            serde_json::to_string_pretty(&manifest)?,
+        )?;
     }
     Ok(())
 }
 
 fn copy_parsers_js(root: &Path, compiled_dir: &Path) -> Result<()> {
+    let source_dir = root.join("source");
     let dashboard_public = root.join("dashboard").join("public");
-    fs::create_dir_all(&dashboard_public)?;
-    for p in [
+
+    let files = [
         "QX-Resource-Parser.js",
         "Loon-Resource-Parser.js",
         "geo_location_checker.js",
-    ] {
-        if let Ok(data) = fs::read(root.join("source").join(p)) {
-            fs::write(compiled_dir.join(p), &data)?;
-            fs::write(dashboard_public.join(p), &data)?;
+    ];
+
+    for file in &files {
+        let src = source_dir.join(file);
+        if src.exists() {
+            fs::copy(&src, compiled_dir.join(file))?;
+            if dashboard_public.exists() {
+                fs::copy(&src, dashboard_public.join(file))?;
+            }
             println!(
                 "  [SUCCESS] Distributed {} to compiled/ and dashboard/public/",
-                p
+                file
             );
         }
     }
@@ -1266,13 +1227,13 @@ fn copy_parsers_js(root: &Path, compiled_dir: &Path) -> Result<()> {
 }
 
 fn is_ai_rule_name(name: &str) -> bool {
-    vec![
+    let ai_keywords = [
+        "openai",
+        "claude",
+        "gemini",
+        "copilot",
         "ai-other",
         "apple-intelligence",
-        "claude",
-        "copilot",
-        "gemini",
-        "openai",
-    ]
-    .contains(&name)
+    ];
+    ai_keywords.iter().any(|&k| name.contains(k))
 }
