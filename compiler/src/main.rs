@@ -977,17 +977,36 @@ fn compile_mihomo_mrs(
         return Ok(());
     }
 
+    // CRITICAL: Mihomo binary MRS format DOES NOT support classical behavior.
+    // Reference: https://github.com/MetaCubeX/mihomo/issues/1442
+    // We only convert to MRS if it's a optimized domain or ipcidr set.
+    if mode.behavior == "classical" {
+        // Skip binary conversion, only rely on the .yaml version generated elsewhere
+        return Ok(());
+    }
+
     let tmp_path = out_dir.join(format!(".{}.mrs-input.yaml", name));
     compile_mihomo_yaml(&format!(".{}.mrs-input", name), rules, out_dir, &mode)?;
-    Command::new(mihomo_path)
+
+    let output_mrs = out_dir.join(format!("{}.mrs", name));
+    let status = Command::new(mihomo_path)
         .args([
             "convert-ruleset",
             &mode.behavior,
             "yaml",
             tmp_path.to_str().unwrap(),
-            out_dir.join(format!("{}.mrs", name)).to_str().unwrap(),
+            output_mrs.to_str().unwrap(),
         ])
         .output()?;
+
+    if !status.status.success() {
+        println!(
+            "    [Error] MRS conversion failed for {}: {}",
+            name,
+            String::from_utf8_lossy(&status.stderr)
+        );
+    }
+
     fs::remove_file(tmp_path)?;
     Ok(())
 }

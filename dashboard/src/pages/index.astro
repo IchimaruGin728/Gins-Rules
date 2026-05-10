@@ -20,7 +20,9 @@ const aiRuleNames = new Set([
   "openai",
 ]);
 
-function getServices(category: string): { name: string; lines: number }[] {
+function getServices(
+  category: string,
+): { name: string; lines: number; classical?: boolean }[] {
   // ASN rules are stored in /source/ip/ with "asn-" prefix, not in /source/asn/
   const dirs = [
     category === "asn"
@@ -40,9 +42,7 @@ function getServices(category: string): { name: string; lines: number }[] {
     if (!fs.existsSync(dir)) continue;
     for (const file of fs.readdirSync(dir).filter((file: string) => {
       if (!file.endsWith(".txt")) return false;
-      // IP category: exclude asn-* files
       if (category === "ip") return !file.startsWith("asn-");
-      // ASN category: only include asn-* files
       if (category === "asn") return file.startsWith("asn-");
       if (category === "ai")
         return aiRuleNames.has(path.basename(file, ".txt"));
@@ -56,22 +56,21 @@ function getServices(category: string): { name: string; lines: number }[] {
     }
   }
 
-  const result = Array.from(services, ([name, lines]) => ({
-    name,
-    lines,
-  })).sort((a: { name: string }, b: { name: string }) =>
-    a.name.localeCompare(b.name),
-  );
+  const result = Array.from(services, ([name, lines]) => {
+    // Simple heuristic: AI category or specific names are likely classical
+    const isClassical = category === "ai" || category === "reject";
+    return { name, lines, classical: isClassical };
+  }).sort((a, b) => a.name.localeCompare(b.name));
 
-  // Inject "Full Merge" bundle for specific categories
-  if (
-    category === "ai" ||
-    category === "reject" ||
-    category === "proxy" ||
-    category === "direct"
-  ) {
+  // Inject "Full Merge" bundle
+  if (["ai", "reject", "proxy", "direct"].includes(category)) {
     const totalLines = result.reduce((sum, s) => sum + s.lines, 0);
-    result.unshift({ name: `${category} (Full Merge).txt`, lines: totalLines });
+    // Category root files (ai.mrs, reject.mrs) are almost always classical
+    result.unshift({
+      name: `${category}.txt`,
+      lines: totalLines,
+      classical: true,
+    });
   }
 
   return result;
@@ -327,14 +326,15 @@ void appCount;
             </div>
             <div
               class="rounded-2xl border border-white/8 bg-black/20 px-4 py-4"
+              title="v5 SRS (Sing-box 1.14+)"
             >
               <div
                 class="text-[9px] font-black uppercase tracking-[0.24em] text-gray-500"
               >
-                Deploy
+                Spec
               </div>
               <div class="mt-2 font-outfit text-2xl font-black text-white">
-                CDN
+                v5
               </div>
             </div>
           </div>
@@ -384,15 +384,17 @@ void appCount;
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {
-          categories.map((category) => (
-            <CopyCard
-              client:load
-              label={category.label}
-              category={category.id}
-              icon={category.icon}
-              baseUrl={apiBase}
-            />
-          ))
+          categories
+            .slice(0, 4)
+            .map((category) => (
+              <CopyCard
+                client:load
+                label={category.label}
+                category={category.id}
+                icon={category.icon}
+                baseUrl={apiBase}
+              />
+            ))
         }
       </div>
     </section>
@@ -499,6 +501,7 @@ void appCount;
                     category={category.id}
                     lines={service.lines}
                     apiBase={apiBase}
+                    classical={service.classical}
                   />
                 ))}
               </div>

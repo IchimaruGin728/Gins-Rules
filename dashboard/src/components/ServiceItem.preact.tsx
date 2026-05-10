@@ -1,15 +1,26 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { activeApp, getActiveConfig, optimizedDomainSet } from "../store.preact";
+import {
+  activeApp,
+  getActiveConfig,
+  optimizedDomainSet,
+} from "../store.preact";
 
 interface Props {
   name: string;
   category: string;
   lines: number;
   apiBase: string;
+  classical?: boolean;
 }
 
-export default function ServiceItem({ name, category, lines, apiBase }: Props) {
+export default function ServiceItem({
+  name,
+  category,
+  lines,
+  apiBase,
+  classical,
+}: Props) {
   const [copied, setCopied] = useState(false);
   const cleanName = name.replace(".txt", "");
   const config = getActiveConfig();
@@ -21,12 +32,25 @@ export default function ServiceItem({ name, category, lines, apiBase }: Props) {
     // Optimized Domain Set logic - ONLY for non-IP categories
     const isIPCategory = category === "ip" || category === "asn";
     let ext = config.ext;
-    
+
     if (optimizedDomainSet.value && !isIPCategory) {
-        if (activeApp.value === "surge") ext = "domainset";
-        else if (activeApp.value === "surfboard" || activeApp.value === "shadowrocket") ext = "txt";
+      if (activeApp.value === "surge") ext = "domainset";
+      else if (
+        activeApp.value === "surfboard" ||
+        activeApp.value === "shadowrocket"
+      )
+        ext = "txt";
     }
-    
+
+    // SMART DOWNGRADE: Mihomo/Stash MRS doesn't support classical behavior
+    // Use .yaml instead for these specific services
+    if (
+      classical &&
+      (activeApp.value === "mihomo" || activeApp.value === "stash")
+    ) {
+      ext = "yaml";
+    }
+
     // URL Format: ruleset/:app/:category/:name.ext
     const url = `${apiBase}/ruleset/${activeApp.value}/${category}/${cleanName}.${ext}`;
 
