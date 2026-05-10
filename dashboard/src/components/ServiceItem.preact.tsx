@@ -64,8 +64,8 @@ export default function ServiceItem({
         ext = "txt";
     }
 
-    // Manual YAML override or smart downgrade
-    if (forceYaml || (classical && isMihomoLike)) {
+    // Manual YAML override
+    if (forceYaml) {
       ext = "yaml";
     }
 
