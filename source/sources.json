@@ -126,10 +126,59 @@
     "enabled": true
   },
   {
+    "name": "Matrix WeChat",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/WeChat.list",
+    "category": "direct",
+    "target": "tencent",
+    "enabled": true
+  },
+  {
     "name": "QQ (BM7)",
     "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/QQ/QQ.list",
     "category": "direct",
     "target": "tencent",
+    "enabled": true
+  },
+  {
+    "name": "Tencent (BM7)",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/Tencent/Tencent.list",
+    "category": "direct",
+    "target": "tencent",
+    "enabled": true
+  },
+  {
+    "name": "M Tencent",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geosite/tencent.list",
+    "category": "direct",
+    "target": "tencent",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit Tencent",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/Tencent.list",
+    "category": "direct",
+    "target": "tencent",
+    "enabled": true
+  },
+  {
+    "name": "Matrix Tencent",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/Tencent.list",
+    "category": "direct",
+    "target": "tencent",
+    "enabled": true
+  },
+  {
+    "name": "Matrix BiliBili",
+    "url": "https://raw.githubusercontent.com/Centralmatrix3/Matrix-io/master/Surge/Ruleset/BiliBili.list",
+    "category": "direct",
+    "target": "bilibili",
+    "enabled": true
+  },
+  {
+    "name": "Rabbit BiliBili",
+    "url": "https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/BiliBili.list",
+    "category": "direct",
+    "target": "bilibili",
     "enabled": true
   },
   {
