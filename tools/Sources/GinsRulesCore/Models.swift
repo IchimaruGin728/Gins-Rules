@@ -1,6 +1,7 @@
 import Foundation
 
-/// A high-performance, thread-safe rule container using Swift Sets for O(1) deduplication.
+/// A high-performance, thread-safe rule container for proxy rules.
+/// Optimized for Swift 6.3 structured concurrency.
 public struct Rules: Codable, Sendable {
   public var domainSuffix: Set<String> = []
   public var domain: Set<String> = []
@@ -13,15 +14,7 @@ public struct Rules: Codable, Sendable {
 
   public init() {}
 
-  /// Total count of all unique rules across all categories.
-  public var count: Int {
-    domainSuffix.count + domain.count + domainKeyword.count + domainRegex.count + ipCidr.count
-      + ipAsn.count + processName.count + userAgent.count
-  }
-
-  public var isEmpty: Bool { count == 0 }
-
-  /// Merges another set of rules into this one efficiently.
+  /// Merges another ruleset into this one efficiently.
   public mutating func merge(with other: Rules) {
     domainSuffix.formUnion(other.domainSuffix)
     domain.formUnion(other.domain)
@@ -33,34 +26,37 @@ public struct Rules: Codable, Sendable {
     userAgent.formUnion(other.userAgent)
   }
 
-  /// Returns a new Rules instance with sensitive/unwanted rules removed.
+  /// Total count of unique rules.
+  public var count: Int {
+    domainSuffix.count + domain.count + domainKeyword.count + domainRegex.count + ipCidr.count
+      + ipAsn.count + processName.count + userAgent.count
+  }
+
+  public var isEmpty: Bool { count == 0 }
+
+  /// Returns a version of these rules filtered for regional/sensitive restrictions.
   public func sanitized() -> Rules {
     let restricted: Set<String> = [
       "tiktok.com", "tiktokv.com", "tiktokcdn.com", "byteoversea.com",
       "ibyteimg.com", "ibytedtos.com", "ipstatp.com", "muscdn.com",
       "musical.ly", "tik-tokapi.com",
     ]
-
+    var copy = self
     let isRestricted = { (d: String) -> Bool in
-      if d.localizedStandardContains("tiktok") || d.localizedStandardContains("tik-tok") {
+      if d.localizedCaseInsensitiveContains("tiktok")
+        || d.localizedCaseInsensitiveContains("tik-tok")
+      {
         return true
       }
       return restricted.contains { d == $0 || d.hasSuffix(".\($0)") }
     }
-
-    var copy = self
     copy.domain = Set(copy.domain.filter { !isRestricted($0) })
     copy.domainSuffix = Set(copy.domainSuffix.filter { !isRestricted($0) })
     return copy
   }
 }
 
-// --- Platform Specific Rule Models ---
-
-public struct MihomoRuleMode: Codable, Sendable {
-  public let behavior: String
-  public init(behavior: String) { self.behavior = behavior }
-}
+// --- Rule Serialization Models ---
 
 public struct SingBoxRuleSet: Codable, Sendable {
   public let version: Int

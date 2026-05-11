@@ -8,10 +8,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE26: true
 
 jobs:
   build:
@@ -19,148 +15,47 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Swift 6.3.1
-        run: |
-          sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer || true
-          swift --version
-
-      - name: Install pnpm 11
+      - name: Setup Node 26 & pnpm 11
         run: |
           corepack enable
           corepack prepare pnpm@11.0.9 --activate
 
       - uses: actions/setup-node@v6
         with:
-          node-version: "26"
+          node-version: 26
           cache: "pnpm"
-          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install Dependencies (Root)
-        run: pnpm install --no-frozen-lockfile --allow-scripts
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile --aggregate-output
 
-      - name: Fetch Latest Tool Versions
-        id: tool-versions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Sync & Compile (Swift Native)
         run: |
-          set -euo pipefail
-          fetch_releases() {
-            local repo="$1"
-            local output="$2"
-            curl -fsSL \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              -A "Gins-Rules-Workflow" \
-              "https://api.github.com/repos/${repo}/releases?per_page=100" \
-              -o "$output"
-          }
-          fetch_releases "SagerNet/sing-box" singbox-releases.json
-          fetch_releases "MetaCubeX/mihomo" mihomo-releases.json
-          SINGBOX_URL=$(jq -r 'map(select(.prerelease == true)) | .[0].assets[] | select(.name | contains("darwin-arm64") and endswith(".tar.gz")) | .browser_download_url' singbox-releases.json | head -n 1)
-          MIHOMO_URL=$(jq -r '([.[] | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha") | .assets[] | select(.name | test("^mihomo-darwin-arm64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$")) | .browser_download_url] + [.[] | select(.prerelease == false) | .assets[] | select(.name | test("^mihomo-darwin-arm64-v[0-9]+\\.[0-9]+\\.[0-9]+\\\.gz$")) | .browser_download_url])[0]' mihomo-releases.json)
-          echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
-          echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
-          echo "cache_key=$(echo -n "$SINGBOX_URL-$MIHOMO_URL" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
+          # Use Swift 6.3 directly from the runner
+          pnpm sync
+          pnpm icons
+          pnpm compile
 
-      - name: Cache Binaries
-        id: cache-bin
-        uses: actions/cache@v5
-        with:
-          path: bin/
-          key: macOS-binaries-${{ steps.tool-versions.outputs.cache_key }}
-
-      - name: Install Compilers
-        if: steps.cache-bin.outputs.cache-hit != 'true'
+      - name: Commit Synced Metadata
         run: |
-          mkdir -p bin
-          curl -sL "${{ steps.tool-versions.outputs.singbox_url }}" | tar xz --strip-components=1
-          mv sing-box bin/
-          curl -sL "${{ steps.tool-versions.outputs.mihomo_url }}" | gunzip > bin/mihomo
-          chmod +x bin/sing-box bin/mihomo
-
-      - name: Sync Data (Swift Native)
-        run: |
-          mkdir -p compiled/ruleset source/upstream
-          swift run --package-path tools gins-rules-syncer --root . sync
-          swift run --package-path tools gins-rules-syncer --root . icons
-          swift run --package-path tools gins-rules-syncer --root . he
-          swift run --package-path tools gins-rules-syncer --root . geo
-
-      - name: Commit Synced Rules
-        id: sync
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add .
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: auto sync upstream rules and parsers [skip ci]"
-            for i in {1..5}; do
-              git pull --rebase -X theirs origin main && git push && break || sleep 5
-            done
-            echo "changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Compile Rules (Swift Native)
-        id: compile
-        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
-        run: |
-          swift run --package-path tools gins-rules-compiler --root .
-          ls -lh compiled/ruleset/mihomo/proxy/ || true
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add source/upstream compiled/Gins-Icons.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: metadata sync [skip ci]" && git pull --rebase -X theirs origin main && git push)
 
       - name: Build Dashboard (Astro 6.3)
-        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           cd dashboard
-          pnpm install --no-frozen-lockfile --allow-scripts
+          pnpm install --no-frozen-lockfile
           pnpm build
+          cp -r dist/* ../compiled/
 
-      - name: Sync Rules to R2 (S3 Speed Sync)
-        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
+      - name: Deploy to Cloudflare
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
         run: |
-          aws configure set default.s3.max_concurrent_requests 100
-          aws s3 sync compiled/ s3://gins-rules-storage/ \
-            --endpoint-url https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com \
-            --delete --no-progress
-
-      - name: Deploy Worker
-        if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
+          aws s3 sync compiled/ s3://gins-rules-storage/ --endpoint-url https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com --delete
           npx wrangler deploy --config cmd/scanner/wrangler.jsonc
-
-      - name: Notify
-        if: always() && (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule')
-        run: |
-          SUMMARY=$(cat compiled/ruleset/build-summary.json 2>/dev/null || echo "{\"services\":0,\"rules\":0,\"ipRules\":0,\"asnFiles\":0,\"srs\":0,\"mrs\":0,\"categoryCounts\":{},\"formats\":0,\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}")
-          ICONS_HASH=$(cat source/icons-hash.json 2>/dev/null || echo "{}")
-          ICONS_TOTAL=$(jq 'length' dashboard/public/icons-catalog.json 2>/dev/null || echo "0")
-          PAYLOAD=$(jq -n \
-            --arg project "Gins-Rules" \
-            --arg run_id "${{ github.run_id }}" \
-            --arg sha "${{ github.sha }}" \
-            --arg trigger "${{ github.event_name }}" \
-            --argjson stats "$SUMMARY" \
-            --argjson icons_hash "$ICONS_HASH" \
-            --argjson icons_total "$ICONS_TOTAL" \
-            --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '$stats + {
-              project: $project,
-              build: { id: $run_id, sha: $sha, trigger: $trigger },
-              icons_total: $icons_total,
-              artifacts: { icons: $icons_hash },
-              timestamp: $time
-            }')
-          curl -sf -X POST \
-            -H "Authorization: Bearer ${{ secrets.WORKFLOW_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -d "$PAYLOAD" \
-            "https://rules.ichimarugin728.dev/workflow/build-complete" || true

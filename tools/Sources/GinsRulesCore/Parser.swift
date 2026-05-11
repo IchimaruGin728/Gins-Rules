@@ -1,13 +1,7 @@
 import Foundation
 
 public enum RuleParser {
-  /// Parses a rule source file at the given local URL.
-  public static func parse(url: URL) throws -> Rules {
-    let content = try String(contentsOf: url, encoding: .utf8)
-    return parse(content: content)
-  }
-
-  /// Parses rule content from a raw string using high-speed string processing.
+  /// High-performance line-based parser using modern Swift string primitives.
   public static func parse(content: String) -> Rules {
     var rules = Rules()
 
@@ -32,12 +26,17 @@ public enum RuleParser {
       } else if trimmed.contains("/") {
         rules.ipCidr.insert(trimmed)
       } else {
-        // Default to domain suffix, stripping leading control characters
-        let domain = trimmed.trimmingCharacters(in: CharacterSet(charactersIn: "+."))
-        rules.domainSuffix.insert(domain)
+        // Default to domain suffix, stripping leading control characters (+.)
+        rules.domainSuffix.insert(trimmed.trimmingCharacters(in: CharacterSet(charactersIn: "+.")))
       }
     }
 
     return rules
+  }
+
+  /// Parses a local file.
+  public static func parse(url: URL) throws -> Rules {
+    let content = try String(contentsOf: url, encoding: .utf8)
+    return parse(content: content)
   }
 }
