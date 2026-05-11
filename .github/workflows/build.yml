@@ -9,11 +9,20 @@ on:
 permissions:
   contents: write
 
+env:
+  CI: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE26: true
+
 jobs:
   build:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v6
+
+      - name: Setup Swift 6.3.1
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer || true
+          swift --version
 
       - name: Setup Node 26 & pnpm 11
         run: |
@@ -26,14 +35,12 @@ jobs:
           cache: "pnpm"
 
       - name: Install Dependencies
-        run: pnpm install --no-frozen-lockfile --aggregate-output
+        run: pnpm install --no-frozen-lockfile --allow-scripts
 
-      - name: Sync & Compile (Swift Native)
+      - name: Sync Data (Swift Native)
         run: |
-          # Use Swift 6.3 directly from the runner
           pnpm sync
           pnpm icons
-          pnpm compile
 
       - name: Commit Synced Metadata
         run: |
@@ -42,10 +49,13 @@ jobs:
           git add source/upstream compiled/Gins-Icons.json
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: metadata sync [skip ci]" && git pull --rebase -X theirs origin main && git push)
 
+      - name: Compile Toolchain (Swift 6.3)
+        run: pnpm compile
+
       - name: Build Dashboard (Astro 6.3)
         run: |
           cd dashboard
-          pnpm install --no-frozen-lockfile
+          pnpm install --no-frozen-lockfile --allow-scripts
           pnpm build
           cp -r dist/* ../compiled/
 
@@ -59,3 +69,31 @@ jobs:
         run: |
           aws s3 sync compiled/ s3://gins-rules-storage/ --endpoint-url https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com --delete
           npx wrangler deploy --config cmd/scanner/wrangler.jsonc
+
+      - name: Notify
+        if: always()
+        run: |
+          SUMMARY=$(cat compiled/ruleset/build-summary.json 2>/dev/null || echo "{\"services\":0,\"rules\":0,\"ipRules\":0,\"asnFiles\":0,\"srs\":0,\"mrs\":0,\"categoryCounts\":{},\"formats\":0,\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}")
+          ICONS_HASH=$(cat source/icons-hash.json 2>/dev/null || echo "{}")
+          ICONS_TOTAL=$(jq 'length' dashboard/public/icons-catalog.json 2>/dev/null || echo "0")
+          PAYLOAD=$(jq -n \
+            --arg project "Gins-Rules" \
+            --arg run_id "${{ github.run_id }}" \
+            --arg sha "${{ github.sha }}" \
+            --arg trigger "${{ github.event_name }}" \
+            --argjson stats "$SUMMARY" \
+            --argjson icons_hash "$ICONS_HASH" \
+            --argjson icons_total "$ICONS_TOTAL" \
+            --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '$stats + {
+              project: $project,
+              build: { id: $run_id, sha: $sha, trigger: $trigger },
+              icons_total: $icons_total,
+              artifacts: { icons: $icons_hash },
+              timestamp: $time
+            }')
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.WORKFLOW_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "https://rules.ichimarugin728.dev/workflow/build-complete" || true
