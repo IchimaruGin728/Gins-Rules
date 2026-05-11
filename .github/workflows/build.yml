@@ -37,18 +37,21 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Sync & Compile (Swift Native)
+      - name: Sync Rules & Icons (Swift Native)
         run: |
           pnpm sync
           pnpm icons
-          pnpm compile
 
       - name: Commit Metadata
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add source/upstream compiled/Gins-Icons.json source/icons-hash.json
+          # Use -f to bypass .gitignore for critical metadata
+          git add -f source/upstream compiled/Gins-Icons.json source/icons-hash.json dashboard/public/icons-catalog.json
           git diff --staged --quiet || (git commit -m "chore: metadata sync [skip ci]" && git pull --rebase -X theirs origin main && git push)
+
+      - name: Compile Toolchain (Swift 6.3)
+        run: pnpm compile
 
       - name: Build Dashboard (Astro 6.3)
         run: |
