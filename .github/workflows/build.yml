@@ -35,7 +35,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install Dependencies
-        run: pnpm install --no-frozen-lockfile --allow-scripts
+        run: pnpm install --no-frozen-lockfile
 
       - name: Sync Data (Swift Native)
         run: |
@@ -55,7 +55,7 @@ jobs:
       - name: Build Dashboard (Astro 6.3)
         run: |
           cd dashboard
-          pnpm install --no-frozen-lockfile --allow-scripts
+          pnpm install --no-frozen-lockfile
           pnpm build
           cp -r dist/* ../compiled/
 
