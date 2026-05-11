@@ -122,6 +122,7 @@ jobs:
       - name: Build SwiftWasm
         run: |
           cd dashboard/swift-wasm
+
           # 1. 下载 WASI-SDK 提供 C 头文件
           WASI_VERSION=22
           curl -L "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION}.0-macos.tar.gz" -o wasi-sdk.tar.gz
@@ -134,11 +135,14 @@ jobs:
           curl -L "$SDK_URL" -o wasm-sdk.tar.gz
           CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
           swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
-          SDK_ID=$(swift sdk list | grep "wasm" | head -n 1 | awk '{print $1}')
 
-          # 3. 终极编译方案
+          SDK_ID=$(swift sdk list | grep "wasm" | head -n 1 | awk '{print $1}')
+          echo "Using SDK: $SDK_ID"
+
+          # 3. 终极编译方案：使用 wasm32-unknown-wasip1 (Swift 6.x 推荐)
+          # 同时指明 sysroot 和 system include 路径
           export WASI_SDK_PATH="$WASI_SDK_FULL_PATH"
-          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasi -c release \
+          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasip1 -c release \
             -Xcc -isystem -Xcc "$SYSROOT/include" \
             -Xcc --sysroot="$SYSROOT"
 
