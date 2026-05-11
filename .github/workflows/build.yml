@@ -37,20 +37,18 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Sync Data (Swift Native)
+      - name: Sync & Compile (Swift Native)
         run: |
           pnpm sync
           pnpm icons
+          pnpm compile
 
-      - name: Commit Synced Metadata
+      - name: Commit Metadata
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add source/upstream compiled/Gins-Icons.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: metadata sync [skip ci]" && git pull --rebase -X theirs origin main && git push)
-
-      - name: Compile Toolchain (Swift 6.3)
-        run: pnpm compile
+          git add source/upstream compiled/Gins-Icons.json source/icons-hash.json
+          git diff --staged --quiet || (git commit -m "chore: metadata sync [skip ci]" && git pull --rebase -X theirs origin main && git push)
 
       - name: Build Dashboard (Astro 6.3)
         run: |
@@ -75,7 +73,6 @@ jobs:
         run: |
           SUMMARY=$(cat compiled/ruleset/build-summary.json 2>/dev/null || echo "{\"services\":0,\"rules\":0,\"ipRules\":0,\"asnFiles\":0,\"srs\":0,\"mrs\":0,\"categoryCounts\":{},\"formats\":0,\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}")
           ICONS_HASH=$(cat source/icons-hash.json 2>/dev/null || echo "{}")
-          ICONS_TOTAL=$(jq 'length' dashboard/public/icons-catalog.json 2>/dev/null || echo "0")
           PAYLOAD=$(jq -n \
             --arg project "Gins-Rules" \
             --arg run_id "${{ github.run_id }}" \
@@ -83,12 +80,10 @@ jobs:
             --arg trigger "${{ github.event_name }}" \
             --argjson stats "$SUMMARY" \
             --argjson icons_hash "$ICONS_HASH" \
-            --argjson icons_total "$ICONS_TOTAL" \
             --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '$stats + {
               project: $project,
               build: { id: $run_id, sha: $sha, trigger: $trigger },
-              icons_total: $icons_total,
               artifacts: { icons: $icons_hash },
               timestamp: $time
             }')
