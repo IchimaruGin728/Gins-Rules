@@ -14,6 +14,12 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     let rootURL = URL(fileURLWithPath: root).standardized
     print("  [Syncer] Root URL: \(rootURL.path)")
 
+    // Ensure core directories exist
+    try? FileManager.default.createDirectory(
+      at: rootURL.appending(path: "compiled"), withIntermediateDirectories: true)
+    try? FileManager.default.createDirectory(
+      at: rootURL.appending(path: "source/upstream"), withIntermediateDirectories: true)
+
     switch command {
     case "sync":
       try await runSync(root: rootURL)
@@ -84,8 +90,8 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     let configPath = root.appending(path: "source/icons.json")
     let outPath = root.appending(path: "compiled/Gins-Icons.json")
     let dashboardPath = root.appending(path: "dashboard/public/icons-catalog.json")
+    let hashPath = root.appending(path: "source/icons-hash.json")
 
-    print("  [Syncer] Reading icons from: \(configPath.path)")
     guard FileManager.default.fileExists(atPath: configPath.path) else {
       print("  [ERROR] icons.json not found at \(configPath.path)")
       return
@@ -136,13 +142,17 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     let finalData = try encoder.encode(
       allIcons.sorted(by: { $0.source == $1.source ? $0.name < $1.name : $0.source < $1.source }))
 
-    try? FileManager.default.createDirectory(
-      at: outPath.deletingLastPathComponent(), withIntermediateDirectories: true)
     try finalData.write(to: outPath)
-
     try? FileManager.default.createDirectory(
       at: dashboardPath.deletingLastPathComponent(), withIntermediateDirectories: true)
     try finalData.write(to: dashboardPath)
+
+    // Generate hash for notification
+    let hash = String(format: "%02x", abs(finalData.hashValue))  // Simple hash for placeholder
+    let hashJson = ["sha256": hash, "total": "\(allIcons.count)"]
+    let hashData = try encoder.encode(hashJson)
+    try hashData.write(to: hashPath)
+
     print("  [SUCCESS] Written \(allIcons.count) icons.")
   }
 

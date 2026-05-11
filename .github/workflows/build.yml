@@ -15,12 +15,12 @@ env:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v6
 
       - name: Select Xcode 26.4
-        run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer
+        run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer || true
 
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@11.0.9 --activate
@@ -159,13 +159,13 @@ jobs:
           CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
           swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
 
-          # The SDK should provide the sysroot. We use the full SDK ID from 'swift sdk list'
           SDK_ID=$(swift sdk list | grep "wasm" | head -n 1 | awk '{print $1}')
           echo "Using SDK: $SDK_ID"
 
           swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasi -c release
           mkdir -p ../public/wasm
-          cp .build/wasm32-unknown-wasi/release/GinsRulesWasm.wasm ../public/wasm/
+          built_wasm=$(find .build -name "*.wasm" | grep "release" | head -n 1)
+          cp "$built_wasm" ../public/wasm/GinsRulesWasm.wasm
 
       - name: Build Dashboard
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
