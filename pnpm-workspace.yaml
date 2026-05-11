@@ -1,0 +1,12 @@
+packages:
+  - '.'
+  - 'dashboard'
+
+allowBuilds:
+  esbuild: true
+  "@esbuild/darwin-arm64": true
+  "@esbuild/linux-x64": true
+  sharp: true
+  workerd: true
+  "@cloudflare/workerd-darwin-arm64": true
+  "@cloudflare/workerd-linux-x64": true

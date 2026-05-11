@@ -28,16 +28,5 @@
     "@unocss/transformer-variant-group": "latest",
     "typescript": "latest",
     "unocss": "latest"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "@esbuild/darwin-arm64",
-      "@esbuild/linux-x64",
-      "sharp",
-      "workerd",
-      "@cloudflare/workerd-darwin-arm64",
-      "@cloudflare/workerd-linux-x64"
-    ]
   }
 }
