@@ -159,10 +159,10 @@ jobs:
           CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
           swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
           swift sdk list
-          # The SDK name is derived from the artifact bundle name
-          swift build --swift-sdk swift-6.3-DEVELOPMENT-SNAPSHOT-2026-05-05-a_wasm -c release
+          # Explicitly set triple to match the SDK's internal configuration
+          swift build --swift-sdk swift-6.3-DEVELOPMENT-SNAPSHOT-2026-05-05-a_wasm --triple wasm32-unknown-wasi -c release
           mkdir -p ../public/wasm
-          cp .build/release/GinsRulesWasm.wasm ../public/wasm/
+          cp .build/wasm32-unknown-wasi/release/GinsRulesWasm.wasm ../public/wasm/
 
       - name: Build Dashboard
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
