@@ -100,7 +100,7 @@ jobs:
 
       - name: Sync Data (Rules, Icons, ASN, Geo)
         run: |
-          mkdir -p compiled/ruleset
+          mkdir -p compiled/ruleset source/upstream
           swift run --package-path tools gins-rules-syncer --root . sync
           swift run --package-path tools gins-rules-syncer --root . icons
           swift run --package-path tools gins-rules-syncer --root . he
@@ -155,15 +155,12 @@ jobs:
           CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
           swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
 
-          # Find the SDK ID and Sysroot path
+          # Find the SDK ID and Sysroot path aggressively
           SDK_ID=$(swift sdk list | grep "wasm" | head -n 1 | awk '{print $1}')
-          WASI_SYSROOT=$(find ~/.swiftpm/swift-sdks -name "wasm32-unknown-wasi" -type d | head -n 1)
-          if [ -z "$WASI_SYSROOT" ]; then
-            WASI_SYSROOT=$(find ~/Library/Developer/Swift/SDKs -name "wasm32-unknown-wasi" -type d | head -n 1)
-          fi
+          WASI_SYSROOT=$(find ~/.swiftpm/swift-sdks ~/Library/Developer/Swift/SDKs -name "wasm32-unknown-wasi" -type d 2>/dev/null | head -n 1)
 
           echo "Using SDK: $SDK_ID"
-          echo "Sysroot: $WASI_SYSROOT"
+          echo "Sysroot Found: $WASI_SYSROOT"
 
           # Force Clang to use the WASI sysroot via environment and compiler flags
           export WASI_SDK_PATH="$WASI_SYSROOT"
