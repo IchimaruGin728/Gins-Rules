@@ -1,20 +1,21 @@
 import Foundation
 
-public enum Parser {
-  public static func parseSource(at url: URL) throws -> Rules {
+public enum RuleParser {
+  /// Parses a rule source file at the given local URL.
+  public static func parse(url: URL) throws -> Rules {
     let content = try String(contentsOf: url, encoding: .utf8)
     return parse(content: content)
   }
 
+  /// Parses rule content from a raw string using high-speed string processing.
   public static func parse(content: String) -> Rules {
     var rules = Rules()
-    let lines = content.components(separatedBy: .newlines)
 
-    for line in lines {
+    content.enumerateLines { line, _ in
       let trimmed = line.trimmingCharacters(in: .whitespaces)
-      if trimmed.isEmpty || trimmed.hasPrefix("#") {
-        continue
-      }
+      guard !trimmed.isEmpty, !trimmed.hasPrefix("#"), !trimmed.hasPrefix(";"),
+        !trimmed.hasPrefix("//")
+      else { return }
 
       if trimmed.hasPrefix("full:") {
         rules.domain.insert(String(trimmed.dropFirst(5)))
@@ -31,32 +32,12 @@ public enum Parser {
       } else if trimmed.contains("/") {
         rules.ipCidr.insert(trimmed)
       } else {
+        // Default to domain suffix, stripping leading control characters
         let domain = trimmed.trimmingCharacters(in: CharacterSet(charactersIn: "+."))
         rules.domainSuffix.insert(domain)
       }
     }
+
     return rules
-  }
-}
-
-extension Rules {
-  public func sanitized() -> Rules {
-    let forceProxy: Set<String> = [
-      "tiktok.com", "tiktokv.com", "tiktokcdn.com", "byteoversea.com",
-      "ibyteimg.com", "ibytedtos.com", "ipstatp.com", "muscdn.com",
-      "musical.ly", "tik-tokapi.com",
-    ]
-
-    let isForce = { (d: String) -> Bool in
-      if d.contains("tiktok") || d.contains("tik-tok") {
-        return true
-      }
-      return forceProxy.contains { d == $0 || d.hasSuffix(".\($0)") }
-    }
-
-    var newRules = self
-    newRules.domain = newRules.domain.filter { !isForce($0) }
-    newRules.domainSuffix = newRules.domainSuffix.filter { !isForce($0) }
-    return newRules
   }
 }

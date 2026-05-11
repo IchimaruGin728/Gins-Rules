@@ -1,5 +1,6 @@
 import Foundation
 
+/// A high-performance, thread-safe rule container using Swift Sets for O(1) deduplication.
 public struct Rules: Codable, Sendable {
   public var domainSuffix: Set<String> = []
   public var domain: Set<String> = []
@@ -12,15 +13,15 @@ public struct Rules: Codable, Sendable {
 
   public init() {}
 
+  /// Total count of all unique rules across all categories.
   public var count: Int {
     domainSuffix.count + domain.count + domainKeyword.count + domainRegex.count + ipCidr.count
       + ipAsn.count + processName.count + userAgent.count
   }
 
-  public var isEmpty: Bool {
-    count == 0
-  }
+  public var isEmpty: Bool { count == 0 }
 
+  /// Merges another set of rules into this one efficiently.
   public mutating func merge(with other: Rules) {
     domainSuffix.formUnion(other.domainSuffix)
     domain.formUnion(other.domain)
@@ -31,20 +32,39 @@ public struct Rules: Codable, Sendable {
     processName.formUnion(other.processName)
     userAgent.formUnion(other.userAgent)
   }
-}
 
-public struct MihomoRuleMode: Codable, Sendable {
-  public var behavior: String
+  /// Returns a new Rules instance with sensitive/unwanted rules removed.
+  public func sanitized() -> Rules {
+    let restricted: Set<String> = [
+      "tiktok.com", "tiktokv.com", "tiktokcdn.com", "byteoversea.com",
+      "ibyteimg.com", "ibytedtos.com", "ipstatp.com", "muscdn.com",
+      "musical.ly", "tik-tokapi.com",
+    ]
 
-  public init(behavior: String) {
-    self.behavior = behavior
+    let isRestricted = { (d: String) -> Bool in
+      if d.localizedStandardContains("tiktok") || d.localizedStandardContains("tik-tok") {
+        return true
+      }
+      return restricted.contains { d == $0 || d.hasSuffix(".\($0)") }
+    }
+
+    var copy = self
+    copy.domain = Set(copy.domain.filter { !isRestricted($0) })
+    copy.domainSuffix = Set(copy.domainSuffix.filter { !isRestricted($0) })
+    return copy
   }
 }
 
-public struct SingBoxRuleSet: Codable, Sendable {
-  public var version: Int
-  public var rules: [SingBoxRule]
+// --- Platform Specific Rule Models ---
 
+public struct MihomoRuleMode: Codable, Sendable {
+  public let behavior: String
+  public init(behavior: String) { self.behavior = behavior }
+}
+
+public struct SingBoxRuleSet: Codable, Sendable {
+  public let version: Int
+  public let rules: [SingBoxRule]
   public init(version: Int, rules: [SingBoxRule]) {
     self.version = version
     self.rules = rules
@@ -71,12 +91,8 @@ public struct SingBoxRule: Codable, Sendable {
   }
 
   public init(
-    domainSuffix: [String]? = nil,
-    domain: [String]? = nil,
-    domainKeyword: [String]? = nil,
-    domainRegex: [String]? = nil,
-    ipCidr: [String]? = nil,
-    processName: [String]? = nil,
+    domainSuffix: [String]? = nil, domain: [String]? = nil, domainKeyword: [String]? = nil,
+    domainRegex: [String]? = nil, ipCidr: [String]? = nil, processName: [String]? = nil,
     userAgent: [String]? = nil
   ) {
     self.domainSuffix = domainSuffix
@@ -86,27 +102,5 @@ public struct SingBoxRule: Codable, Sendable {
     self.ipCidr = ipCidr
     self.processName = processName
     self.userAgent = userAgent
-  }
-}
-
-public struct AnywhereRule: Codable, Sendable {
-  public var type: Int
-  public var value: String
-
-  public init(type: Int, value: String) {
-    self.type = type
-    self.value = value
-  }
-}
-
-public struct AsnPrefixRecord: Codable, Sendable {
-  public var asn: UInt32
-  public var cidr: String
-  public var org: String?
-
-  public init(asn: UInt32, cidr: String, org: String? = nil) {
-    self.asn = asn
-    self.cidr = cidr
-    self.org = org
   }
 }
