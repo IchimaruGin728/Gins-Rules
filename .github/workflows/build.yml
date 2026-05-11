@@ -150,28 +150,30 @@ jobs:
       - name: Build SwiftWasm
         run: |
           cd dashboard/swift-wasm
+
+          # 1. 下载并安装官方 WASI-SDK (专门用于提供 C 头文件)
+          WASI_VERSION=22
+          curl -L "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION}.0-macos.tar.gz" -o wasi-sdk.tar.gz
+          tar xzf wasi-sdk.tar.gz
+          WASI_SDK_FULL_PATH="$(pwd)/wasi-sdk-${WASI_VERSION}.0"
+          echo "WASI_SDK_PATH: $WASI_SDK_FULL_PATH"
+
+          # 2. 安装 Swift WASM SDK
           SDK_URL="https://download.swift.org/swift-6.3-branch/wasm-sdk/swift-6.3-DEVELOPMENT-SNAPSHOT-2026-05-05-a/swift-6.3-DEVELOPMENT-SNAPSHOT-2026-05-05-a_wasm.artifactbundle.tar.gz"
           curl -L "$SDK_URL" -o wasm-sdk.tar.gz
           CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
           swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
 
-          # Find the SDK ID and Sysroot path aggressively
           SDK_ID=$(swift sdk list | grep "wasm" | head -n 1 | awk '{print $1}')
-          WASI_SYSROOT=$(find ~/.swiftpm/swift-sdks ~/Library/Developer/Swift/SDKs -name "wasm32-unknown-wasi" -type d 2>/dev/null | head -n 1)
 
-          echo "Using SDK: $SDK_ID"
-          echo "Sysroot Found: $WASI_SYSROOT"
-
-          # Force Clang to use the WASI sysroot via environment and compiler flags
-          export WASI_SDK_PATH="$WASI_SYSROOT"
-          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasip1 -c release \
-            -Xcc -isysroot -Xcc "$WASI_SYSROOT" \
-            -Xcc -I"$WASI_SYSROOT/usr/include"
+          # 3. 终极构建方案：同时指定 SDK 和 WASI_SDK_PATH
+          export WASI_SDK_PATH="$WASI_SDK_FULL_PATH"
+          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasi -c release \
+            -Xcc --sysroot="$WASI_SDK_FULL_PATH/share/wasi-sysroot"
 
           mkdir -p ../public/wasm
           built_wasm=$(find .build -name "*.wasm" | grep "release" | head -n 1)
           cp "$built_wasm" ../public/wasm/GinsRulesWasm.wasm
-
       - name: Build Dashboard
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
