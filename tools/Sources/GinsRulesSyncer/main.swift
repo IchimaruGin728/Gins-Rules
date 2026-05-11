@@ -15,7 +15,6 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     print("🚀 [Gins-Rules Syncer] Initializing Swift-Native Engine...")
     print("📍 Root Path: \(rootURL.path)")
 
-    // Ensure standard directories
     let fileManager = FileManager.default
     let compiledDir = rootURL.appending(path: "compiled")
     let upstreamDir = rootURL.appending(path: "source/upstream")
@@ -38,7 +37,6 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     }
   }
 
-  // --- Rule Synchronization ---
   func runSync(root: URL) async throws {
     let configPath = root.appending(path: "source/sources.json")
     let upstreamDir = root.appending(path: "source/upstream")
@@ -52,14 +50,12 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     let results = try await withThrowingTaskGroup(of: (String, String, [String]).self) { group in
       for src in activeSources {
         group.addTask {
-          print("  ⬇️ Fetching: \(src.name)...")
           guard let url = URL(string: src.url) else { return (src.category, src.target, []) }
           let (data, _) = try await URLSession.shared.data(from: url)
           guard let content = String(data: data, encoding: .utf8) else {
             return (src.category, src.target, [])
           }
-          let rules = processRules(content: content)
-          return (src.category, src.target, rules)
+          return (src.category, src.target, processRules(content: content))
         }
       }
 
@@ -71,18 +67,17 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     }
 
     for (cat, targets) in results {
-      let catDir = upstreamDir.appending(path: cat)
-      try FileManager.default.createDirectory(at: catDir, withIntermediateDirectories: true)
+      let outDir = upstreamDir.appending(path: cat)
+      try FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
       for (name, rules) in targets {
         let content = Set(rules).sorted().joined(separator: "\n") + "\n"
         try content.write(
-          to: catDir.appending(path: "\(name).txt"), atomically: true, encoding: .utf8)
+          to: outDir.appending(path: "\(name).txt"), atomically: true, encoding: .utf8)
         print("  ✅ Written \(rules.count) rules to \(cat)/\(name).txt")
       }
     }
   }
 
-  // --- Icon Hub Aggregator ---
   func runIcons(root: URL) async throws {
     print("🎨 Aggregating premium icon hub...")
     let configPath = root.appending(path: "source/icons.json")
@@ -98,10 +93,8 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     let allIcons = try await withThrowingTaskGroup(of: [NormalizedIcon].self) { group in
       for src in activeSources {
         group.addTask {
-          print("  🔍 Scanning: \(src.name)...")
           guard let url = URL(string: src.url) else { return [] }
           let (data, _) = try await URLSession.shared.data(from: url)
-
           if let raw = try? JSONDecoder().decode([RawIcon].self, from: data) {
             return raw.map {
               NormalizedIcon(
@@ -109,8 +102,6 @@ struct GinsRulesSyncer: AsyncParsableCommand {
                 theme: src.theme)
             }
           }
-
-          // Fallback to dictionary scanning
           if let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
             for key in ["icons", "items", "iconList", "list", "tubiao"] {
               if let list = dict[key] as? [[String: Any]] {
@@ -150,15 +141,37 @@ struct GinsRulesSyncer: AsyncParsableCommand {
 
   func runHe(root: URL) async throws {
     print("🌐 Syncing announced prefixes (HE)...")
-    // Implementation remains similar to before but hardened
+    let asnMapPath = root.appending(path: "source/asn-map.json")
+    let outDir = root.appending(path: "source/upstream/ip")
+    try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
+
+    let configData = try Data(contentsOf: asnMapPath)
+    let asnMap = try JSONDecoder().decode(ASNMap.self, from: configData)
+
+    for (svc, def) in asnMap.services {
+      var prefixes: Set<String> = []
+      for asn in def.asns {
+        let url = URL(
+          string: "https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS\(asn)")!
+        if let (data, _) = try? await URLSession.shared.data(from: url),
+          let resp = try? JSONDecoder().decode(RIPEResponse.self, from: data)
+        {
+          prefixes.formUnion(resp.data.prefixes.map { $0.prefix })
+        }
+      }
+      if !prefixes.isEmpty {
+        let content = prefixes.sorted().joined(separator: "\n") + "\n"
+        try content.write(
+          to: outDir.appending(path: "asn-\(svc).txt"), atomically: true, encoding: .utf8)
+      }
+    }
   }
 
   func runGeo(root: URL) async throws {
-    print("🌍 Syncing GeoIP/ASN data...")
-    // Native Swift GeoIP processing logic here
+    print("🌍 Syncing GeoIP/ASN data (Swift Native)...")
+    // Implementation here if needed, or keeping it clean
   }
 
-  // --- Helper Functions ---
   func processRules(content: String) -> [String] {
     content.components(separatedBy: .newlines).compactMap { line in
       let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -167,10 +180,8 @@ struct GinsRulesSyncer: AsyncParsableCommand {
       {
         return nil
       }
-
       let clean = trimmed.trimmingCharacters(in: CharacterSet(charactersIn: "-'\" "))
       let parts = clean.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-
       if parts.count >= 2 {
         let type = parts[0].uppercased()
         let value = parts[1].split(separator: "//")[0].trimmingCharacters(
@@ -195,7 +206,6 @@ struct GinsRulesSyncer: AsyncParsableCommand {
   }
 }
 
-// Support Structures
 struct UpstreamSource: Codable, Sendable {
   var name, url, category, target: String
   var enabled: Bool
@@ -206,3 +216,17 @@ struct IconSource: Codable, Sendable {
 }
 struct NormalizedIcon: Codable, Sendable { var name, url, source, theme: String }
 struct RawIcon: Codable, Sendable { var name, url, tag: String? }
+struct ASNMap: Codable {
+  struct ServiceDef: Codable {
+    var asns: [Int]
+    var org: String
+  }
+  var services: [String: ServiceDef]
+}
+struct RIPEResponse: Codable {
+  struct RIPEData: Codable {
+    struct RIPEPrefix: Codable { var prefix: String }
+    var prefixes: [RIPEPrefix]
+  }
+  var data: RIPEData
+}

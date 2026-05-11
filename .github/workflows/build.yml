@@ -19,16 +19,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Swift 6.3
+      - name: Select Xcode 26.4
         run: |
-          # Use xcode-select to ensure Xcode 26.4/Swift 6.3 is used on macos-26
           sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer || true
           swift --version
 
       - name: Install pnpm 11
         run: |
           corepack enable
-          corepack prepare pnpm@11.0.10 --activate
+          corepack prepare pnpm@11.0.9 --activate
           pnpm config set allow-scripts true
 
       - uses: actions/setup-node@v6
@@ -112,7 +111,7 @@ jobs:
           swift run --package-path tools gins-rules-compiler --root .
           ls -lh compiled/ruleset/mihomo/proxy/ || true
 
-      - name: Build Dashboard (Astro Latest)
+      - name: Build Dashboard (Astro 6.3)
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           cd dashboard
