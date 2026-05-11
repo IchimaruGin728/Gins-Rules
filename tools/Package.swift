@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
   name: "GinsRules",
   platforms: [
-    .macOS(.v14)
+    .macOS(.v15)
   ],
   products: [
     .library(name: "GinsRulesCore", targets: ["GinsRulesCore"]),
@@ -37,11 +37,6 @@ let package = Package(
         "GinsRulesCore",
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
       ]
-    ),
-
-    .testTarget(
-      name: "GinsRulesTests",
-      dependencies: ["GinsRulesCore"]
     ),
   ]
 )

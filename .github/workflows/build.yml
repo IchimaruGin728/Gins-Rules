@@ -19,14 +19,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: swift-actions/setup-swift@v3
-        with:
-          swift-version: "6.3.1"
+      - name: Setup Swift 6.3
+        run: |
+          # Use xcode-select to ensure Xcode 26.4/Swift 6.3 is used on macos-26
+          sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer || true
+          swift --version
 
-      - name: Install pnpm
+      - name: Install pnpm 11
         run: |
           corepack enable
-          corepack prepare pnpm@11.0.9 --activate
+          corepack prepare pnpm@11.0.10 --activate
           pnpm config set allow-scripts true
 
       - uses: actions/setup-node@v6
@@ -58,7 +60,7 @@ jobs:
           fetch_releases "SagerNet/sing-box" singbox-releases.json
           fetch_releases "MetaCubeX/mihomo" mihomo-releases.json
           SINGBOX_URL=$(jq -r 'map(select(.prerelease == true)) | .[0].assets[] | select(.name | contains("darwin-arm64") and endswith(".tar.gz")) | .browser_download_url' singbox-releases.json | head -n 1)
-          MIHOMO_URL=$(jq -r '([.[] | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha") | .assets[] | select(.name | test("^mihomo-darwin-arm64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$")) | .browser_download_url] + [.[] | select(.prerelease == false) | .assets[] | select(.name | test("^mihomo-darwin-arm64-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$")) | .browser_download_url])[0]' mihomo-releases.json)
+          MIHOMO_URL=$(jq -r '([.[] | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha") | .assets[] | select(.name | test("^mihomo-darwin-arm64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$")) | .browser_download_url] + [.[] | select(.prerelease == false) | .assets[] | select(.name | test("^mihomo-darwin-arm64-v[0-9]+\\.[0-9]+\\.[0-9]+\\\.gz$")) | .browser_download_url])[0]' mihomo-releases.json)
           echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
           echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
           echo "cache_key=$(echo -n "$SINGBOX_URL-$MIHOMO_URL" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
@@ -68,9 +70,18 @@ jobs:
         uses: actions/cache@v5
         with:
           path: bin/
-          key: ${{ runner.os }}-binaries-${{ steps.tool-versions.outputs.cache_key }}
+          key: macOS-binaries-${{ steps.tool-versions.outputs.cache_key }}
 
-      - name: Sync Data (Rules, Icons, ASN, Geo)
+      - name: Install Compilers
+        if: steps.cache-bin.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p bin
+          curl -sL "${{ steps.tool-versions.outputs.singbox_url }}" | tar xz --strip-components=1
+          mv sing-box bin/
+          curl -sL "${{ steps.tool-versions.outputs.mihomo_url }}" | gunzip > bin/mihomo
+          chmod +x bin/sing-box bin/mihomo
+
+      - name: Sync Data (Swift Native)
         run: |
           mkdir -p compiled/ruleset source/upstream
           swift run --package-path tools gins-rules-syncer --root . sync
@@ -94,63 +105,14 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Install Compilers (Bleeding Edge Alpha)
-        if: (steps.sync.outputs.changed == 'true' || github.event_name != 'schedule') && steps.cache-bin.outputs.cache-hit != 'true'
-        run: |
-          set -euo pipefail
-          mkdir -p bin
-          SINGBOX_URL="${{ steps.tool-versions.outputs.singbox_url }}"
-          curl -sL "$SINGBOX_URL" | tar xz --strip-components=1
-          mv sing-box bin/
-          MIHOMO_URL="${{ steps.tool-versions.outputs.mihomo_url }}"
-          if [[ "$MIHOMO_URL" == *.gz ]]; then
-            curl -sL "$MIHOMO_URL" | gunzip > bin/mihomo
-          elif [[ "$MIHOMO_URL" == *.zip ]]; then
-            curl -sL -o mihomo.zip "$MIHOMO_URL"
-            unzip -o mihomo.zip
-            mv mihomo-darwin-arm64* bin/mihomo
-          fi
-          chmod +x bin/sing-box bin/mihomo
-
-      - name: Compile Rules
+      - name: Compile Rules (Swift Native)
         id: compile
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           swift run --package-path tools gins-rules-compiler --root .
           ls -lh compiled/ruleset/mihomo/proxy/ || true
 
-      - name: Build SwiftWasm
-        run: |
-          cd dashboard/swift-wasm
-
-          # 1. 下载 WASI-SDK 提供 C 头文件
-          WASI_VERSION=22
-          curl -L "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION}.0-macos.tar.gz" -o wasi-sdk.tar.gz
-          tar xzf wasi-sdk.tar.gz
-          WASI_SDK_FULL_PATH="$(pwd)/wasi-sdk-${WASI_VERSION}.0"
-          SYSROOT="$WASI_SDK_FULL_PATH/share/wasi-sysroot"
-
-          # 2. 安装 Swift WASM SDK
-          SDK_URL="https://download.swift.org/swift-6.3-branch/wasm-sdk/swift-6.3-DEVELOPMENT-SNAPSHOT-2026-05-05-a/swift-6.3-DEVELOPMENT-SNAPSHOT-2026-05-05-a_wasm.artifactbundle.tar.gz"
-          curl -L "$SDK_URL" -o wasm-sdk.tar.gz
-          CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
-          swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
-
-          SDK_ID=$(swift sdk list | grep "wasm" | head -n 1 | awk '{print $1}')
-          echo "Using SDK: $SDK_ID"
-
-          # 3. 终极编译方案：使用 wasm32-unknown-wasip1 (Swift 6.x 推荐)
-          # 同时指明 sysroot 和 system include 路径
-          export WASI_SDK_PATH="$WASI_SDK_FULL_PATH"
-          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasip1 -c release \
-            -Xcc -isystem -Xcc "$SYSROOT/include" \
-            -Xcc --sysroot="$SYSROOT"
-
-          mkdir -p ../public/wasm
-          built_wasm=$(find .build -name "*.wasm" | grep "release" | head -n 1)
-          cp "$built_wasm" ../public/wasm/GinsRulesWasm.wasm
-
-      - name: Build Dashboard
+      - name: Build Dashboard (Astro Latest)
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
           cd dashboard

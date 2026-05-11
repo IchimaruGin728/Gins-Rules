@@ -2,20 +2,21 @@
   "name": "gins-rules-board",
   "type": "module",
   "version": "1.0.0",
-  "packageManager": "pnpm@11.0.9",
+  "packageManager": "pnpm@11.0.10",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview"
   },
   "dependencies": {
+    "@astrojs/check": "latest",
     "@astrojs/preact": "latest",
     "@preact/signals": "latest",
     "astro": "latest",
+    "hono": "latest",
     "preact": "latest"
   },
   "devDependencies": {
-    "@astrojs/check": "latest",
     "@iconify-json/lucide": "latest",
     "@iconify-json/ph": "latest",
     "@types/node": "latest",
