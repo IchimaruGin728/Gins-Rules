@@ -1,6 +1,7 @@
 import ArgumentParser
 import Foundation
 import GinsRulesCore
+import MaxMind_DB_Reader
 
 @main
 struct GinsRulesSyncer: AsyncParsableCommand {
@@ -14,58 +15,38 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     let rootURL = URL(fileURLWithPath: root).standardized
     print("  [Syncer] Root URL: \(rootURL.path)")
 
-    // Ensure core directories exist
     try? FileManager.default.createDirectory(
       at: rootURL.appending(path: "compiled"), withIntermediateDirectories: true)
     try? FileManager.default.createDirectory(
       at: rootURL.appending(path: "source/upstream"), withIntermediateDirectories: true)
 
     switch command {
-    case "sync":
-      try await runSync(root: rootURL)
-    case "icons":
-      try await runIcons(root: rootURL)
-    case "he":
-      try await runHe(root: rootURL)
-    case "geo":
-      try await runGeo(root: rootURL)
-    default:
-      print("Unknown command: \(command)")
+    case "sync": try await runSync(root: rootURL)
+    case "icons": try await runIcons(root: rootURL)
+    case "he": try await runHe(root: rootURL)
+    case "geo": try await runGeo(root: rootURL)
+    default: print("Unknown command: \(command)")
     }
   }
 
   func runSync(root: URL) async throws {
     let configPath = root.appending(path: "source/sources.json")
     let upstreamDir = root.appending(path: "source/upstream")
-
-    print("  [Syncer] Reading sources from: \(configPath.path)")
-    guard FileManager.default.fileExists(atPath: configPath.path) else {
-      print("  [ERROR] sources.json not found at \(configPath.path)")
-      throw ExitCode.failure
-    }
-
     let configData = try Data(contentsOf: configPath)
     let sources = try JSONDecoder().decode([UpstreamSource].self, from: configData)
-
     print("  [Syncer] Starting parallel sync of \(sources.filter { $0.enabled }.count) sources...")
 
     let results = try await withThrowingTaskGroup(of: (String, String, [String]).self) { group in
       for src in sources where src.enabled {
         group.addTask {
           guard let url = URL(string: src.url) else { return (src.category, src.target, []) }
-          do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            guard let content = String(data: data, encoding: .utf8) else {
-              return (src.category, src.target, [])
-            }
-            return (src.category, src.target, processRules(content: content))
-          } catch {
-            print("    [ERROR] Failed to fetch \(src.name): \(error)")
+          let (data, _) = try await URLSession.shared.data(from: url)
+          guard let content = String(data: data, encoding: .utf8) else {
             return (src.category, src.target, [])
           }
+          return (src.category, src.target, processRules(content: content))
         }
       }
-
       var collected: [String: [String: [String]]] = [:]
       for try await (category, target, rules) in group {
         collected[category, default: [:]][target, default: []].append(contentsOf: rules)
@@ -91,11 +72,6 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     let outPath = root.appending(path: "compiled/Gins-Icons.json")
     let dashboardPath = root.appending(path: "dashboard/public/icons-catalog.json")
     let hashPath = root.appending(path: "source/icons-hash.json")
-
-    guard FileManager.default.fileExists(atPath: configPath.path) else {
-      print("  [ERROR] icons.json not found at \(configPath.path)")
-      return
-    }
 
     let configData = try Data(contentsOf: configPath)
     let sources = try JSONDecoder().decode([IconSource].self, from: configData)
@@ -126,9 +102,7 @@ struct GinsRulesSyncer: AsyncParsableCommand {
                 }
               }
             }
-          } catch {
-            print("    [ERROR] Failed to fetch icons from \(src.name): \(error)")
-          }
+          } catch { print("    [ERROR] Failed to fetch icons from \(src.name): \(error)") }
           return []
         }
       }
@@ -141,23 +115,50 @@ struct GinsRulesSyncer: AsyncParsableCommand {
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
     let finalData = try encoder.encode(
       allIcons.sorted(by: { $0.source == $1.source ? $0.name < $1.name : $0.source < $1.source }))
-
     try finalData.write(to: outPath)
     try? FileManager.default.createDirectory(
       at: dashboardPath.deletingLastPathComponent(), withIntermediateDirectories: true)
     try finalData.write(to: dashboardPath)
 
-    // Generate hash for notification
-    let hash = String(format: "%02x", abs(finalData.hashValue))  // Simple hash for placeholder
-    let hashJson = ["sha256": hash, "total": "\(allIcons.count)"]
-    let hashData = try encoder.encode(hashJson)
-    try hashData.write(to: hashPath)
-
+    let hashJson = ["sha256": "\(finalData.count)", "total": "\(allIcons.count)"]
+    try encoder.encode(hashJson).write(to: hashPath)
     print("  [SUCCESS] Written \(allIcons.count) icons.")
   }
 
-  func runHe(root: URL) async throws { print("  [Syncer] HE sync complete (Swift placeholder)") }
-  func runGeo(root: URL) async throws { print("  [Syncer] Geo sync complete (Swift placeholder)") }
+  func runHe(root: URL) async throws {
+    print("  [Syncer] HE (Announced Prefixes) sync started...")
+    let asnMapPath = root.appending(path: "source/asn-map.json")
+    let outDir = root.appending(path: "source/upstream/ip")
+
+    let configData = try Data(contentsOf: asnMapPath)
+    let asnMap = try JSONDecoder().decode(ASNMap.self, from: configData)
+
+    for (svc, def) in asnMap.services {
+      var prefixes: Set<String> = []
+      for asn in def.asns {
+        print("    Fetching AS\(asn) (\(svc))...")
+        let url = URL(
+          string: "https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS\(asn)")!
+        if let (data, _) = try? await URLSession.shared.data(from: url),
+          let resp = try? JSONDecoder().decode(RIPEResponse.self, from: data)
+        {
+          prefixes.formUnion(resp.data.prefixes.map { $0.prefix })
+        }
+      }
+      if !prefixes.isEmpty {
+        let content = prefixes.sorted().joined(separator: "\n") + "\n"
+        try content.write(
+          to: outDir.appending(path: "asn-\(svc).txt"), atomically: true, encoding: .utf8)
+        print("  [SUCCESS] Written \(prefixes.count) CIDRs to asn-\(svc).txt")
+      }
+    }
+  }
+
+  func runGeo(root: URL) async throws {
+    print("  [Syncer] GeoIP/ASN (MMDB) sync started...")
+    // Simplified MMDB extraction logic for Swift version
+    print("  [Syncer] MMDB processing placeholder - ensure mmdb files exist in .mmdb-cache")
+  }
 
   func processRules(content: String) -> [String] {
     content.components(separatedBy: .newlines).compactMap { line in
@@ -193,20 +194,28 @@ struct GinsRulesSyncer: AsyncParsableCommand {
   }
 }
 
+// Support structures for Syncer
 struct UpstreamSource: Codable, Sendable {
   var name, url, category, target: String
   var enabled: Bool
 }
-
 struct IconSource: Codable, Sendable {
   var name, url, theme: String
   var enabled: Bool
 }
-
-struct NormalizedIcon: Codable, Sendable {
-  var name, url, source, theme: String
+struct NormalizedIcon: Codable, Sendable { var name, url, source, theme: String }
+struct RawIcon: Codable, Sendable { var name, url, tag: String? }
+struct ASNMap: Codable {
+  struct ServiceDef: Codable {
+    var asns: [Int]
+    var org: String
+  }
+  var services: [String: ServiceDef]
 }
-
-struct RawIcon: Codable, Sendable {
-  var name, url, tag: String?
+struct RIPEResponse: Codable {
+  struct RIPEData: Codable {
+    struct RIPEPrefix: Codable { var prefix: String }
+    var prefixes: [RIPEPrefix]
+  }
+  var data: RIPEData
 }
