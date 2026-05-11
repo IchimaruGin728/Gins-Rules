@@ -162,11 +162,20 @@ jobs:
           SDK_ID=$(swift sdk list | grep "wasm" | head -n 1 | awk '{print $1}')
           echo "Using SDK: $SDK_ID"
 
-          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasi -c release
+          # Find the actual SDK path in the bundle
+          SDK_PATH=$(find ~/Library/Developer/Swift/SDKs -name "wasm32-unknown-wasi.sdk" | head -n 1)
+          if [ -z "$SDK_PATH" ]; then
+            SDK_PATH=$(find ~/.swiftpm/swift-sdks -name "wasm32-unknown-wasi.sdk" | head -n 1)
+          fi
+          echo "SDK Path: $SDK_PATH"
+
+          # Pass the sysroot to Clang for C components
+          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasi -c release \
+            -Xcc -isysroot -Xcc "$SDK_PATH"
+
           mkdir -p ../public/wasm
           built_wasm=$(find .build -name "*.wasm" | grep "release" | head -n 1)
           cp "$built_wasm" ../public/wasm/GinsRulesWasm.wasm
-
       - name: Build Dashboard
         if: steps.sync.outputs.changed == 'true' || github.event_name != 'schedule'
         run: |
