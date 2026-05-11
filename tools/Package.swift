@@ -15,7 +15,6 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.7.1"),
     .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.1"),
     .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.37.0"),
-    .package(url: "https://github.com/MaxMind/mmdb-swift.git", from: "0.8.1"),
   ],
   targets: [
     .target(
@@ -37,9 +36,9 @@ let package = Package(
       dependencies: [
         "GinsRulesCore",
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
-        .product(name: "MaxMindDB", package: "mmdb-swift"),
       ]
     ),
+
     .testTarget(
       name: "GinsRulesTests",
       dependencies: ["GinsRulesCore"]
