@@ -1,6 +1,6 @@
-gitlab.com
-gitlab.io
-gitlab.net
-gitter-static.net
-gitter.im
-keyword:gitlab
+DOMAIN-KEYWORD,gitlab
+DOMAIN-SUFFIX,gitlab.com
+DOMAIN-SUFFIX,gitlab.io
+DOMAIN-SUFFIX,gitlab.net
+DOMAIN-SUFFIX,gitter-static.net
+DOMAIN-SUFFIX,gitter.im
