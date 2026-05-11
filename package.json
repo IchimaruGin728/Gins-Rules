@@ -1,10 +1,10 @@
 {
   "name": "gins-rules",
   "private": true,
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@11.0.9",
   "scripts": {
-    "sync": "cargo run --manifest-path syncer/Cargo.toml -- sync && cargo run --manifest-path syncer/Cargo.toml -- geo",
-    "compile": "cargo run --release --manifest-path compiler/Cargo.toml",
+    "sync": "swift run --package-path tools gins-rules-syncer --root . sync && swift run --package-path tools gins-rules-syncer --root . geo",
+    "compile": "swift run --package-path tools gins-rules-compiler --root .",
     "board:build": "pnpm --filter gins-rules-board build && cp -r dashboard/dist/* compiled/",
     "build": "pnpm sync && pnpm compile && pnpm board:build",
     "dev": "wrangler dev --config cmd/scanner/wrangler.jsonc",

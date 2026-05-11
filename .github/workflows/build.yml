@@ -24,7 +24,10 @@ jobs:
           swift-version: "6.3.1"
 
       - name: Install pnpm
-        run: corepack enable && corepack prepare pnpm@11.0.9 --activate
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.0.9 --activate
+          pnpm config set allow-scripts true
 
       - uses: actions/setup-node@v6
         with:
@@ -41,7 +44,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-
           fetch_releases() {
             local repo="$1"
             local output="$2"
@@ -52,42 +54,11 @@ jobs:
               -A "Gins-Rules-Workflow" \
               "https://api.github.com/repos/${repo}/releases?per_page=100" \
               -o "$output"
-
-            if ! jq -e 'type == "array"' "$output" >/dev/null; then
-              echo "Error: Failed to fetch releases for $repo"
-              exit 1
-            fi
           }
-
           fetch_releases "SagerNet/sing-box" singbox-releases.json
           fetch_releases "MetaCubeX/mihomo" mihomo-releases.json
-
-          SINGBOX_URL=$(jq -r '
-            map(select(.prerelease == true))
-            | .[0].assets[]
-            | select(.name | contains("darwin-arm64") and endswith(".tar.gz"))
-            | .browser_download_url
-          ' singbox-releases.json | head -n 1)
-
-          MIHOMO_URL=$(jq -r '
-            (
-              [
-                .[]
-                | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha")
-                | .assets[]
-                | select(.name | test("^mihomo-darwin-arm64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$"))
-                | .browser_download_url
-              ] +
-              [
-                .[]
-                | select(.prerelease == false)
-                | .assets[]
-                | select(.name | test("^mihomo-darwin-arm64-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$"))
-                | .browser_download_url
-              ]
-            )[0] // empty
-          ' mihomo-releases.json)
-
+          SINGBOX_URL=$(jq -r 'map(select(.prerelease == true)) | .[0].assets[] | select(.name | contains("darwin-arm64") and endswith(".tar.gz")) | .browser_download_url' singbox-releases.json | head -n 1)
+          MIHOMO_URL=$(jq -r '([.[] | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha") | .assets[] | select(.name | test("^mihomo-darwin-arm64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$")) | .browser_download_url] + [.[] | select(.prerelease == false) | .assets[] | select(.name | test("^mihomo-darwin-arm64-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$")) | .browser_download_url])[0]' mihomo-releases.json)
           echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
           echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
           echo "cache_key=$(echo -n "$SINGBOX_URL-$MIHOMO_URL" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
@@ -151,7 +122,6 @@ jobs:
       - name: Build SwiftWasm
         run: |
           cd dashboard/swift-wasm
-
           # 1. 下载 WASI-SDK 提供 C 头文件
           WASI_VERSION=22
           curl -L "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION}.0-macos.tar.gz" -o wasi-sdk.tar.gz
@@ -164,13 +134,11 @@ jobs:
           curl -L "$SDK_URL" -o wasm-sdk.tar.gz
           CHECKSUM=$(shasum -a 256 wasm-sdk.tar.gz | awk '{print $1}')
           swift sdk install wasm-sdk.tar.gz --checksum "$CHECKSUM"
-
           SDK_ID=$(swift sdk list | grep "wasm" | head -n 1 | awk '{print $1}')
-          echo "Using SDK: $SDK_ID"
 
-          # 3. 强制注入头文件路径
+          # 3. 终极编译方案
           export WASI_SDK_PATH="$WASI_SDK_FULL_PATH"
-          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasip1 -c release \
+          swift build --swift-sdk "$SDK_ID" --triple wasm32-unknown-wasi -c release \
             -Xcc -isystem -Xcc "$SYSROOT/include" \
             -Xcc --sysroot="$SYSROOT"
 
@@ -222,15 +190,9 @@ jobs:
             --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '$stats + {
               project: $project,
-              build: {
-                id: $run_id,
-                sha: $sha,
-                trigger: $trigger
-              },
+              build: { id: $run_id, sha: $sha, trigger: $trigger },
               icons_total: $icons_total,
-              artifacts: {
-                icons: $icons_hash
-              },
+              artifacts: { icons: $icons_hash },
               timestamp: $time
             }')
           curl -sf -X POST \
