@@ -11,6 +11,37 @@ public enum RuleParser {
         !trimmed.hasPrefix("//")
       else { return }
 
+      // Handle Clash/Surge style rules (e.g. DOMAIN-SUFFIX,google.com,Proxy)
+      let parts = trimmed.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+      if parts.count >= 2 {
+        let type = parts[0].uppercased()
+        let val = parts[1]
+
+        // Skip complex rules
+        if type == "AND" || type == "OR" || type == "NOT" { return }
+
+        switch type {
+        case "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-REGEX", "IP-CIDR", "IP-CIDR6",
+          "IP6-CIDR", "IP-ASN", "PROCESS-NAME", "USER-AGENT", "HOST", "HOST-SUFFIX", "HOST-KEYWORD":
+          switch type {
+          case "DOMAIN", "HOST": rules.domain.insert(val)
+          case "DOMAIN-SUFFIX", "HOST-SUFFIX": rules.domainSuffix.insert(val)
+          case "DOMAIN-KEYWORD", "HOST-KEYWORD": rules.domainKeyword.insert(val)
+          case "DOMAIN-REGEX": rules.domainRegex.insert(val)
+          case "IP-CIDR", "IP-CIDR6", "IP6-CIDR": rules.ipCidr.insert(val)
+
+          case "IP-ASN": rules.ipAsn.insert(val)
+          case "PROCESS-NAME": rules.processName.insert(val)
+          case "USER-AGENT": rules.userAgent.insert(val)
+          default: break
+          }
+          return
+        default:
+          break  // Fallthrough to legacy parsing if not a standard type
+        }
+      }
+
+      // Legacy/Simple parsing
       if trimmed.hasPrefix("full:") {
         rules.domain.insert(String(trimmed.dropFirst(5)))
       } else if trimmed.hasPrefix("keyword:") {

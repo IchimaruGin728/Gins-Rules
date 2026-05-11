@@ -13,7 +13,8 @@ struct GinsRulesCompiler: ParsableCommand {
   mutating func run() throws {
     let rootURL = URL(filePath: root).standardized
     let outDir = rootURL.appending(path: output).appending(path: "ruleset")
-    print("🚀 [Compiler] Building rule matrix...")
+    let binDir = rootURL.appending(path: "bin")
+    print("🚀 [Compiler] Building rule matrix (SRS/MRS Active)...")
 
     let categories = ["proxy", "direct", "reject", "ip", "asn"]
 
@@ -45,12 +46,20 @@ struct GinsRulesCompiler: ParsableCommand {
         if rules.isEmpty { continue }
 
         for format in RuleCompiler.Format.allCases {
-          let targetURL = outDir.appending(path: "\(format.rawValue)/\(cat)")
+          let dirName: String
+          switch format {
+          case .singbox, .srs: dirName = "singbox"
+          case .mihomo, .mrs: dirName = "mihomo"
+          case .stash: dirName = "stash"
+          default: dirName = format.rawValue
+          }
+
+          let targetURL = outDir.appending(path: "\(dirName)/\(cat)")
           try RuleCompiler.compile(
-            format, name: name, rules: rules, outURL: targetURL, isIP: cat == "ip")
+            format, name: name, rules: rules, outURL: targetURL, isIP: cat == "ip", binDir: binDir)
         }
       }
     }
-    print("✨ [Compiler] All formats generated.")
+    print("✨ [Compiler] All formats generated successfully.")
   }
 }

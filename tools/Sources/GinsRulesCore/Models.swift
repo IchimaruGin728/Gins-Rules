@@ -73,8 +73,6 @@ public struct SingBoxRule: Codable, Sendable {
   public var domainKeyword: [String]?
   public var domainRegex: [String]?
   public var ipCidr: [String]?
-  public var processName: [String]?
-  public var userAgent: [String]?
 
   enum CodingKeys: String, CodingKey {
     case domainSuffix = "domain_suffix"
@@ -82,21 +80,29 @@ public struct SingBoxRule: Codable, Sendable {
     case domainKeyword = "domain_keyword"
     case domainRegex = "domain_regex"
     case ipCidr = "ip_cidr"
-    case processName = "process_name"
-    case userAgent = "user_agent"
   }
 
   public init(
     domainSuffix: [String]? = nil, domain: [String]? = nil, domainKeyword: [String]? = nil,
-    domainRegex: [String]? = nil, ipCidr: [String]? = nil, processName: [String]? = nil,
-    userAgent: [String]? = nil
+    domainRegex: [String]? = nil, ipCidr: [String]? = nil
   ) {
     self.domainSuffix = domainSuffix
     self.domain = domain
     self.domainKeyword = domainKeyword
     self.domainRegex = domainRegex
     self.ipCidr = ipCidr
-    self.processName = processName
-    self.userAgent = userAgent
   }
+}
+
+public struct AnywhereRule: Codable, Sendable {
+  public let type: Int
+  public let value: String
+  public init(type: Int, value: String) {
+    self.type = type
+    self.value = value
+  }
+}
+
+public enum RuleCompilerError: Error {
+  case shellError(Int)
 }
