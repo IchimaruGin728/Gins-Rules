@@ -1,7 +1,7 @@
 import ArgumentParser
 import Foundation
 import GinsRulesCore
-import MaxMind_DB_Reader
+import MaxMindDB
 
 @main
 struct GinsRulesSyncer: AsyncParsableCommand {
