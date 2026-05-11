@@ -89,6 +89,15 @@ public enum RuleCompiler {
 
   private static func toMihomoYAML(name: String, rules: Rules, outURL: URL, isIP: Bool) throws {
     let behavior = detectMihomoBehavior(rules: rules, isIP: isIP)
+    try generateMihomoYAML(name: name, rules: rules, outURL: outURL, behavior: behavior)
+
+    // Generate IP split file if it's a classical non-IP category containing IPs
+    if behavior == "classical" && !isIP && !rules.ipCidr.isEmpty {
+      try generateMihomoYAML(name: "\(name)-ip", rules: rules, outURL: outURL, behavior: "ipcidr")
+    }
+  }
+
+  private static func generateMihomoYAML(name: String, rules: Rules, outURL: URL, behavior: String) throws {
     var payload: [String] = []
 
     if behavior == "classical" {
@@ -103,6 +112,8 @@ public enum RuleCompiler {
       payload = rules.domainSuffix.sorted().map { ".\($0)" } + rules.domain.sorted()
     }
 
+    if payload.isEmpty { return }
+
     let yaml = try Yams.dump(object: ["payload": payload])
     try ("# Gins-Rules: \(name)\n" + yaml).write(
       to: outURL.appending(path: "\(name).yaml"), atomically: true, encoding: .utf8)
@@ -112,28 +123,36 @@ public enum RuleCompiler {
     name: String, rules: Rules, outURL: URL, isIP: Bool, binDir: URL?
   ) throws {
     let behavior = detectMihomoBehavior(rules: rules, isIP: isIP)
-    let yamlURL = outURL.appending(path: "\(name).tmp.yaml")
-    let mrsURL = outURL.appending(path: "\(name).mrs")
-
-    // We avoid 'classical' for MRS to prevent hangs in this environment.
-    // Instead we split or choose the best single-type behavior.
+    
     let targetBehavior = (behavior == "classical") ? (isIP ? "ipcidr" : "domain") : behavior
+    try generateMihomoBinary(name: name, rules: rules, outURL: outURL, behavior: targetBehavior, binDir: binDir)
 
+    // Generate IP split file if it's a classical non-IP category containing IPs
+    if behavior == "classical" && !isIP && !rules.ipCidr.isEmpty {
+      try generateMihomoBinary(name: "\(name)-ip", rules: rules, outURL: outURL, behavior: "ipcidr", binDir: binDir)
+    }
+  }
+
+  private static func generateMihomoBinary(
+    name: String, rules: Rules, outURL: URL, behavior: String, binDir: URL?
+  ) throws {
     var payload: [String] = []
-    if targetBehavior == "domain" {
+    if behavior == "domain" {
       payload = rules.domainSuffix.sorted().map { ".\($0)" } + rules.domain.sorted()
-    } else if targetBehavior == "ipcidr" {
+    } else if behavior == "ipcidr" {
       payload = rules.ipCidr.sorted()
     }
 
     if payload.isEmpty { return }
 
+    let yamlURL = outURL.appending(path: "\(name).tmp.yaml")
+    let mrsURL = outURL.appending(path: "\(name).mrs")
     let yaml = try Yams.dump(object: ["payload": payload])
     try ("# Gins-Rules: \(name)\n" + yaml).write(to: yamlURL, atomically: true, encoding: .utf8)
 
     if let bin = binDir?.appending(path: "mihomo"), FileManager.default.fileExists(atPath: bin.path)
     {
-      try shell(bin.path, ["convert-ruleset", targetBehavior, "yaml", yamlURL.path, mrsURL.path])
+      try shell(bin.path, ["convert-ruleset", behavior, "yaml", yamlURL.path, mrsURL.path])
     }
     try? FileManager.default.removeItem(at: yamlURL)
   }
