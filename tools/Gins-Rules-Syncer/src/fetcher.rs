@@ -64,7 +64,11 @@ pub async fn sync_icons(
         let c = client.clone();
         tasks.push(tokio::spawn(async move {
             println!("  [Icon] Downloading {}...", src.name);
-            let text = c.get(&src.url).send().await?.text().await?;
+            let mut req = c.get(&src.url);
+            if src.url.contains("kelee.one") {
+                req = req.header("User-Agent", "Loon/338 CFNetwork/1498.700.2 Darwin/23.6.0");
+            }
+            let text = req.send().await?.text().await?;
             
             let raw: Vec<RawIcon> = serde_json::from_str(&text)?;
             let mut normalized = Vec::new();

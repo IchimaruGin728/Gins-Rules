@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
     }
 
     let client = Client::builder()
-        .user_agent("Loon/338 CFNetwork/1498.700.2 Darwin/23.6.0")
+        .user_agent("Gins-Rules-Syncer/2.0")
         .build()?;
 
     match action {
