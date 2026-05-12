@@ -213,8 +213,8 @@ fn to_quanx(name: &str, rules: &RuleSet, out_dir: &Path) -> Result<()> {
     for s in &rules.domain_suffix { p.push(format!("HOST-SUFFIX,{},PROXY", s)); }
     for s in &rules.domain { p.push(format!("HOST,{},PROXY", s)); }
     for s in &rules.domain_keyword { p.push(format!("HOST-KEYWORD,{},PROXY", s)); }
-    for s in &rules.ip_cidr { p.push(format!("{},{},PROXY", if s.contains(':') { "IP6-CIDR" } else { "IP-CIDR" }, s)); }
-    for s in &rules.ip_asn { p.push(format!("IP-ASN,{},PROXY", s)); }
+    for s in &rules.ip_cidr { p.push(format!("{},{},PROXY", if s.contains(':') { "ip6-cidr" } else { "ip-cidr" }, s)); }
+    for s in &rules.ip_asn { p.push(format!("ip-asn,{},PROXY", s)); }
     p.sort_unstable();
     if !p.is_empty() {
         fs::write(&out, p.join("\n") + "\n")?;
