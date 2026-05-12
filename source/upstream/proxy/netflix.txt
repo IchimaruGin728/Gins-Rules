@@ -1172,7 +1172,7 @@ IP6-CIDR,2a03:5640::/32,Netflix
 # NAME: 深巷有喵的「Netflix」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.05.12 05:22:55
+# UPDATED: 2026.05.13 05:24:25
 # TOTAL: 1158
 
 # ======= 上游同步规则 ========
