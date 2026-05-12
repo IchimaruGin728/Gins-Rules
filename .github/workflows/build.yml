@@ -11,6 +11,7 @@ permissions:
 
 env:
   CI: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE26: true
 
 jobs:
   build:
