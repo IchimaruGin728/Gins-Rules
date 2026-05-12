@@ -36,18 +36,20 @@ fn parse_line(line: &str, rules: &mut RuleSet) {
     
     if parts.len() == 1 {
         let val = parts[0];
-        if val.starts_with("IP-") || val.contains('/') || val.contains(':') {
-            if val.starts_with("AS") || val.parse::<u32>().is_ok() {
-                rules.ip_asn.insert(EcoString::from(val));
-            } else {
-                rules.ip_cidr.insert(EcoString::from(val));
-            }
+        if let Some(stripped) = val.strip_prefix("full:") {
+            rules.domain.insert(EcoString::from(stripped));
+        } else if let Some(stripped) = val.strip_prefix("domain:") {
+            rules.domain.insert(EcoString::from(stripped));
+        } else if let Some(stripped) = val.strip_prefix("regex:") {
+            rules.domain_regex.insert(EcoString::from(stripped));
+        } else if let Some(stripped) = val.strip_prefix("keyword:") {
+            rules.domain_keyword.insert(EcoString::from(stripped));
         } else if val.starts_with('+') || val.starts_with('.') {
             rules.domain_suffix.insert(EcoString::from(val.trim_start_matches('+').trim_start_matches('.')));
-        } else if val.starts_with("regex:") {
-            rules.domain_regex.insert(EcoString::from(val.trim_start_matches("regex:")));
-        } else if val.starts_with("keyword:") {
-            rules.domain_keyword.insert(EcoString::from(val.trim_start_matches("keyword:")));
+        } else if val.starts_with("AS") && val[2..].parse::<u32>().is_ok() {
+            rules.ip_asn.insert(EcoString::from(val));
+        } else if val.contains('/') {
+            rules.ip_cidr.insert(EcoString::from(val));
         } else {
             if val.parse::<std::net::IpAddr>().is_ok() {
                 let suffix = if val.contains(':') { "/128" } else { "/32" };
