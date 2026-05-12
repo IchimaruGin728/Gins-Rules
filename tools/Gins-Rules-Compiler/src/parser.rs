@@ -55,7 +55,7 @@ fn parse_line(line: &str, rules: &mut RuleSet) {
                 let suffix = if val.contains(':') { "/128" } else { "/32" };
                 rules.ip_cidr.insert(EcoString::from(format!("{}{}", val, suffix)));
             } else {
-                rules.domain.insert(EcoString::from(val));
+                rules.domain_suffix.insert(EcoString::from(val));
             }
         }
         return;
@@ -65,15 +65,14 @@ fn parse_line(line: &str, rules: &mut RuleSet) {
     let val = parts[1];
     
     match t.as_str() {
-        "DOMAIN-SUFFIX" | "HOST-SUFFIX" => { rules.domain_suffix.insert(EcoString::from(val)); },
-        "DOMAIN" | "HOST" => { rules.domain.insert(EcoString::from(val)); },
+        "DOMAIN-SUFFIX" | "HOST-SUFFIX" | "DOMAIN" | "HOST" => { rules.domain_suffix.insert(EcoString::from(val)); },
         "DOMAIN-KEYWORD" | "HOST-KEYWORD" => { rules.domain_keyword.insert(EcoString::from(val)); },
         "DOMAIN-REGEX" | "HOST-REGEX" => { rules.domain_regex.insert(EcoString::from(val)); },
         "IP-CIDR" | "IP-CIDR6" | "IP6-CIDR" => { rules.ip_cidr.insert(EcoString::from(val)); },
         "IP-ASN" => { rules.ip_asn.insert(EcoString::from(val)); },
         _ => {
             if val.contains('.') {
-                 rules.domain.insert(EcoString::from(val));
+                 rules.domain_suffix.insert(EcoString::from(val));
             }
         }
     }
