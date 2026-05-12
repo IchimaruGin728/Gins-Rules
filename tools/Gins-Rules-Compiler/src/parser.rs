@@ -68,6 +68,7 @@ fn parse_line(line: &str, rules: &mut RuleSet) {
         "DOMAIN-SUFFIX" | "HOST-SUFFIX" | "DOMAIN" | "HOST" => { rules.domain_suffix.insert(EcoString::from(val)); },
         "DOMAIN-KEYWORD" | "HOST-KEYWORD" => { rules.domain_keyword.insert(EcoString::from(val)); },
         "DOMAIN-REGEX" | "HOST-REGEX" => { rules.domain_regex.insert(EcoString::from(val)); },
+        "HOST-WILDCARD" => { rules.domain_regex.insert(EcoString::from(format!("^{}$", val.replace(".", "\\.").replace("*", ".*")))); },
         "IP-CIDR" | "IP-CIDR6" | "IP6-CIDR" => { rules.ip_cidr.insert(EcoString::from(val)); },
         "IP-ASN" => { rules.ip_asn.insert(EcoString::from(val)); },
         _ => {
