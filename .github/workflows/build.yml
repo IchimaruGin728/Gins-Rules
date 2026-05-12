@@ -27,14 +27,22 @@ jobs:
           swift --version
 
       - name: Setup Node 26 & pnpm 11
-        run: |
-          corepack enable
-          corepack prepare pnpm@11.0.9 --activate
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.9
 
       - uses: actions/setup-node@v6
         with:
           node-version: 26
           cache: "pnpm"
+
+      - name: Cache Swift Build
+        uses: actions/cache@v4
+        with:
+          path: tools/.build
+          key: ${{ runner.os }}-swift-${{ hashFiles('tools/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-swift-
 
       - name: Pull Latest Changes
         run: |
@@ -43,9 +51,11 @@ jobs:
           git pull --rebase origin main
 
       - name: Install Dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          pnpm install --no-frozen-lockfile
+          cd dashboard && pnpm install --no-frozen-lockfile
 
-      - name: Fetch Latest Tool Versions
+      - name: Fetch & Install Compilers
         id: tool-versions
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -66,31 +76,31 @@ jobs:
           fetch_releases "MetaCubeX/mihomo" mihomo-releases.json
           SINGBOX_URL=$(jq -r 'map(select(.prerelease == true)) | .[0].assets[] | select(.name | contains("darwin-arm64") and endswith(".tar.gz")) | .browser_download_url' singbox-releases.json | head -n 1)
           MIHOMO_URL=$(jq -r '([.[] | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha") | .assets[] | select(.name | test("^mihomo-darwin-arm64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$")) | .browser_download_url] + [.[] | select(.prerelease == false) | .assets[] | select(.name | test("^mihomo-darwin-arm64-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$")) | .browser_download_url])[0]' mihomo-releases.json)
-          echo "singbox_url=$SINGBOX_URL" >> $GITHUB_OUTPUT
-          echo "mihomo_url=$MIHOMO_URL" >> $GITHUB_OUTPUT
-
-      - name: Install Compilers
-        run: |
+          
           mkdir -p bin
-          curl -sL "${{ steps.tool-versions.outputs.singbox_url }}" | tar xz --strip-components=1
+          curl -sL "$SINGBOX_URL" | tar xz --strip-components=1 sing-box
           mv sing-box bin/
-          curl -sL "${{ steps.tool-versions.outputs.mihomo_url }}" | gunzip > bin/mihomo
+          curl -sL "$MIHOMO_URL" | gunzip > bin/mihomo
           chmod +x bin/sing-box bin/mihomo
 
-      - name: Sync Data (Swift Native)
-        run: |
-          pnpm sync
-          pnpm icons
+      - name: Build Toolchain (Warm Cache)
+        run: swift build --package-path tools -c release
 
-      - name: Compile Toolchain (Swift 6.3)
-        run: pnpm compile
-
-      - name: Build Dashboard (Astro 6.3)
+      - name: Sync Data & Build Matrix (Parallel)
         run: |
-          cd dashboard
-          pnpm install --no-frozen-lockfile
-          pnpm build
-          cp -r dist/* ../compiled/
+          # 1. Sync Rules & Icons in parallel
+          pnpm sync & 
+          SYNC_PID=$!
+          pnpm icons &
+          ICONS_PID=$!
+          wait $SYNC_PID $ICONS_PID
+          
+          # 2. Compile Rules & Build Dashboard in parallel
+          pnpm compile &
+          COMPILE_PID=$!
+          (cd dashboard && pnpm build && cp -r dist/* ../compiled/) &
+          DASHBOARD_PID=$!
+          wait $COMPILE_PID $DASHBOARD_PID
 
       - name: Commit & Push Changes
         run: |

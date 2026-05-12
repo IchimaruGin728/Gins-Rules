@@ -3,9 +3,9 @@
   "private": true,
   "packageManager": "pnpm@11.0.9",
   "scripts": {
-    "sync": "swift run --package-path tools gins-rules-syncer --root . sync",
-    "icons": "swift run --package-path tools gins-rules-syncer --root . icons",
-    "compile": "swift run --package-path tools gins-rules-compiler --root .",
+    "sync": "swift run --package-path tools -c release gins-rules-syncer --root . sync",
+    "icons": "swift run --package-path tools -c release gins-rules-syncer --root . icons",
+    "compile": "swift run --package-path tools -c release gins-rules-compiler --root .",
     "build": "pnpm sync && pnpm icons && pnpm compile && cd dashboard && pnpm build && cp -r dist/* ../compiled/",
     "deploy": "pnpm build && wrangler deploy --config cmd/scanner/wrangler.jsonc"
   },
