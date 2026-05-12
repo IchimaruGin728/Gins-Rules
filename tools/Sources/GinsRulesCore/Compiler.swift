@@ -169,8 +169,8 @@ public enum RuleCompiler {
       payload += rules.domain.sorted().map { "DOMAIN,\($0)" }
       payload += rules.domainKeyword.sorted().map { "DOMAIN-KEYWORD,\($0)" }
       payload += rules.domainRegex.sorted().map { "DOMAIN-REGEX,\($0)" }
-      payload += rules.ipCidr.sorted().map { "\($0.contains(":") ? "IP-CIDR6" : "IP-CIDR"),\($0),no-resolve" }
-      payload += rules.ipAsn.sorted().map { "IP-ASN,\($0),no-resolve" }
+      payload += rules.ipCidr.sorted().map { "\($0.contains(":") ? "IP-CIDR6" : "IP-CIDR"),\($0)" }
+      payload += rules.ipAsn.sorted().map { "IP-ASN,\($0)" }
     } else if behavior == "ipcidr" {
       payload = rules.ipCidr.sorted()
     } else {
