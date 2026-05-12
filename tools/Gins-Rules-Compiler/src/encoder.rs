@@ -102,6 +102,13 @@ fn to_singbox_json(name: &str, rules: &RuleSet, out_dir: &Path) -> Result<()> {
         v.sort_unstable();
         rule_obj.insert("ip_cidr".to_string(), serde_json::json!(v));
     }
+    if !rules.ip_asn.is_empty() {
+        let mut v: Vec<_> = rules.ip_asn.iter()
+            .filter_map(|s| s.trim_start_matches("AS").parse::<u32>().ok())
+            .collect();
+        v.sort_unstable();
+        rule_obj.insert("asn".to_string(), serde_json::json!(v));
+    }
     
     obj.insert("rules".to_string(), serde_json::json!(vec![rule_obj]));
     fs::write(out, serde_json::to_string(&obj)?)?;
@@ -120,8 +127,10 @@ fn to_singbox_srs(name: &str, rules: &RuleSet, out_dir: &Path) -> Result<()> {
     rx.sort_unstable();
     let mut cidr = rules.ip_cidr.iter().map(|s| s.to_string()).collect::<Vec<_>>();
     cidr.sort_unstable();
+    let mut asn = rules.ip_asn.iter().filter_map(|s| s.trim_start_matches("AS").parse::<u32>().ok()).collect::<Vec<_>>();
+    asn.sort_unstable();
     
-    srs::encode_srs(dom, suf, kw, rx, cidr, &out)?;
+    srs::encode_srs(dom, suf, kw, rx, cidr, asn, &out)?;
     Ok(())
 }
 
@@ -213,8 +222,8 @@ fn to_quanx(name: &str, rules: &RuleSet, out_dir: &Path) -> Result<()> {
     for s in &rules.domain_suffix { p.push(format!("HOST-SUFFIX,{},PROXY", s)); }
     for s in &rules.domain { p.push(format!("HOST,{},PROXY", s)); }
     for s in &rules.domain_keyword { p.push(format!("HOST-KEYWORD,{},PROXY", s)); }
-    for s in &rules.ip_cidr { p.push(format!("{},{},PROXY", if s.contains(':') { "ip6-cidr" } else { "ip-cidr" }, s)); }
-    for s in &rules.ip_asn { p.push(format!("ip-asn,{},PROXY", s)); }
+    for s in &rules.ip_cidr { p.push(format!("{},{},PROXY", if s.contains(':') { "IP6-CIDR" } else { "IP-CIDR" }, s)); }
+    for s in &rules.ip_asn { p.push(format!("IP-ASN,{},PROXY", s)); }
     p.sort_unstable();
     if !p.is_empty() {
         fs::write(&out, p.join("\n") + "\n")?;
@@ -269,42 +278,31 @@ fn to_anywhere(name: &str, rules: &RuleSet, out_dir: &Path) -> Result<()> {
 
 fn to_egern(name: &str, rules: &RuleSet, out_dir: &Path) -> Result<()> {
     let out = out_dir.join(format!("{}.yaml", name));
-    let mut egern_rules: Vec<std::collections::HashMap<&str, std::collections::HashMap<&str, &str>>> = Vec::new();
+    let mut egern_rules: Vec<serde_json::Value> = Vec::new();
     
     for s in &rules.domain_suffix { 
-        let mut m = std::collections::HashMap::new(); m.insert("match", s.as_str()); m.insert("policy", "Proxy");
-        let mut t = std::collections::HashMap::new(); t.insert("domain_suffix", m);
-        egern_rules.push(t);
+        egern_rules.push(serde_json::json!({"domain_suffix": {"match": s, "policy": "Proxy"}}));
     }
     for s in &rules.domain { 
-        let mut m = std::collections::HashMap::new(); m.insert("match", s.as_str()); m.insert("policy", "Proxy");
-        let mut t = std::collections::HashMap::new(); t.insert("domain", m);
-        egern_rules.push(t);
+        egern_rules.push(serde_json::json!({"domain": {"match": s, "policy": "Proxy"}}));
     }
     for s in &rules.domain_keyword { 
-        let mut m = std::collections::HashMap::new(); m.insert("match", s.as_str()); m.insert("policy", "Proxy");
-        let mut t = std::collections::HashMap::new(); t.insert("domain_keyword", m);
-        egern_rules.push(t);
+        egern_rules.push(serde_json::json!({"domain_keyword": {"match": s, "policy": "Proxy"}}));
     }
     for s in &rules.domain_regex { 
-        let mut m = std::collections::HashMap::new(); m.insert("match", s.as_str()); m.insert("policy", "Proxy");
-        let mut t = std::collections::HashMap::new(); t.insert("domain_regex", m);
-        egern_rules.push(t);
+        egern_rules.push(serde_json::json!({"domain_regex": {"match": s, "policy": "Proxy"}}));
     }
     for s in &rules.ip_cidr { 
-        let mut m = std::collections::HashMap::new(); m.insert("match", s.as_str()); m.insert("policy", "Proxy"); m.insert("no_resolve", "true");
-        let mut t = std::collections::HashMap::new(); t.insert(if s.contains(':') { "ip_cidr6" } else { "ip_cidr" }, m);
-        egern_rules.push(t);
+        egern_rules.push(serde_json::json!({if s.contains(':') { "ip_cidr6" } else { "ip_cidr" }: {"match": s, "policy": "Proxy", "no_resolve": "true"}}));
     }
     for s in &rules.ip_asn { 
-        let mut m = std::collections::HashMap::new(); m.insert("match", s.trim_start_matches("AS")); m.insert("policy", "Proxy");
-        let mut t = std::collections::HashMap::new(); t.insert("asn", m);
-        egern_rules.push(t);
+        let asn_val = if s.starts_with("AS") { s.to_string() } else { format!("AS{}", s) };
+        egern_rules.push(serde_json::json!({"asn": {"match": asn_val, "policy": "Proxy"}}));
     }
     
     if !egern_rules.is_empty() {
-        let mut wrap = std::collections::HashMap::new();
-        wrap.insert("rules", egern_rules);
+        let mut wrap = serde_json::Map::new();
+        wrap.insert("rules".to_string(), serde_json::Value::Array(egern_rules));
         let yaml_str = serde_yaml::to_string(&wrap)?;
         fs::write(&out, format!("# Gins-Rules: {}\n{}", name, yaml_str))?;
     }

@@ -15,7 +15,8 @@ pub struct HeadlessRule {
     pub domain_regex: ::prost::alloc::vec::Vec<String>,
     #[prost(string, repeated, tag="6")]
     pub ip_cidr: ::prost::alloc::vec::Vec<String>,
-    // Note: IP-ASN is tag 28 in recent Sing-box rule-set proto, but to be safe we'll leave it as we just compile cidr
+    #[prost(uint32, repeated, tag="28")]
+    pub asn: ::prost::alloc::vec::Vec<u32>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -30,6 +31,7 @@ pub fn encode_srs(
     domain_keyword: Vec<String>,
     domain_regex: Vec<String>,
     ip_cidr: Vec<String>,
+    asn: Vec<u32>,
     out_path: &std::path::Path,
 ) -> Result<()> {
     let mut file = File::create(out_path)?;
@@ -40,6 +42,7 @@ pub fn encode_srs(
         domain_keyword,
         domain_regex,
         ip_cidr,
+        asn,
     };
     
     let ruleset = PlainRuleSet {
