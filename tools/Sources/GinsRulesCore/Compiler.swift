@@ -227,11 +227,11 @@ public enum RuleCompiler {
 
   private static func toQuantumultX(name: String, rules: Rules, outURL: URL) throws {
     var list: [String] = []
-    list += rules.domainSuffix.sorted().map { "host-suffix,\($0),proxy" }
-    list += rules.domain.sorted().map { "host,\($0),proxy" }
-    list += rules.domainKeyword.sorted().map { "host-keyword,\($0),proxy" }
-    list += rules.ipCidr.sorted().map { "\($0.contains(":") ? "ip6-cidr" : "ip-cidr"),\($0),proxy,no-resolve" }
-    list += rules.ipAsn.sorted().map { "ip-asn,\($0),proxy" }
+    list += rules.domainSuffix.sorted().map { "HOST-SUFFIX,\($0),PROXY" }
+    list += rules.domain.sorted().map { "HOST,\($0),PROXY" }
+    list += rules.domainKeyword.sorted().map { "HOST-KEYWORD,\($0),PROXY" }
+    list += rules.ipCidr.sorted().map { "\($0.contains(":") ? "IP6-CIDR" : "IP-CIDR"),\($0),PROXY" }
+    list += rules.ipAsn.sorted().map { "IP-ASN,\($0),PROXY" }
     try (list.joined(separator: "\n") + "\n").write(
       to: outURL.appending(path: "\(name).list"), atomically: true, encoding: .utf8)
   }
