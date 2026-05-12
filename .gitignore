@@ -64,3 +64,4 @@ bin/
 
 # MMDB cache
 .mmdb-cache/
+*.json
