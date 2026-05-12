@@ -2,6 +2,19 @@ import ArgumentParser
 import Foundation
 import GinsRulesCore
 
+struct BuildSummary: Encodable {
+  var services: Int = 12
+  var rules: Int = 0
+  var ipRules: Int = 0
+  var srs: Int = 0
+  var mrs: Int = 0
+  var timestamp: String = {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
+    return formatter.string(from: Date())
+  }()
+}
+
 @main
 struct GinsRulesCompiler: ParsableCommand {
   @Option(name: .shortAndLong, help: "Root directory")
@@ -18,6 +31,13 @@ struct GinsRulesCompiler: ParsableCommand {
 
     let categories = ["proxy", "direct", "reject", "ip", "asn"]
     var aiAggregateRules = Rules()
+    
+    var summary = BuildSummary()
+    // Using global collectors for an elegant counting approach
+    var allRules = Rules()
+    var allRuleNames = Set<String>()
+    var srsCount = 0
+    var mrsCount = 0
 
     for cat in categories {
       print("  📁 Category: \(cat)")
@@ -50,6 +70,10 @@ struct GinsRulesCompiler: ParsableCommand {
         
         categoryAggregateRules.merge(with: rules)
         
+        // Collect stats gracefully
+        allRules.merge(with: rules)
+        allRuleNames.insert(name)
+        
         if isAIRuleName(name) {
           aiAggregateRules.merge(with: rules)
         }
@@ -57,9 +81,15 @@ struct GinsRulesCompiler: ParsableCommand {
         for format in RuleCompiler.Format.allCases {
           let dirName: String
           switch format {
-          case .singbox, .srs: dirName = "singbox"
-          case .mihomo, .mrs: dirName = "mihomo"
-          case .stash: dirName = "stash"
+          case .singbox, .srs: 
+            dirName = "singbox"
+            if format == .srs { srsCount += 1 }
+          case .mihomo, .mrs: 
+            dirName = "mihomo"
+            if format == .mrs { mrsCount += 1 }
+          case .stash: 
+            dirName = "stash"
+            mrsCount += 1 // Stash also generates MRS and YAML
           default: dirName = format.rawValue
           }
 
@@ -75,9 +105,15 @@ struct GinsRulesCompiler: ParsableCommand {
         for format in RuleCompiler.Format.allCases {
           let dirName: String
           switch format {
-          case .singbox, .srs: dirName = "singbox"
-          case .mihomo, .mrs: dirName = "mihomo"
-          case .stash: dirName = "stash"
+          case .singbox, .srs: 
+            dirName = "singbox"
+            if format == .srs { srsCount += 1 }
+          case .mihomo, .mrs: 
+            dirName = "mihomo"
+            if format == .mrs { mrsCount += 1 }
+          case .stash: 
+            dirName = "stash"
+            mrsCount += 1
           default: dirName = format.rawValue
           }
 
@@ -94,9 +130,15 @@ struct GinsRulesCompiler: ParsableCommand {
       for format in RuleCompiler.Format.allCases {
         let dirName: String
         switch format {
-        case .singbox, .srs: dirName = "singbox"
-        case .mihomo, .mrs: dirName = "mihomo"
-        case .stash: dirName = "stash"
+        case .singbox, .srs: 
+          dirName = "singbox"
+          if format == .srs { srsCount += 1 }
+        case .mihomo, .mrs: 
+          dirName = "mihomo"
+          if format == .mrs { mrsCount += 1 }
+        case .stash: 
+          dirName = "stash"
+          mrsCount += 1
         default: dirName = format.rawValue
         }
 
@@ -105,8 +147,18 @@ struct GinsRulesCompiler: ParsableCommand {
           format, name: "ai", rules: aiAggregateRules, outURL: targetURL, isIP: false, binDir: binDir)
       }
     }
+    
+    summary.services = allRuleNames.count
+    summary.rules = allRules.count
+    summary.ipRules = allRules.ipCidr.count + allRules.ipAsn.count
+    summary.srs = srsCount
+    summary.mrs = mrsCount
+    
+    let summaryURL = outDir.appending(path: "build-summary.json")
+    try JSONEncoder().encode(summary).write(to: summaryURL)
 
     print("✨ [Compiler] All formats generated successfully.")
+    print("📊 [Summary] Services: \(summary.services), Rules: \(summary.rules), IP Rules: \(summary.ipRules), SRS: \(summary.srs), MRS: \(summary.mrs)")
   }
 
   func isAIRuleName(_ name: String) -> Bool {

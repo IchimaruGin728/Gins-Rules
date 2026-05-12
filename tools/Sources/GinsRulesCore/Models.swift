@@ -12,6 +12,26 @@ public struct Rules: Codable, Sendable {
   public var processName: Set<String> = []
   public var userAgent: Set<String> = []
 
+  public init(
+    domainSuffix: Set<String> = [],
+    domain: Set<String> = [],
+    domainKeyword: Set<String> = [],
+    domainRegex: Set<String> = [],
+    ipCidr: Set<String> = [],
+    ipAsn: Set<String> = [],
+    processName: Set<String> = [],
+    userAgent: Set<String> = []
+  ) {
+    self.domainSuffix = domainSuffix
+    self.domain = domain
+    self.domainKeyword = domainKeyword
+    self.domainRegex = domainRegex
+    self.ipCidr = ipCidr
+    self.ipAsn = ipAsn
+    self.processName = processName
+    self.userAgent = userAgent
+  }
+
   public init() {}
 
   /// Merges another ruleset into this one efficiently.
