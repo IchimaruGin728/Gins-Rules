@@ -11,20 +11,25 @@ permissions:
 
 env:
   CI: true
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE26: true
 
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0 # Full history for rebasing
+          fetch-depth: 0
 
-      - name: Setup Swift 6.3.1
-        run: |
-          sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer || true
-          swift --version
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tools
 
       - name: Setup Node 26 & pnpm 11
         uses: pnpm/action-setup@v4
@@ -35,14 +40,6 @@ jobs:
         with:
           node-version: 26
           cache: "pnpm"
-
-      - name: Cache Swift Build
-        uses: actions/cache@v4
-        with:
-          path: tools/.build
-          key: ${{ runner.os }}-swift-${{ hashFiles('tools/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-swift-
 
       - name: Pull Latest Changes
         run: |
@@ -55,40 +52,9 @@ jobs:
           pnpm install --no-frozen-lockfile
           cd dashboard && pnpm install --no-frozen-lockfile
 
-      - name: Fetch & Install Compilers
-        id: tool-versions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          fetch_releases() {
-            local repo="$1"
-            local output="$2"
-            curl -fsSL \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              -A "Gins-Rules-Workflow" \
-              "https://api.github.com/repos/${repo}/releases?per_page=100" \
-              -o "$output"
-          }
-          fetch_releases "SagerNet/sing-box" singbox-releases.json
-          fetch_releases "MetaCubeX/mihomo" mihomo-releases.json
-          SINGBOX_URL=$(jq -r 'map(select(.prerelease == true)) | .[0].assets[] | select(.name | contains("darwin-arm64") and endswith(".tar.gz")) | .browser_download_url' singbox-releases.json | head -n 1)
-          MIHOMO_URL=$(jq -r '([.[] | select(.tag_name == "Prerelease-Alpha" or .tag_name == "alpha") | .assets[] | select(.name | test("^mihomo-darwin-arm64(-v[123])?(-go[0-9]+)?-alpha-.*\\.gz$")) | .browser_download_url] + [.[] | select(.prerelease == false) | .assets[] | select(.name | test("^mihomo-darwin-arm64-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$")) | .browser_download_url])[0]' mihomo-releases.json)
-          
-          mkdir -p bin
-          curl -sL "$SINGBOX_URL" | tar xz --strip-components=1
-          mv sing-box bin/
-          curl -sL "$MIHOMO_URL" | gunzip > bin/mihomo
-          chmod +x bin/sing-box bin/mihomo
-
-      - name: Build Toolchain (Warm Cache)
-        run: swift build --package-path tools -c release
-
       - name: Sync Data & Build Matrix (Parallel)
         run: |
-          # 1. Sync Rules & Icons in parallel
+          # The Rust binaries run fast enough, we just use pnpm scripts
           pnpm sync & 
           SYNC_PID=$!
           pnpm icons &

@@ -1,0 +1,21 @@
+[package]
+name = "Gins-Rules-Compiler"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+Gins-Rules-Core = { path = "../Gins-Rules-Core" }
+rayon = { workspace = true }
+dashmap = { workspace = true }
+ahash = { workspace = true }
+memmap2 = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+rmp-serde = { workspace = true }
+ecow = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+chrono = "0.4.44"
+prost.workspace = true
