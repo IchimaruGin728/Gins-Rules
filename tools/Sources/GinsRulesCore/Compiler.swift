@@ -122,11 +122,17 @@ public enum RuleCompiler {
   private static func toMihomoBinary(
     name: String, rules: Rules, outURL: URL, isIP: Bool, binDir: URL?
   ) throws {
-    let behavior = detectMihomoBehavior(rules: rules, isIP: isIP)
+    if isIP {
+      let behavior = rules.ipAsn.isEmpty ? "ipcidr" : "classical"
+      try generateMihomoBinary(name: name, rules: rules, outURL: outURL, behavior: behavior, binDir: binDir)
+      return
+    }
+
+    let hasComplex = !rules.domainKeyword.isEmpty || !rules.domainRegex.isEmpty || !rules.ipAsn.isEmpty || !rules.ipCidr.isEmpty
     
-    if behavior == "classical" {
-      // For mixed classical rules, we split into domain and IP binaries
-      // 1. Domain-only MRS
+    if hasComplex {
+      // Split into Domain-ish and IP-ish binaries to support split config usage
+      // 1. Domain Binary: suffixes, domains, keywords, regex
       let domainRules = Rules(
         domainSuffix: rules.domainSuffix,
         domain: rules.domain,
@@ -134,20 +140,22 @@ public enum RuleCompiler {
         domainRegex: rules.domainRegex
       )
       if !domainRules.isEmpty {
-        try generateMihomoBinary(name: name, rules: domainRules, outURL: outURL, behavior: "domain", binDir: binDir)
+        let behavior = (rules.domainKeyword.isEmpty && rules.domainRegex.isEmpty) ? "domain" : "classical"
+        try generateMihomoBinary(name: name, rules: domainRules, outURL: outURL, behavior: behavior, binDir: binDir)
       }
-      
-      // 2. IP-only MRS
+
+      // 2. IP Binary: cidr, asn
       let ipRules = Rules(
         ipCidr: rules.ipCidr,
         ipAsn: rules.ipAsn
       )
       if !ipRules.isEmpty {
-        try generateMihomoBinary(name: "\(name)-ip", rules: ipRules, outURL: outURL, behavior: "ipcidr", binDir: binDir)
+        let behavior = rules.ipAsn.isEmpty ? "ipcidr" : "classical"
+        try generateMihomoBinary(name: "\(name)-ip", rules: ipRules, outURL: outURL, behavior: behavior, binDir: binDir)
       }
     } else {
-      // For pure domain or pure IP, compile directly
-      try generateMihomoBinary(name: name, rules: rules, outURL: outURL, behavior: behavior, binDir: binDir)
+      // Pure domain set
+      try generateMihomoBinary(name: name, rules: rules, outURL: outURL, behavior: "domain", binDir: binDir)
     }
   }
 
@@ -155,7 +163,15 @@ public enum RuleCompiler {
     name: String, rules: Rules, outURL: URL, behavior: String, binDir: URL?
   ) throws {
     var payload: [String] = []
-    if behavior == "ipcidr" {
+    
+    if behavior == "classical" {
+      payload += rules.domainSuffix.sorted().map { "DOMAIN-SUFFIX,\($0)" }
+      payload += rules.domain.sorted().map { "DOMAIN,\($0)" }
+      payload += rules.domainKeyword.sorted().map { "DOMAIN-KEYWORD,\($0)" }
+      payload += rules.domainRegex.sorted().map { "DOMAIN-REGEX,\($0)" }
+      payload += rules.ipCidr.sorted().map { "\($0.contains(":") ? "IP-CIDR6" : "IP-CIDR"),\($0),no-resolve" }
+      payload += rules.ipAsn.sorted().map { "IP-ASN,\($0),no-resolve" }
+    } else if behavior == "ipcidr" {
       payload = rules.ipCidr.sorted()
     } else {
       // Default to domain behavior: leading dot for suffixes
@@ -213,7 +229,9 @@ public enum RuleCompiler {
     var list: [String] = []
     list += rules.domainSuffix.sorted().map { "HOST-SUFFIX,\($0),Proxy" }
     list += rules.domain.sorted().map { "HOST,\($0),Proxy" }
-    list += rules.ipCidr.sorted().map { "\($0.contains(":") ? "IP6-CIDR" : "IP-CIDR"),\($0),Proxy" }
+    list += rules.domainKeyword.sorted().map { "HOST-KEYWORD,\($0),Proxy" }
+    list += rules.ipCidr.sorted().map { "\($0.contains(":") ? "IP6-CIDR" : "IP-CIDR"),\($0),Proxy,no-resolve" }
+    list += rules.ipAsn.sorted().map { "IP-ASN,\($0),Proxy,no-resolve" }
     try (list.joined(separator: "\n") + "\n").write(
       to: outURL.appending(path: "\(name).list"), atomically: true, encoding: .utf8)
   }
