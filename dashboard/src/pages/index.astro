@@ -205,17 +205,19 @@ const sourceProviders = [
   "Yuu518",
   "Blackmatrix7",
   "Nice (fmz200)",
+  "Rabbit-Spec",
+  "Centralmatrix3",
+  "SukkaW",
+  "Telegram Official",
+  "353355.xyz",
   "xream/geoip (ipinfo)",
   "xream/geoip (ip2location)",
   "RIPE NCC (BGP)",
   "HE BGP (bgp.he.net)",
-  "Telegram Official",
   "Cloudflare Official",
   "Google gstatic",
   "Amazon ip-ranges",
   "GitHub meta API",
-  "Rabbit-Spec/Surge",
-  "Centralmatrix3/Matrix-io",
 ];
 
 const totalServices = baseCategories.reduce((sum, category) => {
@@ -529,6 +531,18 @@ void buildTime;
         >
       </div>
 
+      <div class="px-1">
+        <div class="relative">
+          <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 i-ph-magnifying-glass-bold text-sm pointer-events-none"></div>
+          <input
+            id="service-search"
+            type="text"
+            placeholder="Search services... (e.g. google, telegram, netflix)"
+            class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-gray-300 placeholder-gray-600 outline-none focus:border-brand-primary/40 focus:bg-white/[0.05] transition-all"
+          />
+        </div>
+      </div>
+
       {
         categories.map((category, index) => (
           <details
@@ -569,4 +583,35 @@ void buildTime;
       }
     </section>
   </div>
+
+  <script>
+    const searchInput = document.getElementById("service-search") as HTMLInputElement;
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase().trim();
+        const detailsList = document.querySelectorAll("details");
+
+        for (const details of detailsList) {
+          const items = details.querySelectorAll("[data-service-name]");
+          let visibleCount = 0;
+
+          for (const item of items) {
+            const name = (item as HTMLElement).dataset.serviceName || "";
+            const match = !query || name.toLowerCase().includes(query);
+            (item as HTMLElement).style.display = match ? "" : "none";
+            if (match) visibleCount++;
+          }
+
+          // Update category count badge
+          const badge = details.querySelector(".rounded-full");
+          if (badge) badge.textContent = String(visibleCount);
+
+          // Auto-open categories with matches when searching
+          if (query) {
+            (details as HTMLDetailsElement).open = visibleCount > 0;
+          }
+        }
+      });
+    }
+  </script>
 </Layout>

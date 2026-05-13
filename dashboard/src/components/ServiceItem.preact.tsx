@@ -91,6 +91,7 @@ export default function ServiceItem({
 
   return (
     <div
+      data-service-name={cleanName}
       class={`
         group/item relative flex items-center justify-between w-full p-3 rounded-xl transition-all duration-300
         ${

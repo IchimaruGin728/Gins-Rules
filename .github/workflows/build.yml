@@ -83,14 +83,33 @@ jobs:
           cargo build --release --manifest-path tools/gins-rules-engine/Cargo.toml
           (cd tools/gins-rules-binary && go build -o ../../bin/gins-rules-binary .)
 
-      - name: Sync & Compile (Parallel)
+      - name: Sync Upstream
+        id: sync
         run: |
-          pnpm sync &
-          SYNC_PID=$!
-          pnpm icons &
-          ICONS_PID=$!
-          wait $SYNC_PID $ICONS_PID
+          # Sync to temp directory
+          cp -r source/upstream source/upstream-prev 2>/dev/null || true
+          pnpm sync
 
+          # Compare with previous upstream data
+          if diff -rq source/upstream source/upstream-prev >/dev/null 2>&1; then
+            echo "No upstream changes detected."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            # Restore previous upstream
+            rm -rf source/upstream
+            mv source/upstream-prev source/upstream 2>/dev/null || true
+          else
+            echo "Upstream changes detected!"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            rm -rf source/upstream-prev 2>/dev/null || true
+          fi
+
+      - name: Sync Icons
+        if: steps.sync.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+        run: pnpm icons
+
+      - name: Compile & Build Dashboard
+        if: steps.sync.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
           pnpm compile &
           COMPILE_PID=$!
           (cd dashboard && pnpm build && cp -r dist/* ../compiled/) &
@@ -108,6 +127,7 @@ jobs:
           )
 
       - name: Deploy to Cloudflare
+        if: steps.sync.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
