@@ -3,11 +3,9 @@ package main
 import (
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/maxmind/mmdbwriter"
@@ -143,35 +141,6 @@ func generateGeoIPMMDB(categories map[string]map[string]RuleSet, cacheDir, outPa
 		}
 	}
 
-	// Add our local IP data (e.g., CN IPs)
-	if ipTargets, ok := categories["ip"]; ok {
-		for name, rs := range ipTargets {
-			if len(rs.IPCidr) == 0 {
-				continue
-			}
-
-			// Use uppercase country code
-			code := strings.ToUpper(name)
-
-			for _, cidr := range rs.IPCidr {
-				_, ipNet, err := net.ParseCIDR(cidr)
-				if err != nil {
-					continue
-				}
-
-				record := mmdbtype.Map{
-					"country": mmdbtype.Map{
-						"iso_code": mmdbtype.String(code),
-					},
-				}
-
-				if err := writer.Insert(ipNet, record); err != nil {
-					fmt.Fprintf(os.Stderr, "    ⚠️  Insert %s: %v\n", cidr, err)
-				}
-			}
-		}
-	}
-
 	// Write the merged MMDB
 	f, err := os.Create(outPath)
 	if err != nil {
@@ -205,37 +174,6 @@ func generateGeoASNMMDB(categories map[string]map[string]RuleSet, cacheDir, outP
 		mmdbPath := filepath.Join(cacheDir, src.Name+".mmdb")
 		if err := mergeUpstreamMMDB(writer, mmdbPath, src.Name); err != nil {
 			fmt.Fprintf(os.Stderr, "    ⚠️  Merge %s: %v\n", src.Name, err)
-		}
-	}
-
-	// Add our local ASN data
-	if asnTargets, ok := categories["asn"]; ok {
-		for name, rs := range asnTargets {
-			if len(rs.IPCidr) == 0 {
-				continue
-			}
-
-			// Extract ASN number
-			asn := extractASN(name, rs)
-			if asn == "" {
-				continue
-			}
-
-			for _, cidr := range rs.IPCidr {
-				_, ipNet, err := net.ParseCIDR(cidr)
-				if err != nil {
-					continue
-				}
-
-				record := mmdbtype.Map{
-					"autonomous_system_number":       mmdbtype.String(asn),
-					"autonomous_system_organization": mmdbtype.String(name),
-				}
-
-				if err := writer.Insert(ipNet, record); err != nil {
-					fmt.Fprintf(os.Stderr, "    ⚠️  Insert %s: %v\n", cidr, err)
-				}
-			}
 		}
 	}
 
@@ -325,19 +263,3 @@ func convertValue(v interface{}) mmdbtype.DataType {
 	}
 }
 
-// extractASN extracts the ASN number from the target name and rules
-func extractASN(name string, rs RuleSet) string {
-	// First check if there are explicit ASN entries in the rules
-	if len(rs.IPAsn) > 0 {
-		// Use the first ASN entry
-		asn := rs.IPAsn[0]
-		if !strings.HasPrefix(asn, "AS") {
-			asn = "AS" + asn
-		}
-		return asn
-	}
-
-	// Try to extract from the name (e.g., "asn-google" -> look for ASN in the name)
-	// This is a fallback - ideally ASN should be in the rules
-	return ""
-}
