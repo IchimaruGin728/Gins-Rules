@@ -1,7 +1,6 @@
 {
   "name": "gins-rules",
   "private": true,
-  "packageManager": "pnpm@11.0.9",
   "scripts": {
     "sync": "cargo run --release --manifest-path tools/gins-rules-engine/Cargo.toml -- sync --root .",
     "icons": "cargo run --release --manifest-path tools/gins-rules-engine/Cargo.toml -- icons --root .",
