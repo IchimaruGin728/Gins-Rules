@@ -1,75 +1,58 @@
-use crate::config::{IconSource, NormalizedIcon, RawIcon, UpstreamSource};
 use anyhow::Result;
-use futures::future::join_all;
-use reqwest::Client;
-use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
-pub async fn sync_rules(
-    client: &Client,
-    sources: Vec<UpstreamSource>,
-    root: &std::path::Path,
-) -> Result<()> {
-    let mut tasks = vec![];
-    
-    for src in sources {
-        if !src.enabled {
-            continue;
-        }
-        let c = client.clone();
-        tasks.push(tokio::spawn(async move {
-            println!("  [Rule] Downloading {}...", src.name);
-            let resp = c.get(&src.url).send().await?.text().await?;
-            Ok::<_, anyhow::Error>((src.category, src.target, resp))
-        }));
-    }
-
-    let results = join_all(tasks).await;
-    
-    let mut collected: HashMap<String, HashMap<String, String>> = HashMap::new();
-    for res in results {
-        if let Ok(Ok((cat, target, text))) = res {
-            let cat_map = collected.entry(cat).or_default();
-            let target_str = cat_map.entry(target).or_default();
-            target_str.push_str(&text);
-            target_str.push('\n');
-        } else if let Ok(Err(e)) = res {
-            eprintln!("  ❌ Error downloading: {}", e);
-        }
-    }
-
-    for (cat, targets) in collected {
-        let dir = root.join("source/upstream").join(&cat);
-        tokio::fs::create_dir_all(&dir).await?;
-        for (target, content) in targets {
-            let file_path = dir.join(format!("{}.txt", target));
-            tokio::fs::write(&file_path, content).await?;
-            println!("  ✅ Saved {}/{}", cat, target);
-        }
-    }
-    
-    Ok(())
+#[derive(Debug, Deserialize)]
+struct IconSource {
+    name: String,
+    url: String,
+    theme: String,
+    enabled: bool,
 }
 
-pub async fn sync_icons(
-    client: &Client,
-    sources: Vec<IconSource>,
-    root: &std::path::Path,
-) -> Result<()> {
-    let mut tasks = vec![];
+#[derive(Debug, Deserialize)]
+struct RawIcon {
+    name: Option<String>,
+    tag: Option<String>,
+    url: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct NormalizedIcon {
+    name: String,
+    url: String,
+    source: String,
+    theme: String,
+}
+
+pub async fn run(root: &str) -> Result<()> {
+    let root = PathBuf::from(root).canonicalize()?;
+    let config_path = root.join("source/icons.json");
+    let data = tokio::fs::read(&config_path).await?;
+    let sources: Vec<IconSource> = serde_json::from_slice(&data)?;
+
+    println!("🖼 Synchronizing icon catalog from {} sources...", sources.len());
+
+    let client = reqwest::Client::builder()
+        .user_agent("Gins-Rules-Engine/2.0")
+        .build()?;
+
+    let mut all_icons: Vec<NormalizedIcon> = Vec::new();
+    let mut join_set = tokio::task::JoinSet::new();
 
     for src in sources {
         if !src.enabled {
             continue;
         }
         let c = client.clone();
-        tasks.push(tokio::spawn(async move {
+        join_set.spawn(async move {
             println!("  [Icon] Downloading {}...", src.name);
             let mut req = c.get(&src.url);
             if src.url.contains("kelee.one") {
                 req = req.header("User-Agent", "Loon/338 CFNetwork/1498.700.2 Darwin/23.6.0");
             }
             let text = req.send().await?.text().await?;
-            
+
             let raw: Vec<RawIcon> = serde_json::from_str(&text)?;
             let mut normalized = Vec::new();
             for r in raw {
@@ -85,15 +68,13 @@ pub async fn sync_icons(
                 }
             }
             Ok::<_, anyhow::Error>(normalized)
-        }));
+        });
     }
 
-    let results = join_all(tasks).await;
-    let mut all_icons = Vec::new();
-    for res in results {
-        if let Ok(Ok(icons)) = res {
+    while let Some(result) = join_set.join_next().await {
+        if let Ok(Ok(icons)) = result {
             all_icons.extend(icons);
-        } else if let Ok(Err(e)) = res {
+        } else if let Ok(Err(e)) = result {
             eprintln!("  ❌ Error parsing icons: {}", e);
         }
     }
@@ -122,7 +103,6 @@ pub async fn sync_icons(
     )
     .await?;
 
-    println!("  ✅ Saved {} icons", all_icons.len());
-
+    println!("✨ Saved {} icons", all_icons.len());
     Ok(())
 }
