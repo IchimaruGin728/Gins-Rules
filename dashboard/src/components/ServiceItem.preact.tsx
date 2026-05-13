@@ -87,7 +87,8 @@ export default function ServiceItem({
     }
   };
 
-  const showIPBadges = hasIP && (!isMihomoLike || isIPPart);
+  // Show IP badge on main cards when service has IP rules (all apps)
+  const showIPBadges = hasIP && !isIPPart;
 
   return (
     <div
@@ -130,14 +131,18 @@ export default function ServiceItem({
             )}
           </div>
           <span class="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
-            {isDisabled ? "Unsupported Domain-Set" : `${lines} Rules`}
+            {isDisabled
+              ? "Unsupported Domain-Set"
+              : isIPPart
+                ? `IP CIDR · ${lines} Rules`
+                : `${lines} Rules`}
           </span>
         </div>
       </div>
 
       <div class="flex items-center gap-1.5">
-        {/* Classical YAML Fallback Button for Mihomo/Stash */}
-        {isMihomoLike && classical && !isDisabled && (
+        {/* Classical YAML Fallback Button for Mihomo/Stash — always available */}
+        {isMihomoLike && !isIPPart && !isDisabled && (
           <button
             type="button"
             onClick={(e) => handleCopy(e, true)}
