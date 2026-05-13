@@ -23,6 +23,13 @@ pub fn parse_file(path: &Path) -> Result<RuleSet> {
             continue;
         }
 
+        // Skip HTTP error responses that leaked into upstream data
+        if line.starts_with('<') || line.starts_with("<!DOCTYPE") || line.starts_with("<html")
+            || line == "404: Not Found" || line == "503: Service Unavailable"
+            || line == "403: Forbidden" {
+            continue;
+        }
+
         let line = line.split('#').next().unwrap().trim();
         let line = line.split("//").next().unwrap().trim();
 
