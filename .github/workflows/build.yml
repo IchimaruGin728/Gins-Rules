@@ -45,6 +45,27 @@ jobs:
           node-version: '26.1.0'
           cache: "pnpm"
 
+      - name: Download Rule Tools
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p bin
+
+          MIHOMO_ASSET=$(gh release view Prerelease-Alpha --repo MetaCubeX/mihomo --json assets --jq '.assets[].name | select(test("^mihomo-linux-amd64-alpha-.*\\.gz$"))' | head -n 1)
+          gh release download Prerelease-Alpha --repo MetaCubeX/mihomo --pattern "$MIHOMO_ASSET" --dir bin
+          gunzip -c "bin/$MIHOMO_ASSET" > bin/mihomo
+          rm "bin/$MIHOMO_ASSET"
+
+          SINGBOX_TAG=$(gh release list --repo SagerNet/sing-box --limit 20 --json tagName,isPrerelease --jq '.[] | select(.isPrerelease) | .tagName' | head -n 1)
+          SINGBOX_ASSET=$(gh release view "$SINGBOX_TAG" --repo SagerNet/sing-box --json assets --jq '.assets[].name | select(test("^sing-box-.*-linux-amd64\\.tar\\.gz$"))' | head -n 1)
+          gh release download "$SINGBOX_TAG" --repo SagerNet/sing-box --pattern "$SINGBOX_ASSET" --dir bin
+          tar -xzf "bin/$SINGBOX_ASSET" -C bin --strip-components=1 "sing-box-${SINGBOX_TAG#v}-linux-amd64/sing-box"
+          rm "bin/$SINGBOX_ASSET"
+
+          chmod +x bin/mihomo bin/sing-box
+          bin/mihomo -v
+          bin/sing-box version
+
       - name: Pull Latest Changes
         run: |
           git config --local user.email "action@github.com"

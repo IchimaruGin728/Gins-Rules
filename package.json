@@ -5,7 +5,7 @@
     "sync": "cargo run --release --manifest-path tools/gins-rules-engine/Cargo.toml -- sync --root .",
     "icons": "cargo run --release --manifest-path tools/gins-rules-engine/Cargo.toml -- icons --root .",
     "parse": "cargo run --release --manifest-path tools/gins-rules-engine/Cargo.toml -- parse --root . --output compiled",
-    "binary": "cd tools/gins-rules-binary && go run . --input ../../compiled/intermediate.json --output ../../compiled/ruleset --mihomo ../../bin/mihomo",
+    "binary": "cd tools/gins-rules-binary && go run . --input ../../compiled/intermediate.json --output ../../compiled/ruleset --mihomo ../../bin/mihomo --singbox ../../bin/sing-box",
     "compile": "pnpm parse && pnpm binary",
     "build": "pnpm sync && pnpm icons && pnpm compile && cd dashboard && pnpm build && cp -r dist/* ../compiled/",
     "deploy": "pnpm build && wrangler deploy --config cmd/scanner/wrangler.jsonc"
