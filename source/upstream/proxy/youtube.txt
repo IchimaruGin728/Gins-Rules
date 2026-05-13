@@ -1,3 +1,4 @@
+404: Not Found
 # NAME: YouTube
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -423,4 +424,3 @@ USER-AGENT,YouTubeMusic*
 USER-AGENT,com.google.ios.youtube*
 USER-AGENT,com.google.ios.youtubemusic*
 
-404: Not Found
