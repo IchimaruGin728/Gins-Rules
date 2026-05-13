@@ -10,7 +10,8 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result
     let out = out_dir.join(format!("{}.list", name));
     let mut p = Vec::new();
 
-    // Performance-tier order: DOMAIN → DOMAIN-SUFFIX → DOMAIN-KEYWORD → DOMAIN-REGEX → IP → PROCESS → UA
+    // Performance-tier order: DOMAIN → DOMAIN-SUFFIX → DOMAIN-KEYWORD → IP → PROCESS → UA
+    // Surge RULE-SET does not support DOMAIN-REGEX, DOMAIN-WILDCARD, or PROCESS-NAME
     for s in &rules.domain {
         p.push(format!("DOMAIN,{}", s));
     }
@@ -19,9 +20,6 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result
     }
     for s in &rules.domain_keyword {
         p.push(format!("DOMAIN-KEYWORD,{}", s));
-    }
-    for s in &rules.domain_regex {
-        p.push(format!("DOMAIN-REGEX,{}", s));
     }
     for s in &rules.ip_cidr {
         p.push(format!(
