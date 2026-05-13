@@ -193,6 +193,7 @@ func generateGeoASNMMDB(categories map[string]map[string]RuleSet, cacheDir, outP
 }
 
 // mergeUpstreamMMDB merges an upstream MMDB file into the writer
+// Note: mmdbwriter.Insert will overwrite existing entries, so the last source wins
 func mergeUpstreamMMDB(writer *mmdbwriter.Tree, mmdbPath, sourceName string) error {
 	if _, err := os.Stat(mmdbPath); os.IsNotExist(err) {
 		return fmt.Errorf("file not found: %s", mmdbPath)
@@ -215,10 +216,8 @@ func mergeUpstreamMMDB(writer *mmdbwriter.Tree, mmdbPath, sourceName string) err
 
 		// Convert record to mmdbtype
 		mmdbRecord := convertToMMDBType(record)
-		if err := writer.Insert(ipNet, mmdbRecord); err != nil {
-			// Skip conflicting entries
-			continue
-		}
+		// Insert will overwrite if network already exists
+		writer.Insert(ipNet, mmdbRecord)
 		count++
 	}
 
