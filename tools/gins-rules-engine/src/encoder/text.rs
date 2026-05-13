@@ -14,8 +14,9 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, cat: &str) -> Result<
         if is_ip { ".ip.txt" } else { ".txt" }
     ));
 
-    let mut p: Vec<String> = rules.domain_suffix.iter().map(|s| s.to_string()).collect();
-    p.extend(rules.domain.iter().map(|s| s.to_string()));
+    // Performance-tier order
+    let mut p: Vec<String> = rules.domain.iter().map(|s| s.to_string()).collect();
+    p.extend(rules.domain_suffix.iter().map(|s| s.to_string()));
     p.extend(rules.ip_cidr.iter().map(|s| s.to_string()));
     p.extend(rules.ip_asn.iter().map(|s| s.to_string()));
     p.extend(rules.process_name.iter().map(|s| format!("PROCESS-NAME,{}", s)));

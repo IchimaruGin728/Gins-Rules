@@ -10,11 +10,12 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result
     let out = out_dir.join(format!("{}.list", name));
     let mut p = Vec::new();
 
-    for s in &rules.domain_suffix {
-        p.push(format!("DOMAIN-SUFFIX,{}", s));
-    }
+    // Performance-tier order
     for s in &rules.domain {
         p.push(format!("DOMAIN,{}", s));
+    }
+    for s in &rules.domain_suffix {
+        p.push(format!("DOMAIN-SUFFIX,{}", s));
     }
     for s in &rules.domain_keyword {
         p.push(format!("DOMAIN-KEYWORD,{}", s));

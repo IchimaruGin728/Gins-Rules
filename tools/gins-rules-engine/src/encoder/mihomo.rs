@@ -74,20 +74,21 @@ fn write_classical_yaml(name: &str, rules: &RuleSet, out_dir: &Path) -> Result<(
     let out = out_dir.join(format!("{}.yaml", name));
     let mut payload: Vec<String> = Vec::new();
 
-    for s in &rules.domain_suffix {
-        payload.push(format!("DOMAIN-SUFFIX,{}", s));
-    }
+    // Performance-tier order
     for s in &rules.domain {
         payload.push(format!("DOMAIN,{}", s));
+    }
+    for s in &rules.domain_suffix {
+        payload.push(format!("DOMAIN-SUFFIX,{}", s));
     }
     for s in &rules.domain_keyword {
         payload.push(format!("DOMAIN-KEYWORD,{}", s));
     }
-    for s in &rules.domain_regex {
-        payload.push(format!("DOMAIN-REGEX,{}", s));
-    }
     for s in &rules.domain_wildcard {
         payload.push(format!("DOMAIN-WILDCARD,{}", s));
+    }
+    for s in &rules.domain_regex {
+        payload.push(format!("DOMAIN-REGEX,{}", s));
     }
     for s in &rules.ip_cidr {
         payload.push(format!(

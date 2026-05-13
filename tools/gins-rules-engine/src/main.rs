@@ -2,6 +2,7 @@ mod encoder;
 mod icons;
 mod intermediate;
 mod models;
+mod optimizer;
 mod parser;
 mod sync;
 

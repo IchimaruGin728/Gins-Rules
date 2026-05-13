@@ -10,11 +10,14 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result
     let out = out_dir.join(format!("{}.list", name));
     let mut p = Vec::new();
 
-    for s in &rules.domain_suffix {
-        p.push(format!("HOST-SUFFIX,{},PROXY", s));
-    }
+    // Performance-tier order: HOST → HOST-SUFFIX → HOST-KEYWORD → HOST-WILDCARD → IP → IP-ASN → PROCESS-NAME → USER-AGENT
+    // Each type is pre-sorted alphabetically by the optimizer.
+
     for s in &rules.domain {
         p.push(format!("HOST,{},PROXY", s));
+    }
+    for s in &rules.domain_suffix {
+        p.push(format!("HOST-SUFFIX,{},PROXY", s));
     }
     for s in &rules.domain_keyword {
         p.push(format!("HOST-KEYWORD,{},PROXY", s));
@@ -39,7 +42,6 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result
         p.push(format!("USER-AGENT,{},PROXY", s));
     }
 
-    p.sort_unstable();
     if !p.is_empty() {
         fs::write(&out, p.join("\n") + "\n")?;
     }

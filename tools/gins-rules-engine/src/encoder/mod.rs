@@ -16,6 +16,7 @@ use std::path::{Path, PathBuf};
 
 use crate::intermediate;
 use crate::models::RuleSet;
+use crate::optimizer;
 use crate::parser;
 
 const CATEGORIES: &[&str] = &["proxy", "direct", "reject", "ip", "asn"];
@@ -59,6 +60,9 @@ pub fn run(root: &str, output: &str) -> Result<()> {
                     continue;
                 }
 
+                // Optimize: expand keywords→suffixes, sort by performance
+                optimizer::optimize(&mut rules);
+
                 category_aggregate.merge(&rules);
                 category_rules.insert(name.clone(), rules);
             }
@@ -70,6 +74,7 @@ pub fn run(root: &str, output: &str) -> Result<()> {
 
             // Encode category aggregate
             if !category_aggregate.is_empty() {
+                optimizer::optimize(&mut category_aggregate);
                 println!("    📦 Compiling aggregate bundle: {}", cat);
                 encode_all_formats(cat, &category_aggregate, &out_dir, cat);
             }
@@ -90,6 +95,7 @@ pub fn run(root: &str, output: &str) -> Result<()> {
         }
     }
     if !ai_aggregate.is_empty() {
+        optimizer::optimize(&mut ai_aggregate);
         println!("    🤖 Compiling AI aggregate bundle: ai");
         encode_all_formats("ai", &ai_aggregate, &out_dir, "ai");
     }
