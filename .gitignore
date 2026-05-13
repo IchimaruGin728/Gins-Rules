@@ -54,6 +54,7 @@ pnpm-debug.log*
 
 # Go
 bin/
+tools/gins-rules-binary/gins-rules-binary
 /main
 /sync
 /compile

@@ -58,8 +58,8 @@ jobs:
 
       - name: Build Tools
         run: |
-          cd tools/gins-rules-engine && cargo build --release
-          cd tools/gins-rules-binary && go build -o ../../bin/gins-rules-binary .
+          cargo build --release --manifest-path tools/gins-rules-engine/Cargo.toml
+          (cd tools/gins-rules-binary && go build -o ../../bin/gins-rules-binary .)
 
       - name: Sync & Compile (Parallel)
         run: |
