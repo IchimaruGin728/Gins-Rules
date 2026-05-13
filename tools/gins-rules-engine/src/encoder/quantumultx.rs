@@ -32,10 +32,12 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result
     for s in &rules.ip_asn {
         p.push(format!("IP-ASN,{},PROXY", s));
     }
+    for s in &rules.process_name {
+        p.push(format!("PROCESS-NAME,{},PROXY", s));
+    }
     for s in &rules.user_agent {
         p.push(format!("USER-AGENT,{},PROXY", s));
     }
-    // QuanX does not support PROCESS-NAME
 
     p.sort_unstable();
     if !p.is_empty() {

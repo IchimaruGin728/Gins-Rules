@@ -51,6 +51,8 @@ fn parse_line(line: &str, rules: &mut RuleSet) {
             rules.domain_regex.insert(CompactString::new(stripped));
         } else if let Some(stripped) = val.strip_prefix("keyword:") {
             rules.domain_keyword.insert(CompactString::new(stripped));
+        } else if let Some(stripped) = val.strip_prefix("process:") {
+            rules.process_name.insert(CompactString::new(stripped));
         } else if val.starts_with('+') || val.starts_with('.') {
             rules
                 .domain_suffix
