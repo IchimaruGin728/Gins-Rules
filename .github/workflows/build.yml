@@ -142,18 +142,22 @@ jobs:
         if: always()
         run: |
           SUMMARY=$(cat compiled/ruleset/build-summary.json 2>/dev/null || echo "{\"services\":0,\"rules\":0,\"ipRules\":0,\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}")
+          BINARY=$(cat compiled/ruleset/binary-summary.json 2>/dev/null || echo "{}")
           ICONS_HASH=$(cat source/icons-hash.json 2>/dev/null || echo "{}")
           PAYLOAD=$(jq -n \
             --arg project "Gins-Rules" \
             --arg run_id "${{ github.run_id }}" \
             --arg sha "${{ github.sha }}" \
             --arg trigger "${{ github.event_name }}" \
+            --arg upstream_changed "${{ steps.sync.outputs.changed }}" \
             --argjson stats "$SUMMARY" \
+            --argjson binary "$BINARY" \
             --argjson icons_hash "$ICONS_HASH" \
             --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '$stats + {
               project: $project,
-              build: { id: $run_id, sha: $sha, trigger: $trigger },
+              build: { id: $run_id, sha: $sha, trigger: $trigger, upstream_changed: $upstream_changed },
+              binary: $binary,
               artifacts: { icons: $icons_hash },
               timestamp: $time
             }')

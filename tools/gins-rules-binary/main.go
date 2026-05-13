@@ -52,19 +52,42 @@ func main() {
 
 	fmt.Printf("📦 [Binary] Processing %d categories...\n", len(intermediate.Categories))
 
+	// Count total services
+	totalServices := 0
+	for _, targets := range intermediate.Categories {
+		totalServices += len(targets)
+	}
+
 	// Generate MRS files
-	mrsCount := generateAllMRS(intermediate.Categories, *output, *mihomoBin)
+	mrsCount, mrsTotal := generateAllMRS(intermediate.Categories, *output, *mihomoBin)
 
 	// Generate SRS files
-	srsCount := generateAllSRS(intermediate.Categories, *output, *singboxBin)
+	srsCount, srsTotal := generateAllSRS(intermediate.Categories, *output, *singboxBin)
 
 	// Generate DAT files
-	datCount := generateAllDAT(intermediate.Categories, *output)
+	datCount, datTotal := generateAllDAT(intermediate.Categories, *output)
 
 	// Generate MMDB files
 	mmdbCount := generateAllMMDB(intermediate.Categories, *output)
 
 	fmt.Printf("✨ [Binary] Generated %d MRS, %d SRS, %d DAT, %d MMDB files\n", mrsCount, srsCount, datCount, mmdbCount)
+
+	// Write binary summary
+	binarySummary := map[string]interface{}{
+		"mrs":       map[string]int{"success": mrsCount, "total": mrsTotal},
+		"srs":       map[string]int{"success": srsCount, "total": srsTotal},
+		"dat":       map[string]int{"success": datCount, "total": datTotal},
+		"mmdb":      mmdbCount,
+		"services":  totalServices,
+		"timestamp": intermediate.Timestamp,
+	}
+	summaryData, _ := json.MarshalIndent(binarySummary, "", "    ")
+	summaryPath := filepath.Join(*output, "binary-summary.json")
+	if err := os.WriteFile(summaryPath, summaryData, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "  ❌ Failed to write binary-summary.json: %v\n", err)
+	} else {
+		fmt.Printf("  📄 Wrote binary-summary.json\n")
+	}
 }
 
 func hasDomainOnly(rs RuleSet) bool {

@@ -104,7 +104,7 @@ pub fn run(root: &str, output: &str) -> Result<()> {
     let compiled_dir = out_dir.parent().unwrap_or(&out_dir);
     intermediate::write(&all_categories, compiled_dir)?;
 
-    // Build summary
+    // Build summary — source-level stats
     let total_services: usize = all_categories.values().map(|m| m.len()).sum();
     let total_rules: usize = all_categories.values().flat_map(|m| m.values()).map(|r| r.len()).sum();
     let total_ips: usize = all_categories
@@ -113,10 +113,42 @@ pub fn run(root: &str, output: &str) -> Result<()> {
         .map(|r| r.ip_cidr.len() + r.ip_asn.len())
         .sum();
 
+    // Count compiled output files
+    let mut compiled_files: u64 = 0;
+    let mut compiled_rules: u64 = 0;
+    for format_dir in &["surge", "quantumultx", "mihomo", "loon", "surfboard",
+                        "egern", "singbox", "exclave", "anywhere", "stash",
+                        "shadowrocket", "text"] {
+        let dir = out_dir.join(format_dir);
+        if let Ok(entries) = std::fs::read_dir(&dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    if let Ok(files) = std::fs::read_dir(&path) {
+                        for f in files.flatten() {
+                            let fp = f.path();
+                            if fp.is_file() && fp.extension().map_or(false, |e| e == "list" || e == "lsr" || e == "yaml" || e == "json" || e == "txt") {
+                                compiled_files += 1;
+                                if let Ok(content) = std::fs::read_to_string(&fp) {
+                                    compiled_rules += content.lines()
+                                        .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
+                                        .count() as u64;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        break; // Only count one format (surge) to avoid over-counting
+    }
+
     let summary = serde_json::json!({
         "services": total_services,
         "rules": total_rules,
         "ipRules": total_ips,
+        "compiled_files": compiled_files,
+        "compiled_rules": compiled_rules,
         "timestamp": chrono::Utc::now().to_rfc3339(),
     });
     std::fs::write(out_dir.join("build-summary.json"), serde_json::to_string(&summary)?)?;

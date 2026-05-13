@@ -10,29 +10,32 @@ import (
 )
 
 // generateAllDAT generates geoip.dat, geosite.dat, geoasn.dat
-func generateAllDAT(categories map[string]map[string]RuleSet, output string) int {
-	count := 0
+func generateAllDAT(categories map[string]map[string]RuleSet, output string) (int, int) {
+	success := 0
+	total := 0
 	outDir := filepath.Join(output, "xray")
 	if err := ensureDir(outDir); err != nil {
 		fmt.Fprintf(os.Stderr, "  ❌ mkdir %s: %v\n", outDir, err)
-		return 0
+		return 0, 0
 	}
 
 	// geoip.dat — from ip category
 	if ipTargets, ok := categories["ip"]; ok {
+		total++
 		if err := generateGeoIP(ipTargets, filepath.Join(outDir, "geoip.dat")); err != nil {
 			fmt.Fprintf(os.Stderr, "  ❌ geoip.dat: %v\n", err)
 		} else {
-			count++
+			success++
 		}
 	}
 
 	// geoasn.dat — from asn category
 	if asnTargets, ok := categories["asn"]; ok {
+		total++
 		if err := generateGeoIP(asnTargets, filepath.Join(outDir, "geoasn.dat")); err != nil {
 			fmt.Fprintf(os.Stderr, "  ❌ geoasn.dat: %v\n", err)
 		} else {
-			count++
+			success++
 		}
 	}
 
@@ -61,14 +64,15 @@ func generateAllDAT(categories map[string]map[string]RuleSet, output string) int
 		}
 	}
 	if len(geositeData) > 0 {
+		total++
 		if err := generateGeoSite(geositeData, filepath.Join(outDir, "geosite.dat")); err != nil {
 			fmt.Fprintf(os.Stderr, "  ❌ geosite.dat: %v\n", err)
 		} else {
-			count++
+			success++
 		}
 	}
 
-	return count
+	return success, total
 }
 
 // generateGeoIP generates a geoip.dat compatible file

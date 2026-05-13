@@ -9,13 +9,15 @@ import (
 )
 
 // generateAllSRS generates SRS files for all categories using sing-box CLI
-func generateAllSRS(categories map[string]map[string]RuleSet, output string, singboxBin string) int {
-	count := 0
+func generateAllSRS(categories map[string]map[string]RuleSet, output string, singboxBin string) (int, int) {
+	success := 0
+	total := 0
 	for cat, targets := range categories {
 		for name, rs := range targets {
 			if ruleSetIsEmpty(rs) {
 				continue
 			}
+			total++
 			outDir := filepath.Join(output, "singbox", cat)
 			if err := ensureDir(outDir); err != nil {
 				fmt.Fprintf(os.Stderr, "  ❌ mkdir %s: %v\n", outDir, err)
@@ -27,11 +29,11 @@ func generateAllSRS(categories map[string]map[string]RuleSet, output string, sin
 			if err := generateSrs(singboxBin, rs, outPath); err != nil {
 				fmt.Fprintf(os.Stderr, "  ❌ SRS %s/%s: %v\n", cat, name, err)
 			} else {
-				count++
+				success++
 			}
 		}
 	}
-	return count
+	return success, total
 }
 
 // generateSrs writes a sing-box JSON source file and calls sing-box rule-set compile

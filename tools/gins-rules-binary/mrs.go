@@ -8,8 +8,9 @@ import (
 )
 
 // generateAllMRS generates MRS files for all categories using mihomo CLI
-func generateAllMRS(categories map[string]map[string]RuleSet, output string, mihomoBin string) int {
-	count := 0
+func generateAllMRS(categories map[string]map[string]RuleSet, output string, mihomoBin string) (int, int) {
+	success := 0
+	total := 0
 	for cat, targets := range categories {
 		for name, rs := range targets {
 			if ruleSetIsEmpty(rs) {
@@ -29,36 +30,39 @@ func generateAllMRS(categories map[string]map[string]RuleSet, output string, mih
 				// Domain MRS
 				domainLines := domainPayload(rs)
 				if len(domainLines) > 0 {
+					total++
 					if err := generateMrs(mihomoBin, "domain", domainLines, filepath.Join(outDir, name+".mrs")); err != nil {
 						fmt.Fprintf(os.Stderr, "  ❌ MRS domain %s/%s: %v\n", cat, name, err)
 					} else {
-						count++
+						success++
 					}
 				}
 
 				// IP MRS
 				ipLines := ipcidrPayload(rs)
 				if len(ipLines) > 0 {
+					total++
 					if err := generateMrs(mihomoBin, "ipcidr", ipLines, filepath.Join(outDir, name+"-ip.mrs")); err != nil {
 						fmt.Fprintf(os.Stderr, "  ❌ MRS ipcidr %s/%s: %v\n", cat, name, err)
 					} else {
-						count++
+						success++
 					}
 				}
 			} else {
 				// Simple domain-only: generate domain MRS
 				domainLines := domainPayload(rs)
 				if len(domainLines) > 0 {
+					total++
 					if err := generateMrs(mihomoBin, "domain", domainLines, filepath.Join(outDir, name+".mrs")); err != nil {
 						fmt.Fprintf(os.Stderr, "  ❌ MRS domain %s/%s: %v\n", cat, name, err)
 					} else {
-						count++
+						success++
 					}
 				}
 			}
 		}
 	}
-	return count
+	return success, total
 }
 
 // generateMrs writes a temporary text file and calls mihomo convert-ruleset
