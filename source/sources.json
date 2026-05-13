@@ -779,7 +779,7 @@
   {"name": "SukkaW TelegramASN", "url": "https://raw.githubusercontent.com/SukkaW/Surge/master/Source/ip/telegram_asn.conf", "category": "proxy", "target": "telegram", "enabled": true},
 
   {"name": "SukkaW AI", "url": "https://raw.githubusercontent.com/SukkaW/Surge/master/Source/non_ip/ai.conf", "category": "proxy", "target": "ai-other", "enabled": true},
-  {"name": "SukkaW AppleCN", "url": "https://raw.githubusercontent.com/SukkaW/Surge/master/Source/non_ip/apple_cn.conf", "category": "direct", "target": "apple-direct", "enabled": true},
+  {"name": "SukkaW AppleCN", "url": "https://raw.githubusercontent.com/SukkaW/Surge/master/Source/non_ip/apple_cn.conf", "category": "direct", "target": "apple", "enabled": true},
   {"name": "SukkaW AppleIntelligence", "url": "https://raw.githubusercontent.com/SukkaW/Surge/master/Source/non_ip/apple_intelligence.conf", "category": "proxy", "target": "apple-intelligence", "enabled": true},
   {"name": "SukkaW AppleServices", "url": "https://raw.githubusercontent.com/SukkaW/Surge/master/Source/non_ip/apple_services.conf", "category": "proxy", "target": "apple", "enabled": true},
   {"name": "SukkaW Direct", "url": "https://raw.githubusercontent.com/SukkaW/Surge/master/Source/non_ip/direct.conf", "category": "direct", "target": "direct-list", "enabled": true},
