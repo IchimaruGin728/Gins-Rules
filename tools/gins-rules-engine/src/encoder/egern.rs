@@ -37,9 +37,7 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result
         };
         egern_rules.push(serde_json::json!({"asn": {"match": asn_val, "policy": "Proxy"}}));
     }
-    for s in &rules.process_name {
-        egern_rules.push(serde_json::json!({"process_name": {"match": s, "policy": "Proxy"}}));
-    }
+    // Egern does not support process_name in rule-set
     for s in &rules.user_agent {
         egern_rules.push(serde_json::json!({"user_agent": {"match": s, "policy": "Proxy"}}));
     }
