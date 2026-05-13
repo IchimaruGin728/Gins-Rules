@@ -10,10 +10,5 @@ HOST-SUFFIX,sndcdn.com,SoundCloud
 HOST-SUFFIX,soundcloud.com,SoundCloud
 USER-AGENT,SoundCloud*,SoundCloud
 
-# 规则名称: SoundCloud
-# 规则统计: 3
-
-DOMAIN-SUFFIX,p-cdn.us
-DOMAIN-SUFFIX,sndcdn.com
-DOMAIN-SUFFIX,soundcloud.com
-
+429: Too Many Requests
+For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
