@@ -544,7 +544,9 @@ void buildTime;
       </div>
 
       {
-        categories.map((category, index) => (
+        categories.map((category, index) => {
+          const catRules = category.services.reduce((sum: number, s: {lines: number}) => sum + s.lines, 0);
+          return (
           <details
             class="glass-panel p-0! overflow-hidden group/details"
             open={index === 0}
@@ -556,7 +558,10 @@ void buildTime;
                   {category.label}
                 </span>
                 <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 bg-white/5 px-2.5 py-0.5 rounded-full">
-                  {category.services.length}
+                  {category.services.length} services
+                </span>
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                  {(catRules / 1000).toFixed(0)}K rules
                 </span>
               </div>
               <div class="i-ph-caret-down-bold text-gray-500 transition-transform duration-300 group-open:rotate-180" />
@@ -579,7 +584,8 @@ void buildTime;
               </div>
             </div>
           </details>
-        ))
+          );
+        })
       }
     </section>
   </div>
