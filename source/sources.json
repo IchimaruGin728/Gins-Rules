@@ -806,7 +806,7 @@
   {"name": "China Operator CERNET", "url": "https://china-operator-ip.yfgao.com/cernet.txt", "category": "direct", "target": "direct-list", "enabled": true},
   {"name": "China Operator CSTNET", "url": "https://china-operator-ip.yfgao.com/cstnet.txt", "category": "direct", "target": "direct-list", "enabled": true},
   {"name": "China Operator DrPeng", "url": "https://china-operator-ip.yfgao.com/drpeng.txt", "category": "direct", "target": "direct-list", "enabled": true},
-  {"name": "China Operator GoogleCN", "url": "https://china-operator-ip.yfgao.com/googlecn.txt", "category": "direct", "target": "direct-list", "enabled": true},
+  {"name": "China Operator GoogleCN", "url": "https://china-operator-ip.yfgao.com/googlecn.txt", "category": "proxy", "target": "proxy-list", "enabled": true},
 
   {"name": "Fries ASN China", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.China.list", "category": "direct", "target": "direct-list", "enabled": true},
   {"name": "Fries ASN Telegram", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.Telegram.list", "category": "ip", "target": "asn-telegram", "enabled": true}
