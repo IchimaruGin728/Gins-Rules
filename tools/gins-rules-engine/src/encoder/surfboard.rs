@@ -22,7 +22,7 @@ pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result
     }
     for s in &rules.ip_cidr {
         p.push(format!(
-            "{},{}",
+            "{},{},no-resolve",
             if s.contains(':') { "IP-CIDR6" } else { "IP-CIDR" },
             s
         ));

@@ -92,13 +92,13 @@ fn write_classical_yaml(name: &str, rules: &RuleSet, out_dir: &Path) -> Result<(
     }
     for s in &rules.ip_cidr {
         payload.push(format!(
-            "{},{}",
+            "{},{},no-resolve",
             if s.contains(':') { "IP-CIDR6" } else { "IP-CIDR" },
             s
         ));
     }
     for s in &rules.ip_asn {
-        payload.push(format!("IP-ASN,{}", s));
+        payload.push(format!("IP-ASN,{},no-resolve", s));
     }
     for s in &rules.process_name {
         payload.push(format!("PROCESS-NAME,{}", s));

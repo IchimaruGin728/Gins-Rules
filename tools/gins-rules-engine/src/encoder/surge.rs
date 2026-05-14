@@ -85,7 +85,7 @@ pub fn encode_shadowrocket(
     }
     for s in &rules.ip_cidr {
         p.push(format!(
-            "{},{}",
+            "{},{},no-resolve",
             if s.contains(':') { "IP-CIDR6" } else { "IP-CIDR" },
             s
         ));
