@@ -809,5 +809,11 @@
   {"name": "China Operator GoogleCN", "url": "https://china-operator-ip.yfgao.com/googlecn.txt", "category": "ip", "target": "cn-googlecn", "enabled": true},
 
   {"name": "Fries ASN China", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.China.list", "category": "ip", "target": "asn-cn", "enabled": true},
-  {"name": "Fries ASN Telegram", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.Telegram.list", "category": "ip", "target": "asn-telegram", "enabled": true}
+  {"name": "Fries ASN Telegram", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.Telegram.list", "category": "ip", "target": "asn-telegram", "enabled": true},
+
+  {"name": "CN All - Direct Domains", "url": "https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/direct-list.txt", "category": "direct", "target": "cn-all", "enabled": true},
+  {"name": "CN All - China Domains", "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geosite/cn.list", "category": "direct", "target": "cn-all", "enabled": true},
+  {"name": "CN All - China IPv4", "url": "https://china-operator-ip.yfgao.com/china.txt", "category": "ip", "target": "cn-all", "enabled": true},
+  {"name": "CN All - China IPv6", "url": "https://china-operator-ip.yfgao.com/china6.txt", "category": "ip", "target": "cn-all", "enabled": true},
+  {"name": "CN All - ASN China", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.China.list", "category": "ip", "target": "cn-all", "enabled": true}
 ]
