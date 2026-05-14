@@ -795,25 +795,19 @@
 
   {"name": "BM7 Cloudflarecn", "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Cloudflarecn/Cloudflarecn.list", "category": "direct", "target": "direct-list", "enabled": true},
 
-  {"name": "China Operator China", "url": "https://china-operator-ip.yfgao.com/china.txt", "category": "ip", "target": "cn", "enabled": true},
-  {"name": "China Operator China v6", "url": "https://china-operator-ip.yfgao.com/china6.txt", "category": "ip", "target": "cn-v6", "enabled": true},
-  {"name": "China Operator ChinaNet", "url": "https://china-operator-ip.yfgao.com/chinanet.txt", "category": "ip", "target": "cn-chinanet", "enabled": true},
-  {"name": "China Operator ChinaNet v6", "url": "https://china-operator-ip.yfgao.com/chinanet6.txt", "category": "ip", "target": "cn-chinanet-v6", "enabled": true},
-  {"name": "China Operator CMCC", "url": "https://china-operator-ip.yfgao.com/cmcc.txt", "category": "ip", "target": "cn-cmcc", "enabled": true},
-  {"name": "China Operator CMCC v6", "url": "https://china-operator-ip.yfgao.com/cmcc6.txt", "category": "ip", "target": "cn-cmcc-v6", "enabled": true},
-  {"name": "China Operator Unicom", "url": "https://china-operator-ip.yfgao.com/unicom.txt", "category": "ip", "target": "cn-unicom", "enabled": true},
-  {"name": "China Operator Unicom v6", "url": "https://china-operator-ip.yfgao.com/unicom6.txt", "category": "ip", "target": "cn-unicom-v6", "enabled": true},
-  {"name": "China Operator CERNET", "url": "https://china-operator-ip.yfgao.com/cernet.txt", "category": "ip", "target": "cn-cernet", "enabled": true},
-  {"name": "China Operator CSTNET", "url": "https://china-operator-ip.yfgao.com/cstnet.txt", "category": "ip", "target": "cn-cstnet", "enabled": true},
-  {"name": "China Operator DrPeng", "url": "https://china-operator-ip.yfgao.com/drpeng.txt", "category": "ip", "target": "cn-drpeng", "enabled": true},
-  {"name": "China Operator GoogleCN", "url": "https://china-operator-ip.yfgao.com/googlecn.txt", "category": "ip", "target": "cn-googlecn", "enabled": true},
+  {"name": "China Operator China", "url": "https://china-operator-ip.yfgao.com/china.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator China v6", "url": "https://china-operator-ip.yfgao.com/china6.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator ChinaNet", "url": "https://china-operator-ip.yfgao.com/chinanet.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator ChinaNet v6", "url": "https://china-operator-ip.yfgao.com/chinanet6.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator CMCC", "url": "https://china-operator-ip.yfgao.com/cmcc.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator CMCC v6", "url": "https://china-operator-ip.yfgao.com/cmcc6.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator Unicom", "url": "https://china-operator-ip.yfgao.com/unicom.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator Unicom v6", "url": "https://china-operator-ip.yfgao.com/unicom6.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator CERNET", "url": "https://china-operator-ip.yfgao.com/cernet.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator CSTNET", "url": "https://china-operator-ip.yfgao.com/cstnet.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator DrPeng", "url": "https://china-operator-ip.yfgao.com/drpeng.txt", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "China Operator GoogleCN", "url": "https://china-operator-ip.yfgao.com/googlecn.txt", "category": "ip", "target": "direct-list", "enabled": true},
 
-  {"name": "Fries ASN China", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.China.list", "category": "ip", "target": "asn-cn", "enabled": true},
-  {"name": "Fries ASN Telegram", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.Telegram.list", "category": "ip", "target": "asn-telegram", "enabled": true},
-
-  {"name": "CN All - Direct Domains", "url": "https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/direct-list.txt", "category": "direct", "target": "cn-all", "enabled": true},
-  {"name": "CN All - China Domains", "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geosite/cn.list", "category": "direct", "target": "cn-all", "enabled": true},
-  {"name": "CN All - China IPv4", "url": "https://china-operator-ip.yfgao.com/china.txt", "category": "ip", "target": "cn-all", "enabled": true},
-  {"name": "CN All - China IPv6", "url": "https://china-operator-ip.yfgao.com/china6.txt", "category": "ip", "target": "cn-all", "enabled": true},
-  {"name": "CN All - ASN China", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.China.list", "category": "ip", "target": "cn-all", "enabled": true}
+  {"name": "Fries ASN China", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.China.list", "category": "ip", "target": "direct-list", "enabled": true},
+  {"name": "Fries ASN Telegram", "url": "https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.Telegram.list", "category": "ip", "target": "asn-telegram", "enabled": true}
 ]
