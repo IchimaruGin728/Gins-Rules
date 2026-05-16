@@ -96,7 +96,7 @@ export const APPS: AppConfig[] = [
     id: "anywhere",
     label: "Anywhere",
     icon: "/icons/anywhere.png",
-    ext: "json",
+    ext: "arrs",
     color: "#007AFF",
   },
   {

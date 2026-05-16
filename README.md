@@ -40,7 +40,7 @@ The delivery URLs are backed by high-performance R2 storage with Cloudflare Smar
 | **Surfboard (Opt)**| TXT | `/ruleset/surfboard/{cat}/{name}.txt` | [apple.txt](https://rules.ichimarugin728.dev/ruleset/surfboard/proxy/apple.txt) |
 | **Egern** | YAML | `/ruleset/egern/{cat}/{name}.yaml` | [apple.yaml](https://rules.ichimarugin728.dev/ruleset/egern/proxy/apple.yaml) |
 | **Exclave** | Route | `/ruleset/exclave/{cat}/{name}.list` | [apple.list](https://rules.ichimarugin728.dev/ruleset/exclave/proxy/apple.list) |
-| **Anywhere** | JSON | `/ruleset/anywhere/{cat}/{name}.json` | [apple.json](https://rules.ichimarugin728.dev/ruleset/anywhere/proxy/apple.json) |
+| **Anywhere** | ARRS | `/ruleset/anywhere/{cat}/{name}.arrs` | [apple.arrs](https://rules.ichimarugin728.dev/ruleset/anywhere/proxy/apple.arrs) |
 | **Icons Hub** | JSON | `/Gins-Icons.json` | [Gins-Icons.json](https://rules.ichimarugin728.dev/Gins-Icons.json) |
 
 ### 🎨 Icon Hub Dashboard
