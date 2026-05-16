@@ -11,7 +11,7 @@ use crate::models::RuleSet;
 pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result<()> {
     fs::create_dir_all(out_dir)?;
 
-    let out = out_dir.join(format!("{}.json", name));
+    let out = out_dir.join(format!("{}.arrs", name));
     let mut lines: Vec<String> = Vec::new();
 
     lines.push(format!("name = {}", name));

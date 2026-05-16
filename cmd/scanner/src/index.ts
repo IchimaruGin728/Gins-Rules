@@ -391,7 +391,7 @@ async function populateHotRulesKV(env: Env) {
 		shadowrocket: "list",
 		surfboard: "list",
 		exclave: "list",
-		anywhere: "json",
+		anywhere: "arrs",
 		text: "list",
 	};
 
