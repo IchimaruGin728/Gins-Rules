@@ -1,7 +1,7 @@
 # NAME: 深巷有喵的「ChinaCIDR」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.05.16 05:13:26
+# UPDATED: 2026.05.17 04:57:45
 # TOTAL: 8690
 
 # ======= 手动维护规则 ========
