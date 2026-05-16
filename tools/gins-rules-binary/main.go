@@ -168,7 +168,14 @@ func classicalPayload(rs RuleSet) []string {
 	return lines
 }
 
-// domainPayload generates domain text lines (.suffix format)
+// domainPayload generates domain text lines for mihomo MRS text format:
+//
+//	.suffix → domain suffix
+//	exact   → exact domain
+//
+// MRS domain trie only supports exact match and dot-prefix suffix.
+// domain_keyword, domain_regex, domain_wildcard (glob-style),
+// process_name, user_agent are not representable.
 func domainPayload(rs RuleSet) []string {
 	var lines []string
 	for _, s := range rs.DomainSuffix {

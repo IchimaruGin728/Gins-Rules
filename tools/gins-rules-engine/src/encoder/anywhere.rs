@@ -4,37 +4,37 @@ use std::path::Path;
 
 use crate::models::RuleSet;
 
-// Anywhere format type mapping (v2ray GeoSite DomainType)
-// 2 = domain_suffix, 3 = domain (exact), 4 = keyword, 5 = regex
-// 6 = ip_cidr, 7 = ip_asn
+// Anywhere RoutingRuleType (from Swift source):
+//   0 = IPv4 CIDR, 1 = IPv6 CIDR, 2 = Domain Suffix, 3 = Domain Keyword
+// Text format: `<type>, <value>` with optional `name = <name>` header.
 
 pub fn encode(name: &str, rules: &RuleSet, out_dir: &Path, _cat: &str) -> Result<()> {
     fs::create_dir_all(out_dir)?;
 
     let out = out_dir.join(format!("{}.json", name));
-    let mut p: Vec<serde_json::Value> = Vec::new();
+    let mut lines: Vec<String> = Vec::new();
 
+    lines.push(format!("name = {}", name));
+
+    // 2 = Domain Suffix
     for s in &rules.domain_suffix {
-        p.push(serde_json::json!({"type": 2, "value": s}));
+        lines.push(format!("2, {}", s));
     }
-    for s in &rules.domain {
-        p.push(serde_json::json!({"type": 3, "value": s}));
-    }
+    // 3 = Domain Keyword
     for s in &rules.domain_keyword {
-        p.push(serde_json::json!({"type": 4, "value": s}));
+        lines.push(format!("3, {}", s));
     }
-    for s in &rules.domain_regex {
-        p.push(serde_json::json!({"type": 5, "value": s}));
-    }
+    // 0 = IPv4 CIDR, 1 = IPv6 CIDR
     for s in &rules.ip_cidr {
-        p.push(serde_json::json!({"type": 6, "value": s}));
-    }
-    for s in &rules.ip_asn {
-        p.push(serde_json::json!({"type": 7, "value": s}));
+        if s.contains(':') {
+            lines.push(format!("1, {}", s));
+        } else {
+            lines.push(format!("0, {}", s));
+        }
     }
 
-    if !p.is_empty() {
-        fs::write(&out, serde_json::to_string(&p)?)?;
+    if !lines.is_empty() {
+        fs::write(&out, lines.join("\n") + "\n")?;
     }
     Ok(())
 }
