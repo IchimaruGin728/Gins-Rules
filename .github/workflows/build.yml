@@ -147,6 +147,7 @@ jobs:
             --arg run_id "${{ github.run_id }}" \
             --arg sha "${{ github.sha }}" \
             --arg trigger "${{ github.event_name }}" \
+            --arg status "${{ job.status }}" \
             --arg upstream_changed "${{ steps.sync.outputs.changed }}" \
             --argjson stats "$SUMMARY" \
             --argjson binary "$BINARY" \
@@ -154,7 +155,7 @@ jobs:
             --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '$stats + {
               project: $project,
-              build: { id: $run_id, sha: $sha, trigger: $trigger, upstream_changed: $upstream_changed },
+              build: { id: $run_id, sha: $sha, trigger: $trigger, status: $status, upstream_changed: $upstream_changed },
               binary: $binary,
               artifacts: { icons: $icons_hash },
               timestamp: $time

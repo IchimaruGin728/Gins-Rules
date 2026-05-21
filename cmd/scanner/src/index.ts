@@ -91,14 +91,18 @@ export default {
 
 	async queue(batch: MessageBatch<NotifyMessage>, env: Env): Promise<void> {
 		for (const msg of batch.messages) {
-			const { text, telegram, discord } = msg.body;
-			const sections = text
-				.split("---SPLIT---")
-				.map((s: string) => s.trim())
-				.filter(Boolean);
-			for (const content of sections) {
-				if (telegram) await sendTelegram(env, content);
-				if (discord) await sendDiscord(env, content);
+			try {
+				const { text, telegram, discord } = msg.body;
+				const sections = text
+					.split("---SPLIT---")
+					.map((s: string) => s.trim())
+					.filter(Boolean);
+				for (const content of sections) {
+					if (telegram) await sendTelegram(env, content);
+					if (discord) await sendDiscord(env, content);
+				}
+			} catch (err) {
+				console.error("Notify queue error:", err);
 			}
 			msg.ack();
 		}
@@ -457,14 +461,17 @@ async function generateDailySummary(
 		stats.services > 0 ? ((stats.srs / stats.services) * 100).toFixed(0) : "0";
 	const mrsRate =
 		stats.services > 0 ? ((stats.mrs / stats.services) * 100).toFixed(0) : "0";
+	const trafficSection = stats.topHits && stats.topHits !== "No traffic data"
+		? `\n📊 热门规则集:\n${stats.topHits}`
+		: "";
 
 	return `🛡️ Gins-Rules 报告
-✅ ${stats.services} 个分流服务活跃中，已更新 ${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录。二进制编译率：SRS ${srsRate}% / MRS ${mrsRate}%。 (Updated ${date})
+✅ ${stats.services} 个分流服务活跃中，已更新 ${domainRules} 条域名规则及 ${stats.ipRules} 条 IP 记录。二进制编译率：SRS ${srsRate}% / MRS ${mrsRate}%。 (Updated ${date})${trafficSection}
 
 ---SPLIT---
 
 🛡️ Gins-Rules Report
-✅ ${stats.services} routing services active. Synchronized ${domainRules} domain rules and ${stats.ipRules} IP records. Binary compilation: SRS ${srsRate}% / MRS ${mrsRate}%. (Updated ${date})`;
+✅ ${stats.services} routing services active. Synchronized ${domainRules} domain rules and ${stats.ipRules} IP records. Binary compilation: SRS ${srsRate}% / MRS ${mrsRate}%. (Updated ${date})${trafficSection}`;
 }
 
 async function handleBuildComplete(
@@ -512,7 +519,7 @@ async function handleRulesetManifest(url: URL, env: Env): Promise<Response> {
 }
 
 async function sendTelegram(env: Env, text: string) {
-	await fetch(
+	const resp = await fetch(
 		`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`,
 		{
 			method: "POST",
@@ -524,14 +531,20 @@ async function sendTelegram(env: Env, text: string) {
 			}),
 		},
 	);
+	if (!resp.ok) {
+		console.error(`Telegram send failed: ${resp.status} ${await resp.text().catch(() => "")}`);
+	}
 }
 
 async function sendDiscord(env: Env, text: string) {
-	await fetch(env.DISCORD_WEBHOOK_URL, {
+	const resp = await fetch(env.DISCORD_WEBHOOK_URL, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ content: text }),
 	});
+	if (!resp.ok) {
+		console.error(`Discord send failed: ${resp.status} ${await resp.text().catch(() => "")}`);
+	}
 }
 
 function json(d: unknown) {
