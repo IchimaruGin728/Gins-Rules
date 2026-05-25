@@ -51,8 +51,6 @@ USER-AGENT,MicroMessenger*,WeChat
 USER-AGENT,WeChat*,WeChat
 IP-ASN,132203,WeChat
 
-404: Not Found
-404: Not Found
 # 规则名称: Tencent
 # 规则统计: 19
 
@@ -124,6 +122,8 @@ IP-CIDR,101.32.133.53/32,no-resolve
 IP-CIDR,129.226.107.244/32,no-resolve
 IP-CIDR,129.226.3.47/32,no-resolve
 
+404: Not Found
+404: Not Found
 # NAME: Tencent
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
