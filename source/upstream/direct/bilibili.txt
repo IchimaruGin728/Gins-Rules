@@ -1,7 +1,7 @@
 # NAME: 深巷有喵的「BiliBili」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.05.26 05:16:46
+# UPDATED: 2026.05.27 05:51:50
 # TOTAL: 133
 
 # ======= 上游同步规则 ========
