@@ -1,8 +1,3 @@
-# $ meta_title Sukka's Ruleset - GitLab
-# $ meta_description GitLab forbids usage from CN, HK, MO. This file contains ruleset for GitLab.
-
-DOMAIN-SUFFIX,gitlab.com
-
 # 规则名称: GitLab
 # 规则统计: 6
 
@@ -12,4 +7,9 @@ DOMAIN-SUFFIX,gitlab.net
 DOMAIN-SUFFIX,gitter-static.net
 DOMAIN-SUFFIX,gitter.im
 DOMAIN-KEYWORD,gitlab
+
+# $ meta_title Sukka's Ruleset - GitLab
+# $ meta_description GitLab forbids usage from CN, HK, MO. This file contains ruleset for GitLab.
+
+DOMAIN-SUFFIX,gitlab.com
 
