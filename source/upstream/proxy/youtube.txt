@@ -1,7 +1,7 @@
 # NAME: 深巷有喵的「YouTube」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.05.28 06:02:04
+# UPDATED: 2026.05.29 06:01:08
 # TOTAL: 190
 
 # ======= 上游同步规则 ========
@@ -196,7 +196,6 @@ USER-AGENT,YouTubeMusic*
 USER-AGENT,com.google.ios.youtube*
 USER-AGENT,com.google.ios.youtubemusic*
 
-404: Not Found
 # NAME: YouTube
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -419,6 +418,7 @@ USER-AGENT,*com.google.ios.youtubemusic*,YouTubeMusic
 USER-AGENT,YouTubeMusic*,YouTubeMusic
 USER-AGENT,com.google.ios.youtubemusic*,YouTubeMusic
 
+404: Not Found
 # 规则名称: YouTube
 # 规则统计: 14
 
