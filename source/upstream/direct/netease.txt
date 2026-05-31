@@ -1,3 +1,24 @@
+# $ meta_title Sukka's Ruleset - Netease Music
+# $ meta_description This file contains rules for Netease Music.
+
+USER-AGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90
+USER-AGENT,NeteaseMusic*
+DOMAIN-SUFFIX,music.126.net
+DOMAIN-SUFFIX,music.163.com
+
+# 规则名称: NetEase
+# 规则统计: 9
+
+DOMAIN-SUFFIX,126.com
+DOMAIN-SUFFIX,126.net
+DOMAIN-SUFFIX,127.net
+DOMAIN-SUFFIX,163.com
+DOMAIN-SUFFIX,163yun.com
+DOMAIN-SUFFIX,lofter.com
+DOMAIN-SUFFIX,netease.com
+DOMAIN-SUFFIX,ydstatic.com
+DOMAIN-SUFFIX,youdao.com
+
 # $ meta_title Sukka's Ruleset - Netease Music IPs
 # $ meta_description This file contains IPs used by Netease Music.
 
@@ -20,25 +41,4 @@ IP-CIDR,118.24.63.156/32,no-resolve
 IP-CIDR,193.112.159.225/32,no-resolve
 IP-CIDR,223.252.199.66/32,no-resolve
 IP-CIDR,223.252.199.67/32,no-resolve
-
-# $ meta_title Sukka's Ruleset - Netease Music
-# $ meta_description This file contains rules for Netease Music.
-
-USER-AGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90
-USER-AGENT,NeteaseMusic*
-DOMAIN-SUFFIX,music.126.net
-DOMAIN-SUFFIX,music.163.com
-
-# 规则名称: NetEase
-# 规则统计: 9
-
-DOMAIN-SUFFIX,126.com
-DOMAIN-SUFFIX,126.net
-DOMAIN-SUFFIX,127.net
-DOMAIN-SUFFIX,163.com
-DOMAIN-SUFFIX,163yun.com
-DOMAIN-SUFFIX,lofter.com
-DOMAIN-SUFFIX,netease.com
-DOMAIN-SUFFIX,ydstatic.com
-DOMAIN-SUFFIX,youdao.com
 
