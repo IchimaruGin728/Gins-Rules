@@ -197,19 +197,6 @@ USER-AGENT,com.google.ios.youtube*
 USER-AGENT,com.google.ios.youtubemusic*
 
 404: Not Found
-# NAME: YouTubeMusic
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:15:10
-# HOST: 1
-# USER-AGENT: 4
-# TOTAL: 5
-HOST,music.youtube.com,YouTubeMusic
-USER-AGENT,*YouTubeMusic*,YouTubeMusic
-USER-AGENT,*com.google.ios.youtubemusic*,YouTubeMusic
-USER-AGENT,YouTubeMusic*,YouTubeMusic
-USER-AGENT,com.google.ios.youtubemusic*,YouTubeMusic
-
 # NAME: YouTube
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -418,6 +405,19 @@ USER-AGENT,com.google.ios.youtubemusic*,YouTube
 IP-CIDR,172.110.32.0/21,YouTube
 IP-CIDR,216.73.80.0/20,YouTube
 IP6-CIDR,2620:120:e000::/40,YouTube
+
+# NAME: YouTubeMusic
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:15:10
+# HOST: 1
+# USER-AGENT: 4
+# TOTAL: 5
+HOST,music.youtube.com,YouTubeMusic
+USER-AGENT,*YouTubeMusic*,YouTubeMusic
+USER-AGENT,*com.google.ios.youtubemusic*,YouTubeMusic
+USER-AGENT,YouTubeMusic*,YouTubeMusic
+USER-AGENT,com.google.ios.youtubemusic*,YouTubeMusic
 
 # 规则名称: YouTube
 # 规则统计: 14
