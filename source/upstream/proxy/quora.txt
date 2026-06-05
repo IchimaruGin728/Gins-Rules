@@ -1,3 +1,4 @@
+404: Not Found
 # 规则名称: Quora
 # 规则统计: 5
 
@@ -7,4 +8,3 @@ DOMAIN-SUFFIX,qr.ae
 DOMAIN-SUFFIX,quora.com
 DOMAIN-SUFFIX,quoracdn.net
 
-404: Not Found
