@@ -1,3 +1,46 @@
+# $ meta_title Sukka's Ruleset - Telegram ASN
+# $ meta_description This file contains ASN owned/used by Telegram Messenger.
+# $ meta_description Note that unlike "ip/telegram" file which is based on officially released list by Telegram themselves. Use this file at your own risk.
+
+# Telegram DC2/DC4 - Amsterdam
+IP-ASN,62041
+# Telegram DC5 - Singapore
+IP-ASN,62014
+# Telegram DC1/DC3 - Miami
+IP-ASN,59930
+# Telegram India CDN
+IP-ASN,44907
+# Telegram Finland, RETN Transit Only
+IP-ASN,211157
+
+# NAME: 深巷有喵的「TelegramASN」规则
+# AUTHOR: Rabbit-Spec
+# REPO: https://github.com/Rabbit-Spec/Surge
+# UPDATED: 2026.06.13 05:55:33
+# TOTAL: 20
+
+# ======= 上游同步规则 ========
+PROCESS-NAME,org.telegram.messenger
+DOMAIN-SUFFIX,comments.app // @CommentsBot
+DOMAIN-SUFFIX,t.me
+DOMAIN-SUFFIX,tx.me
+DOMAIN-SUFFIX,tdesktop.com
+DOMAIN-SUFFIX,telegra.ph // Telegraph
+DOMAIN-SUFFIX,telegram.me
+DOMAIN-SUFFIX,telegram.org
+DOMAIN-SUFFIX,telegram-cdn.org
+DOMAIN-SUFFIX,graph.org
+DOMAIN-SUFFIX,legra.ph
+DOMAIN-SUFFIX,telesco.pe // Telescope
+IP-CIDR,109.239.140.0/24,no-resolve // Telegram Messenger LLP
+IP-CIDR,5.28.192.0/18,no-resolve // IPFFM - Internet Provider Frankfurt GmbH
+IP-CIDR6,2a0a:f280::/32,no-resolve
+IP-ASN,44907,no-resolve // Telegram Messenger Inc
+IP-ASN,62014,no-resolve // Telegram Messenger Inc
+IP-ASN,62041,no-resolve // Telegram Messenger Inc
+IP-ASN,59930,no-resolve // Telegram Messenger Inc
+IP-ASN,211157,no-resolve // Telegram Messenger Inc
+
 # NAME: Telegram
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -50,33 +93,23 @@ IP-ASN,59930,Telegram
 IP-ASN,62014,Telegram
 IP-ASN,62041,Telegram
 
-# NAME: 深巷有喵的「TelegramASN」规则
-# AUTHOR: Rabbit-Spec
-# REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.06.12 18:37:00
-# TOTAL: 20
+# $ meta_title Sukka's Ruleset - Telegram Domains
+# $ meta_description This file contains domains used by Telegram Messenger.
 
-# ======= 上游同步规则 ========
-PROCESS-NAME,org.telegram.messenger
-DOMAIN-SUFFIX,comments.app // @CommentsBot
 DOMAIN-SUFFIX,t.me
 DOMAIN-SUFFIX,tx.me
+DOMAIN-SUFFIX,tg.dev
 DOMAIN-SUFFIX,tdesktop.com
-DOMAIN-SUFFIX,telegra.ph // Telegraph
+DOMAIN-SUFFIX,telegra.ph
+DOMAIN-SUFFIX,telega.one
 DOMAIN-SUFFIX,telegram.me
 DOMAIN-SUFFIX,telegram.org
-DOMAIN-SUFFIX,telegram-cdn.org
+DOMAIN-SUFFIX,telegram.dog
+DOMAIN-SUFFIX,telegram.space
 DOMAIN-SUFFIX,graph.org
 DOMAIN-SUFFIX,legra.ph
-DOMAIN-SUFFIX,telesco.pe // Telescope
-IP-CIDR,109.239.140.0/24,no-resolve // Telegram Messenger LLP
-IP-CIDR,5.28.192.0/18,no-resolve // IPFFM - Internet Provider Frankfurt GmbH
-IP-CIDR6,2a0a:f280::/32,no-resolve
-IP-ASN,44907,no-resolve // Telegram Messenger Inc
-IP-ASN,62014,no-resolve // Telegram Messenger Inc
-IP-ASN,62041,no-resolve // Telegram Messenger Inc
-IP-ASN,59930,no-resolve // Telegram Messenger Inc
-IP-ASN,211157,no-resolve // Telegram Messenger Inc
+DOMAIN-SUFFIX,telesco.pe
+DOMAIN-SUFFIX,cdn-telegram.org
 
 # 规则名称: Telegram
 # 规则统计: 15
@@ -96,37 +129,4 @@ IP-CIDR6,2001:67c:4e8::/48,no-resolve
 IP-CIDR6,2001:b28:f23d::/48,no-resolve
 IP-CIDR6,2001:b28:f23f::/48,no-resolve
 IP-CIDR6,2a0a:f280::/32,no-resolve
-
-# $ meta_title Sukka's Ruleset - Telegram Domains
-# $ meta_description This file contains domains used by Telegram Messenger.
-
-DOMAIN-SUFFIX,t.me
-DOMAIN-SUFFIX,tx.me
-DOMAIN-SUFFIX,tg.dev
-DOMAIN-SUFFIX,tdesktop.com
-DOMAIN-SUFFIX,telegra.ph
-DOMAIN-SUFFIX,telega.one
-DOMAIN-SUFFIX,telegram.me
-DOMAIN-SUFFIX,telegram.org
-DOMAIN-SUFFIX,telegram.dog
-DOMAIN-SUFFIX,telegram.space
-DOMAIN-SUFFIX,graph.org
-DOMAIN-SUFFIX,legra.ph
-DOMAIN-SUFFIX,telesco.pe
-DOMAIN-SUFFIX,cdn-telegram.org
-
-# $ meta_title Sukka's Ruleset - Telegram ASN
-# $ meta_description This file contains ASN owned/used by Telegram Messenger.
-# $ meta_description Note that unlike "ip/telegram" file which is based on officially released list by Telegram themselves. Use this file at your own risk.
-
-# Telegram DC2/DC4 - Amsterdam
-IP-ASN,62041
-# Telegram DC5 - Singapore
-IP-ASN,62014
-# Telegram DC1/DC3 - Miami
-IP-ASN,59930
-# Telegram India CDN
-IP-ASN,44907
-# Telegram Finland, RETN Transit Only
-IP-ASN,211157
 
