@@ -1,4 +1,3 @@
-404: Not Found
 # NAME: WeChat
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -53,6 +52,29 @@ USER-AGENT,WeChat*,WeChat
 IP-ASN,132203,WeChat
 
 404: Not Found
+# 规则名称: Tencent
+# 规则统计: 19
+
+DOMAIN-SUFFIX,foxmail.com
+DOMAIN-SUFFIX,gtimg.com
+DOMAIN-SUFFIX,idqqimg.com
+DOMAIN-SUFFIX,igamecj.com
+DOMAIN-SUFFIX,myapp.com
+DOMAIN-SUFFIX,myqcloud.com
+DOMAIN-SUFFIX,qq.com
+DOMAIN-SUFFIX,qqmail.com
+DOMAIN-SUFFIX,qqurl.com
+DOMAIN-SUFFIX,smtcdns.com
+DOMAIN-SUFFIX,smtcdns.net
+DOMAIN-SUFFIX,soso.com
+DOMAIN-SUFFIX,tencent-cloud.net
+DOMAIN-SUFFIX,tencent.com
+DOMAIN-SUFFIX,tencentmind.com
+DOMAIN-SUFFIX,tenpay.com
+DOMAIN-SUFFIX,wechat.com
+DOMAIN-SUFFIX,weixin.com
+DOMAIN-SUFFIX,weiyun.com
+
 # 规则名称: WeChat
 # 规则统计: 21
 
@@ -77,6 +99,30 @@ IP-CIDR,101.32.133.209/32,no-resolve
 IP-CIDR,101.32.133.53/32,no-resolve
 IP-CIDR,129.226.107.244/32,no-resolve
 IP-CIDR,129.226.3.47/32,no-resolve
+
+404: Not Found
+# 规则名称: Tencent
+# 规则统计: 19
+
+DOMAIN-SUFFIX,foxmail.com
+DOMAIN-SUFFIX,gtimg.com
+DOMAIN-SUFFIX,idqqimg.com
+DOMAIN-SUFFIX,igamecj.com
+DOMAIN-SUFFIX,myapp.com
+DOMAIN-SUFFIX,myqcloud.com
+DOMAIN-SUFFIX,qq.com
+DOMAIN-SUFFIX,qqmail.com
+DOMAIN-SUFFIX,qqurl.com
+DOMAIN-SUFFIX,smtcdns.com
+DOMAIN-SUFFIX,smtcdns.net
+DOMAIN-SUFFIX,soso.com
+DOMAIN-SUFFIX,tencent-cloud.net
+DOMAIN-SUFFIX,tencent.com
+DOMAIN-SUFFIX,tencentmind.com
+DOMAIN-SUFFIX,tenpay.com
+DOMAIN-SUFFIX,wechat.com
+DOMAIN-SUFFIX,weixin.com
+DOMAIN-SUFFIX,weiyun.com
 
 # NAME: Tencent
 # AUTHOR: blackmatrix7
@@ -2609,50 +2655,4 @@ IP-CIDR,150.138.137.0/32,Tencent
 IP-CIDR,150.139.143.0/32,Tencent
 IP-CIDR,27.159.95.0/32,Tencent
 IP-CIDR,58.58.81.129/32,Tencent
-
-# 规则名称: Tencent
-# 规则统计: 19
-
-DOMAIN-SUFFIX,foxmail.com
-DOMAIN-SUFFIX,gtimg.com
-DOMAIN-SUFFIX,idqqimg.com
-DOMAIN-SUFFIX,igamecj.com
-DOMAIN-SUFFIX,myapp.com
-DOMAIN-SUFFIX,myqcloud.com
-DOMAIN-SUFFIX,qq.com
-DOMAIN-SUFFIX,qqmail.com
-DOMAIN-SUFFIX,qqurl.com
-DOMAIN-SUFFIX,smtcdns.com
-DOMAIN-SUFFIX,smtcdns.net
-DOMAIN-SUFFIX,soso.com
-DOMAIN-SUFFIX,tencent-cloud.net
-DOMAIN-SUFFIX,tencent.com
-DOMAIN-SUFFIX,tencentmind.com
-DOMAIN-SUFFIX,tenpay.com
-DOMAIN-SUFFIX,wechat.com
-DOMAIN-SUFFIX,weixin.com
-DOMAIN-SUFFIX,weiyun.com
-
-# 规则名称: Tencent
-# 规则统计: 19
-
-DOMAIN-SUFFIX,foxmail.com
-DOMAIN-SUFFIX,gtimg.com
-DOMAIN-SUFFIX,idqqimg.com
-DOMAIN-SUFFIX,igamecj.com
-DOMAIN-SUFFIX,myapp.com
-DOMAIN-SUFFIX,myqcloud.com
-DOMAIN-SUFFIX,qq.com
-DOMAIN-SUFFIX,qqmail.com
-DOMAIN-SUFFIX,qqurl.com
-DOMAIN-SUFFIX,smtcdns.com
-DOMAIN-SUFFIX,smtcdns.net
-DOMAIN-SUFFIX,soso.com
-DOMAIN-SUFFIX,tencent-cloud.net
-DOMAIN-SUFFIX,tencent.com
-DOMAIN-SUFFIX,tencentmind.com
-DOMAIN-SUFFIX,tenpay.com
-DOMAIN-SUFFIX,wechat.com
-DOMAIN-SUFFIX,weixin.com
-DOMAIN-SUFFIX,weiyun.com
 
