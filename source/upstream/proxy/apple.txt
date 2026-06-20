@@ -1,14 +1,10 @@
-#!name=Apple分流
-#!desc=分流选择支持的地区
-#!author=奶思
-#!homepage=https://github.com/fmz200/wool_scripts
-#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/author/NaiSi_01.png
-#!raw-url=https://github.com/fmz200/wool_scripts/raw/main/Loon/rule/AppleAll.list
-#!tg-channel=https://t.me/inaisi
-#!date=2025-08-08 02:06:36
-#############################################
+# NAME: 深巷有喵的「Apple」规则
+# AUTHOR: Rabbit-Spec
+# REPO: https://github.com/Rabbit-Spec/Surge
+# UPDATED: 2026.06.20 05:13:57
+# TOTAL: 1616
 
-DOMAIN,appldnld.apple.com.edgesuite.net
+# ======= 上游同步规则 ========
 DOMAIN,apple-events.akamaized.net
 DOMAIN,appleworldwidedeveloper.hb-api.omtrdc.net
 DOMAIN,appleworldwidedeveloper.sc.omtrdc.net
@@ -66,6 +62,7 @@ DOMAIN-SUFFIX,appl-e.com
 DOMAIN-SUFFIX,appl.com
 DOMAIN-SUFFIX,appl4e.com
 DOMAIN-SUFFIX,appla.com
+DOMAIN-SUFFIX,appldnld.apple.com.edgesuite.net
 DOMAIN-SUFFIX,apple-darwin.com
 DOMAIN-SUFFIX,apple-darwin.net
 DOMAIN-SUFFIX,apple-darwin.org
@@ -815,7 +812,6 @@ DOMAIN-SUFFIX,ibeatsbydre.cc
 DOMAIN-SUFFIX,ibeatsbydre.com
 DOMAIN-SUFFIX,ichat.co.in
 DOMAIN-SUFFIX,icloud-content.com.cn
-DOMAIN-SUFFIX,icloud.com
 DOMAIN-SUFFIX,idvd.eu
 DOMAIN-SUFFIX,igoshopping.net
 DOMAIN-SUFFIX,ikids.com
@@ -1146,7 +1142,6 @@ DOMAIN-SUFFIX,aaplimg.com
 DOMAIN-SUFFIX,app-store.wang
 DOMAIN-SUFFIX,appe-store.com
 DOMAIN-SUFFIX,apple-appstore.cn
-DOMAIN-SUFFIX,apple-icloud.cn
 DOMAIN-SUFFIX,apple-itunes.cn
 DOMAIN-SUFFIX,apple-pay.com
 DOMAIN-SUFFIX,apple-pay.rs
@@ -1157,7 +1152,6 @@ DOMAIN-SUFFIX,appleappstore.net
 DOMAIN-SUFFIX,appleappstore.tv
 DOMAIN-SUFFIX,appledarwin.com
 DOMAIN-SUFFIX,appledarwin.net
-DOMAIN-SUFFIX,appleicloud.cn
 DOMAIN-SUFFIX,appleid-applemx.com
 DOMAIN-SUFFIX,appleid-applemx.us
 DOMAIN-SUFFIX,appleid-iclou.com
@@ -1166,7 +1160,6 @@ DOMAIN-SUFFIX,appleid.berlin
 DOMAIN-SUFFIX,appleid.com
 DOMAIN-SUFFIX,appleid.hamburg
 DOMAIN-SUFFIX,appleid.hk
-DOMAIN-SUFFIX,applemx-icloud.com
 DOMAIN-SUFFIX,appleone.audio
 DOMAIN-SUFFIX,appleone.blog
 DOMAIN-SUFFIX,appleone.chat
@@ -1202,7 +1195,6 @@ DOMAIN-SUFFIX,applepaysupplies.net
 DOMAIN-SUFFIX,applepaysupplies.tv
 DOMAIN-SUFFIX,applewallet.com
 DOMAIN-SUFFIX,applewallet.tv
-DOMAIN-SUFFIX,appsto.re
 DOMAIN-SUFFIX,appstore.co.id
 DOMAIN-SUFFIX,appstore.com
 DOMAIN-SUFFIX,appstore.hk
@@ -1214,50 +1206,7 @@ DOMAIN-SUFFIX,crashlytics.com
 DOMAIN-SUFFIX,darwinsource.com
 DOMAIN-SUFFIX,darwinsource.org
 DOMAIN-SUFFIX,darwinsourcecode.com
-DOMAIN-SUFFIX,icloud-apple.cn
-DOMAIN-SUFFIX,icloud-content.com
-DOMAIN-SUFFIX,icloud-isupport.com
-DOMAIN-SUFFIX,icloud-sandbox.com
-DOMAIN-SUFFIX,icloud.ch
-DOMAIN-SUFFIX,icloud.com
-DOMAIN-SUFFIX,icloud.com.cn
-DOMAIN-SUFFIX,icloud.de
-DOMAIN-SUFFIX,icloud.ee
-DOMAIN-SUFFIX,icloud.fi
-DOMAIN-SUFFIX,icloud.fr
-DOMAIN-SUFFIX,icloud.hu
-DOMAIN-SUFFIX,icloud.ie
-DOMAIN-SUFFIX,icloud.is
-DOMAIN-SUFFIX,icloud.jp
-DOMAIN-SUFFIX,icloud.lv
-DOMAIN-SUFFIX,icloud.net.cn
-DOMAIN-SUFFIX,icloud.om
-DOMAIN-SUFFIX,icloud.org
-DOMAIN-SUFFIX,icloud.pt
-DOMAIN-SUFFIX,icloud.ro
-DOMAIN-SUFFIX,icloud.se
-DOMAIN-SUFFIX,icloud.si
-DOMAIN-SUFFIX,icloud.sk
-DOMAIN-SUFFIX,icloud.vn
-DOMAIN-SUFFIX,icloudads.net
-DOMAIN-SUFFIX,icloudapple.cn
-DOMAIN-SUFFIX,icloudbox.net
-DOMAIN-SUFFIX,icloudbrowser.net
-DOMAIN-SUFFIX,icloude.com
-DOMAIN-SUFFIX,icloudhome.com
-DOMAIN-SUFFIX,icloudmail.net
-DOMAIN-SUFFIX,icloudmusic.net
-DOMAIN-SUFFIX,icloudnet.net
-DOMAIN-SUFFIX,icloudo.com
-DOMAIN-SUFFIX,icloudo.de
-DOMAIN-SUFFIX,icloudo.net
-DOMAIN-SUFFIX,icloudos.de
-DOMAIN-SUFFIX,icloudos.net
-DOMAIN-SUFFIX,icloudpay.net
-DOMAIN-SUFFIX,icloudsecure.net
-DOMAIN-SUFFIX,icloudsetup.com
 DOMAIN-SUFFIX,ids-apple.com
-DOMAIN-SUFFIX,ios-icloud.com
 DOMAIN-SUFFIX,itun.es
 DOMAIN-SUFFIX,itunbes.com
 DOMAIN-SUFFIX,ituneas.com
@@ -1291,12 +1240,8 @@ DOMAIN-SUFFIX,itunesstore.co
 DOMAIN-SUFFIX,itunesu.com
 DOMAIN-SUFFIX,itunesu.net
 DOMAIN-SUFFIX,iutunes.com
-DOMAIN-SUFFIX,me.com
 DOMAIN-SUFFIX,myappleid.com
-DOMAIN-SUFFIX,myicloud.net
-DOMAIN-SUFFIX,mylcloud.net
 DOMAIN-SUFFIX,tvappstore.net
-DOMAIN-SUFFIX,wwwicloud.com
 DOMAIN-SUFFIX,wwwitunes.com
 DOMAIN-SUFFIX,aplestore.com
 DOMAIN-SUFFIX,aplleipods.com
@@ -1563,11 +1508,63 @@ DOMAIN-SUFFIX,wwwapplemusic.com
 DOMAIN-SUFFIX,applemusic.com
 DOMAIN-SUFFIX,apple-dns.net
 DOMAIN-SUFFIX,apple.news
+DOMAIN-SUFFIX,appsto.re
 DOMAIN-SUFFIX,cdn-apple.com
 DOMAIN-SUFFIX,digicert.com
 DOMAIN-SUFFIX,apple-cloudkit.com
+DOMAIN-SUFFIX,apple-icloud.cn
 DOMAIN-SUFFIX,apple-livephotoskit.com
+DOMAIN-SUFFIX,appleicloud.cn
+DOMAIN-SUFFIX,applemx-icloud.com
 DOMAIN-SUFFIX,apzones.com
+DOMAIN-SUFFIX,icloud-apple.cn
+DOMAIN-SUFFIX,icloud-content.com
+DOMAIN-SUFFIX,icloud-isupport.com
+DOMAIN-SUFFIX,icloud-sandbox.com
+DOMAIN-SUFFIX,icloud.ch
+DOMAIN-SUFFIX,icloud.cn
+DOMAIN-SUFFIX,icloud.com
+DOMAIN-SUFFIX,icloud.com.cn
+DOMAIN-SUFFIX,icloud.de
+DOMAIN-SUFFIX,icloud.ee
+DOMAIN-SUFFIX,icloud.fi
+DOMAIN-SUFFIX,icloud.fr
+DOMAIN-SUFFIX,icloud.hu
+DOMAIN-SUFFIX,icloud.ie
+DOMAIN-SUFFIX,icloud.is
+DOMAIN-SUFFIX,icloud.jp
+DOMAIN-SUFFIX,icloud.lv
+DOMAIN-SUFFIX,icloud.net.cn
+DOMAIN-SUFFIX,icloud.om
+DOMAIN-SUFFIX,icloud.org
+DOMAIN-SUFFIX,icloud.pt
+DOMAIN-SUFFIX,icloud.ro
+DOMAIN-SUFFIX,icloud.se
+DOMAIN-SUFFIX,icloud.si
+DOMAIN-SUFFIX,icloud.sk
+DOMAIN-SUFFIX,icloud.vn
+DOMAIN-SUFFIX,icloudads.net
+DOMAIN-SUFFIX,icloudapple.cn
+DOMAIN-SUFFIX,icloudbox.net
+DOMAIN-SUFFIX,icloudbrowser.net
+DOMAIN-SUFFIX,icloude.com
+DOMAIN-SUFFIX,icloudhome.com
+DOMAIN-SUFFIX,icloudmail.net
+DOMAIN-SUFFIX,icloudmusic.net
+DOMAIN-SUFFIX,icloudnet.net
+DOMAIN-SUFFIX,icloudo.com
+DOMAIN-SUFFIX,icloudo.de
+DOMAIN-SUFFIX,icloudo.net
+DOMAIN-SUFFIX,icloudos.de
+DOMAIN-SUFFIX,icloudos.net
+DOMAIN-SUFFIX,icloudpay.net
+DOMAIN-SUFFIX,icloudsecure.net
+DOMAIN-SUFFIX,icloudsetup.com
+DOMAIN-SUFFIX,ios-icloud.com
+DOMAIN-SUFFIX,me.com
+DOMAIN-SUFFIX,myicloud.net
+DOMAIN-SUFFIX,mylcloud.net
+DOMAIN-SUFFIX,wwwicloud.com
 DOMAIN-KEYWORD,apple-support.akadns.net
 DOMAIN-KEYWORD,apple.com.akadns.net
 DOMAIN-KEYWORD,apple.com.edgekey.net
@@ -1585,6 +1582,9 @@ IP-CIDR,198.183.17.0/24,no-resolve
 IP-CIDR,205.180.175.0/24,no-resolve
 IP-CIDR,63.92.224.0/19,no-resolve
 IP-CIDR,65.199.22.0/23,no-resolve
+IP-CIDR6,2403:300::/32,no-resolve
+IP-CIDR6,2620:149::/32,no-resolve
+IP-CIDR6,2a01:b740::/32,no-resolve
 USER-AGENT,*FindMyiPhone?
 USER-AGENT,*Music?
 USER-AGENT,*WeatherFoundation*
@@ -1604,9 +1604,9 @@ USER-AGENT,locationd*
 USER-AGENT,passd*
 USER-AGENT,Music*
 USER-AGENT,AppleNews*
-USER-AGENT,AppleTV*
 USER-AGENT,com.apple.news*
 USER-AGENT,com.apple.trustd*
+USER-AGENT,AppleTV*
 USER-AGENT,com.apple.tv*
 PROCESS-NAME,CoreLocationAgent
 PROCESS-NAME,WeatherWidget
@@ -1621,6 +1621,39 @@ PROCESS-NAME,com.apple.geod
 PROCESS-NAME,Music
 PROCESS-NAME,LookupViewService
 PROCESS-NAME,TV
+
+# 规则名称: Apple
+# 规则统计: 29
+
+DOMAIN,apple.comscoreresearch.com
+DOMAIN-SUFFIX,aaplimg.com
+DOMAIN-SUFFIX,akadns.net
+DOMAIN-SUFFIX,apple-cloudkit.com
+DOMAIN-SUFFIX,apple-dns.net
+DOMAIN-SUFFIX,apple-mapkit.com
+DOMAIN-SUFFIX,apple.co
+DOMAIN-SUFFIX,apple.com
+DOMAIN-SUFFIX,apple.com.cn
+DOMAIN-SUFFIX,apple.news
+DOMAIN-SUFFIX,appstore.com
+DOMAIN-SUFFIX,cdn-apple.com
+DOMAIN-SUFFIX,crashlytics.com
+DOMAIN-SUFFIX,icloud-content.com
+DOMAIN-SUFFIX,icloud.com
+DOMAIN-SUFFIX,icloud.com.cn
+DOMAIN-SUFFIX,itunes.com
+DOMAIN-SUFFIX,me.com
+DOMAIN-SUFFIX,mzstatic.com
+IP-CIDR,139.178.128.0/18,no-resolve
+IP-CIDR,144.178.0.0/19,no-resolve
+IP-CIDR,144.178.36.0/22,no-resolve
+IP-CIDR,144.178.48.0/20,no-resolve
+IP-CIDR,17.0.0.0/8,no-resolve
+IP-CIDR,192.35.50.0/24,no-resolve
+IP-CIDR,198.183.17.0/24,no-resolve
+IP-CIDR,205.180.175.0/24,no-resolve
+IP-CIDR,63.92.224.0/19,no-resolve
+IP-CIDR,65.199.22.0/23,no-resolve
 
 # NAME: Apple
 # AUTHOR: blackmatrix7
@@ -3516,13 +3549,17 @@ IP6-CIDR,2403:300::/32,Apple
 IP6-CIDR,2620:149::/32,Apple
 IP6-CIDR,2a01:b740::/32,Apple
 
-# NAME: 深巷有喵的「Apple」规则
-# AUTHOR: Rabbit-Spec
-# REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.06.20 05:13:57
-# TOTAL: 1616
+#!name=Apple分流
+#!desc=分流选择支持的地区
+#!author=奶思
+#!homepage=https://github.com/fmz200/wool_scripts
+#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/author/NaiSi_01.png
+#!raw-url=https://github.com/fmz200/wool_scripts/raw/main/Loon/rule/AppleAll.list
+#!tg-channel=https://t.me/inaisi
+#!date=2025-08-08 02:06:36
+#############################################
 
-# ======= 上游同步规则 ========
+DOMAIN,appldnld.apple.com.edgesuite.net
 DOMAIN,apple-events.akamaized.net
 DOMAIN,appleworldwidedeveloper.hb-api.omtrdc.net
 DOMAIN,appleworldwidedeveloper.sc.omtrdc.net
@@ -3580,7 +3617,6 @@ DOMAIN-SUFFIX,appl-e.com
 DOMAIN-SUFFIX,appl.com
 DOMAIN-SUFFIX,appl4e.com
 DOMAIN-SUFFIX,appla.com
-DOMAIN-SUFFIX,appldnld.apple.com.edgesuite.net
 DOMAIN-SUFFIX,apple-darwin.com
 DOMAIN-SUFFIX,apple-darwin.net
 DOMAIN-SUFFIX,apple-darwin.org
@@ -4330,6 +4366,7 @@ DOMAIN-SUFFIX,ibeatsbydre.cc
 DOMAIN-SUFFIX,ibeatsbydre.com
 DOMAIN-SUFFIX,ichat.co.in
 DOMAIN-SUFFIX,icloud-content.com.cn
+DOMAIN-SUFFIX,icloud.com
 DOMAIN-SUFFIX,idvd.eu
 DOMAIN-SUFFIX,igoshopping.net
 DOMAIN-SUFFIX,ikids.com
@@ -4660,6 +4697,7 @@ DOMAIN-SUFFIX,aaplimg.com
 DOMAIN-SUFFIX,app-store.wang
 DOMAIN-SUFFIX,appe-store.com
 DOMAIN-SUFFIX,apple-appstore.cn
+DOMAIN-SUFFIX,apple-icloud.cn
 DOMAIN-SUFFIX,apple-itunes.cn
 DOMAIN-SUFFIX,apple-pay.com
 DOMAIN-SUFFIX,apple-pay.rs
@@ -4670,6 +4708,7 @@ DOMAIN-SUFFIX,appleappstore.net
 DOMAIN-SUFFIX,appleappstore.tv
 DOMAIN-SUFFIX,appledarwin.com
 DOMAIN-SUFFIX,appledarwin.net
+DOMAIN-SUFFIX,appleicloud.cn
 DOMAIN-SUFFIX,appleid-applemx.com
 DOMAIN-SUFFIX,appleid-applemx.us
 DOMAIN-SUFFIX,appleid-iclou.com
@@ -4678,6 +4717,7 @@ DOMAIN-SUFFIX,appleid.berlin
 DOMAIN-SUFFIX,appleid.com
 DOMAIN-SUFFIX,appleid.hamburg
 DOMAIN-SUFFIX,appleid.hk
+DOMAIN-SUFFIX,applemx-icloud.com
 DOMAIN-SUFFIX,appleone.audio
 DOMAIN-SUFFIX,appleone.blog
 DOMAIN-SUFFIX,appleone.chat
@@ -4713,6 +4753,7 @@ DOMAIN-SUFFIX,applepaysupplies.net
 DOMAIN-SUFFIX,applepaysupplies.tv
 DOMAIN-SUFFIX,applewallet.com
 DOMAIN-SUFFIX,applewallet.tv
+DOMAIN-SUFFIX,appsto.re
 DOMAIN-SUFFIX,appstore.co.id
 DOMAIN-SUFFIX,appstore.com
 DOMAIN-SUFFIX,appstore.hk
@@ -4724,7 +4765,50 @@ DOMAIN-SUFFIX,crashlytics.com
 DOMAIN-SUFFIX,darwinsource.com
 DOMAIN-SUFFIX,darwinsource.org
 DOMAIN-SUFFIX,darwinsourcecode.com
+DOMAIN-SUFFIX,icloud-apple.cn
+DOMAIN-SUFFIX,icloud-content.com
+DOMAIN-SUFFIX,icloud-isupport.com
+DOMAIN-SUFFIX,icloud-sandbox.com
+DOMAIN-SUFFIX,icloud.ch
+DOMAIN-SUFFIX,icloud.com
+DOMAIN-SUFFIX,icloud.com.cn
+DOMAIN-SUFFIX,icloud.de
+DOMAIN-SUFFIX,icloud.ee
+DOMAIN-SUFFIX,icloud.fi
+DOMAIN-SUFFIX,icloud.fr
+DOMAIN-SUFFIX,icloud.hu
+DOMAIN-SUFFIX,icloud.ie
+DOMAIN-SUFFIX,icloud.is
+DOMAIN-SUFFIX,icloud.jp
+DOMAIN-SUFFIX,icloud.lv
+DOMAIN-SUFFIX,icloud.net.cn
+DOMAIN-SUFFIX,icloud.om
+DOMAIN-SUFFIX,icloud.org
+DOMAIN-SUFFIX,icloud.pt
+DOMAIN-SUFFIX,icloud.ro
+DOMAIN-SUFFIX,icloud.se
+DOMAIN-SUFFIX,icloud.si
+DOMAIN-SUFFIX,icloud.sk
+DOMAIN-SUFFIX,icloud.vn
+DOMAIN-SUFFIX,icloudads.net
+DOMAIN-SUFFIX,icloudapple.cn
+DOMAIN-SUFFIX,icloudbox.net
+DOMAIN-SUFFIX,icloudbrowser.net
+DOMAIN-SUFFIX,icloude.com
+DOMAIN-SUFFIX,icloudhome.com
+DOMAIN-SUFFIX,icloudmail.net
+DOMAIN-SUFFIX,icloudmusic.net
+DOMAIN-SUFFIX,icloudnet.net
+DOMAIN-SUFFIX,icloudo.com
+DOMAIN-SUFFIX,icloudo.de
+DOMAIN-SUFFIX,icloudo.net
+DOMAIN-SUFFIX,icloudos.de
+DOMAIN-SUFFIX,icloudos.net
+DOMAIN-SUFFIX,icloudpay.net
+DOMAIN-SUFFIX,icloudsecure.net
+DOMAIN-SUFFIX,icloudsetup.com
 DOMAIN-SUFFIX,ids-apple.com
+DOMAIN-SUFFIX,ios-icloud.com
 DOMAIN-SUFFIX,itun.es
 DOMAIN-SUFFIX,itunbes.com
 DOMAIN-SUFFIX,ituneas.com
@@ -4758,8 +4842,12 @@ DOMAIN-SUFFIX,itunesstore.co
 DOMAIN-SUFFIX,itunesu.com
 DOMAIN-SUFFIX,itunesu.net
 DOMAIN-SUFFIX,iutunes.com
+DOMAIN-SUFFIX,me.com
 DOMAIN-SUFFIX,myappleid.com
+DOMAIN-SUFFIX,myicloud.net
+DOMAIN-SUFFIX,mylcloud.net
 DOMAIN-SUFFIX,tvappstore.net
+DOMAIN-SUFFIX,wwwicloud.com
 DOMAIN-SUFFIX,wwwitunes.com
 DOMAIN-SUFFIX,aplestore.com
 DOMAIN-SUFFIX,aplleipods.com
@@ -5026,63 +5114,11 @@ DOMAIN-SUFFIX,wwwapplemusic.com
 DOMAIN-SUFFIX,applemusic.com
 DOMAIN-SUFFIX,apple-dns.net
 DOMAIN-SUFFIX,apple.news
-DOMAIN-SUFFIX,appsto.re
 DOMAIN-SUFFIX,cdn-apple.com
 DOMAIN-SUFFIX,digicert.com
 DOMAIN-SUFFIX,apple-cloudkit.com
-DOMAIN-SUFFIX,apple-icloud.cn
 DOMAIN-SUFFIX,apple-livephotoskit.com
-DOMAIN-SUFFIX,appleicloud.cn
-DOMAIN-SUFFIX,applemx-icloud.com
 DOMAIN-SUFFIX,apzones.com
-DOMAIN-SUFFIX,icloud-apple.cn
-DOMAIN-SUFFIX,icloud-content.com
-DOMAIN-SUFFIX,icloud-isupport.com
-DOMAIN-SUFFIX,icloud-sandbox.com
-DOMAIN-SUFFIX,icloud.ch
-DOMAIN-SUFFIX,icloud.cn
-DOMAIN-SUFFIX,icloud.com
-DOMAIN-SUFFIX,icloud.com.cn
-DOMAIN-SUFFIX,icloud.de
-DOMAIN-SUFFIX,icloud.ee
-DOMAIN-SUFFIX,icloud.fi
-DOMAIN-SUFFIX,icloud.fr
-DOMAIN-SUFFIX,icloud.hu
-DOMAIN-SUFFIX,icloud.ie
-DOMAIN-SUFFIX,icloud.is
-DOMAIN-SUFFIX,icloud.jp
-DOMAIN-SUFFIX,icloud.lv
-DOMAIN-SUFFIX,icloud.net.cn
-DOMAIN-SUFFIX,icloud.om
-DOMAIN-SUFFIX,icloud.org
-DOMAIN-SUFFIX,icloud.pt
-DOMAIN-SUFFIX,icloud.ro
-DOMAIN-SUFFIX,icloud.se
-DOMAIN-SUFFIX,icloud.si
-DOMAIN-SUFFIX,icloud.sk
-DOMAIN-SUFFIX,icloud.vn
-DOMAIN-SUFFIX,icloudads.net
-DOMAIN-SUFFIX,icloudapple.cn
-DOMAIN-SUFFIX,icloudbox.net
-DOMAIN-SUFFIX,icloudbrowser.net
-DOMAIN-SUFFIX,icloude.com
-DOMAIN-SUFFIX,icloudhome.com
-DOMAIN-SUFFIX,icloudmail.net
-DOMAIN-SUFFIX,icloudmusic.net
-DOMAIN-SUFFIX,icloudnet.net
-DOMAIN-SUFFIX,icloudo.com
-DOMAIN-SUFFIX,icloudo.de
-DOMAIN-SUFFIX,icloudo.net
-DOMAIN-SUFFIX,icloudos.de
-DOMAIN-SUFFIX,icloudos.net
-DOMAIN-SUFFIX,icloudpay.net
-DOMAIN-SUFFIX,icloudsecure.net
-DOMAIN-SUFFIX,icloudsetup.com
-DOMAIN-SUFFIX,ios-icloud.com
-DOMAIN-SUFFIX,me.com
-DOMAIN-SUFFIX,myicloud.net
-DOMAIN-SUFFIX,mylcloud.net
-DOMAIN-SUFFIX,wwwicloud.com
 DOMAIN-KEYWORD,apple-support.akadns.net
 DOMAIN-KEYWORD,apple.com.akadns.net
 DOMAIN-KEYWORD,apple.com.edgekey.net
@@ -5100,9 +5136,6 @@ IP-CIDR,198.183.17.0/24,no-resolve
 IP-CIDR,205.180.175.0/24,no-resolve
 IP-CIDR,63.92.224.0/19,no-resolve
 IP-CIDR,65.199.22.0/23,no-resolve
-IP-CIDR6,2403:300::/32,no-resolve
-IP-CIDR6,2620:149::/32,no-resolve
-IP-CIDR6,2a01:b740::/32,no-resolve
 USER-AGENT,*FindMyiPhone?
 USER-AGENT,*Music?
 USER-AGENT,*WeatherFoundation*
@@ -5122,9 +5155,9 @@ USER-AGENT,locationd*
 USER-AGENT,passd*
 USER-AGENT,Music*
 USER-AGENT,AppleNews*
+USER-AGENT,AppleTV*
 USER-AGENT,com.apple.news*
 USER-AGENT,com.apple.trustd*
-USER-AGENT,AppleTV*
 USER-AGENT,com.apple.tv*
 PROCESS-NAME,CoreLocationAgent
 PROCESS-NAME,WeatherWidget
@@ -5149,64 +5182,6 @@ mask-h2.icloud.com
 mask-api.icloud.com
 mask.apple-dns.net
 canary.mask.apple-dns.net
-
-# $ meta_title Sukka's Ruleset - Apple Domains
-# $ meta_description This file contains domains of Apple, Inc.
-
-# >> Apple
-DOMAIN-SUFFIX,aaplimg.com
-DOMAIN-SUFFIX,apple-dns.net
-DOMAIN-SUFFIX,apple.co
-DOMAIN-SUFFIX,apple.com
-DOMAIN-SUFFIX,appstore.com
-DOMAIN-SUFFIX,cdn-apple.com
-# DOMAIN-SUFFIX,crashlytics.com
-DOMAIN-SUFFIX,icloud.com
-DOMAIN-SUFFIX,icloud-content.com
-DOMAIN-SUFFIX,me.com
-DOMAIN-SUFFIX,organicfruitapps.com
-DOMAIN-SUFFIX,apple-cloudkit.com
-DOMAIN-SUFFIX,apple-mapkit.com
-DOMAIN-SUFFIX,appsto.re
-DOMAIN-SUFFIX,itunes.com
-DOMAIN-SUFFIX,apple.news
-
-# Most of the times, trustd contacts with OCSP servers.
-# Even if it contacts Apple's own server, it will be matched by domain rules anyway
-# PROCESS-NAME,trustd
-
-# Normally, Apple connect to their services through domain & cdn
-# So if we are going to match IP CIDR as well, no-resolve is good enough
-IP-CIDR,17.0.0.0/8,no-resolve
-
-# >> Apple Maps
-PROCESS-NAME,com.apple.geod
-PROCESS-NAME,mapspushd
-PROCESS-NAME,com.apple.Maps
-
-# >> Apple System Services
-# DOMAIN api.smoot.apple.com
-# DOMAIN captive.apple.com
-# DOMAIN xp.apple.com
-# DOMAIN configuration.apple.com
-# DOMAIN guzzoni.apple.com
-# DOMAIN smp-device-content.apple.com
-# DOMAIN-SUFFIX ess.apple.com
-DOMAIN-SUFFIX,push-apple.com.akadns.net
-# DOMAIN-SUFFIX push.apple.com
-# DOMAIN aod.itunes.apple.com
-# DOMAIN mesu.apple.com
-# DOMAIN gs-loc.apple.com
-# DOMAIN mvod.itunes.apple.com
-# DOMAIN streamingaudio.itunes.apple.com
-# DOMAIN-SUFFIX lcdn-locator.apple.com
-# DOMAIN-SUFFIX lcdn-registration.apple.com
-# DOMAIN-SUFFIX ls.apple.com
-PROCESS-NAME,apsd
-PROCESS-NAME,fmfd
-PROCESS-NAME,findmydevice-user-agent
-PROCESS-NAME,CoreLocationAgent
-PROCESS-NAME,WeatherWidget
 
 # NAME: iCloud
 # AUTHOR: blackmatrix7
@@ -5278,36 +5253,61 @@ HOST-SUFFIX,www-cdn.icloud.com.akadns.net,iCloud
 HOST-SUFFIX,wwwicloud.com,iCloud
 HOST-KEYWORD,icloud.com.akadns.net,iCloud
 
-# 规则名称: Apple
-# 规则统计: 29
+# $ meta_title Sukka's Ruleset - Apple Domains
+# $ meta_description This file contains domains of Apple, Inc.
 
-DOMAIN,apple.comscoreresearch.com
+# >> Apple
 DOMAIN-SUFFIX,aaplimg.com
-DOMAIN-SUFFIX,akadns.net
-DOMAIN-SUFFIX,apple-cloudkit.com
 DOMAIN-SUFFIX,apple-dns.net
-DOMAIN-SUFFIX,apple-mapkit.com
 DOMAIN-SUFFIX,apple.co
 DOMAIN-SUFFIX,apple.com
-DOMAIN-SUFFIX,apple.com.cn
-DOMAIN-SUFFIX,apple.news
 DOMAIN-SUFFIX,appstore.com
 DOMAIN-SUFFIX,cdn-apple.com
-DOMAIN-SUFFIX,crashlytics.com
-DOMAIN-SUFFIX,icloud-content.com
+# DOMAIN-SUFFIX,crashlytics.com
 DOMAIN-SUFFIX,icloud.com
-DOMAIN-SUFFIX,icloud.com.cn
-DOMAIN-SUFFIX,itunes.com
+DOMAIN-SUFFIX,icloud-content.com
 DOMAIN-SUFFIX,me.com
-DOMAIN-SUFFIX,mzstatic.com
-IP-CIDR,139.178.128.0/18,no-resolve
-IP-CIDR,144.178.0.0/19,no-resolve
-IP-CIDR,144.178.36.0/22,no-resolve
-IP-CIDR,144.178.48.0/20,no-resolve
+DOMAIN-SUFFIX,organicfruitapps.com
+DOMAIN-SUFFIX,apple-cloudkit.com
+DOMAIN-SUFFIX,apple-mapkit.com
+DOMAIN-SUFFIX,appsto.re
+DOMAIN-SUFFIX,itunes.com
+DOMAIN-SUFFIX,apple.news
+
+# Most of the times, trustd contacts with OCSP servers.
+# Even if it contacts Apple's own server, it will be matched by domain rules anyway
+# PROCESS-NAME,trustd
+
+# Normally, Apple connect to their services through domain & cdn
+# So if we are going to match IP CIDR as well, no-resolve is good enough
 IP-CIDR,17.0.0.0/8,no-resolve
-IP-CIDR,192.35.50.0/24,no-resolve
-IP-CIDR,198.183.17.0/24,no-resolve
-IP-CIDR,205.180.175.0/24,no-resolve
-IP-CIDR,63.92.224.0/19,no-resolve
-IP-CIDR,65.199.22.0/23,no-resolve
+
+# >> Apple Maps
+PROCESS-NAME,com.apple.geod
+PROCESS-NAME,mapspushd
+PROCESS-NAME,com.apple.Maps
+
+# >> Apple System Services
+# DOMAIN api.smoot.apple.com
+# DOMAIN captive.apple.com
+# DOMAIN xp.apple.com
+# DOMAIN configuration.apple.com
+# DOMAIN guzzoni.apple.com
+# DOMAIN smp-device-content.apple.com
+# DOMAIN-SUFFIX ess.apple.com
+DOMAIN-SUFFIX,push-apple.com.akadns.net
+# DOMAIN-SUFFIX push.apple.com
+# DOMAIN aod.itunes.apple.com
+# DOMAIN mesu.apple.com
+# DOMAIN gs-loc.apple.com
+# DOMAIN mvod.itunes.apple.com
+# DOMAIN streamingaudio.itunes.apple.com
+# DOMAIN-SUFFIX lcdn-locator.apple.com
+# DOMAIN-SUFFIX lcdn-registration.apple.com
+# DOMAIN-SUFFIX ls.apple.com
+PROCESS-NAME,apsd
+PROCESS-NAME,fmfd
+PROCESS-NAME,findmydevice-user-agent
+PROCESS-NAME,CoreLocationAgent
+PROCESS-NAME,WeatherWidget
 
