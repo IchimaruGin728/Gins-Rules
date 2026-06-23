@@ -1,27 +1,55 @@
-404: Not Found
-404: Not Found
-# 规则名称: Tencent
-# 规则统计: 19
-
-DOMAIN-SUFFIX,foxmail.com
-DOMAIN-SUFFIX,gtimg.com
-DOMAIN-SUFFIX,idqqimg.com
-DOMAIN-SUFFIX,igamecj.com
-DOMAIN-SUFFIX,myapp.com
-DOMAIN-SUFFIX,myqcloud.com
-DOMAIN-SUFFIX,qq.com
-DOMAIN-SUFFIX,qqmail.com
-DOMAIN-SUFFIX,qqurl.com
-DOMAIN-SUFFIX,smtcdns.com
-DOMAIN-SUFFIX,smtcdns.net
-DOMAIN-SUFFIX,soso.com
-DOMAIN-SUFFIX,tencent-cloud.net
-DOMAIN-SUFFIX,tencent.com
-DOMAIN-SUFFIX,tencentmind.com
-DOMAIN-SUFFIX,tenpay.com
-DOMAIN-SUFFIX,wechat.com
-DOMAIN-SUFFIX,weixin.com
-DOMAIN-SUFFIX,weiyun.com
+# NAME: WeChat
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:18:25
+# HOST: 18
+# HOST-SUFFIX: 22
+# IP-ASN: 1
+# USER-AGENT: 2
+# TOTAL: 43
+HOST,apd-pcdnwxlogin.teg.tencent-cloud.net,WeChat
+HOST,btrace.qq.com,WeChat
+HOST,dl.wechat.com,WeChat
+HOST,dldir1.qq.com,WeChat
+HOST,sgfindershort.wechat.com,WeChat
+HOST,sgilinkshort.wechat.com,WeChat
+HOST,sglong.wechat.com,WeChat
+HOST,sgminorshort.wechat.com,WeChat
+HOST,sgquic.wechat.com,WeChat
+HOST,sgshort.wechat.com,WeChat
+HOST,slife.xy-asia.com,WeChat
+HOST,soup.v.qq.com,WeChat
+HOST,tencentmap.wechat.com,WeChat
+HOST,vweixinf.tc.qq.com,WeChat
+HOST,weixin110.qq.com,WeChat
+HOST,wup.imtt.qq.com,WeChat
+HOST,wx.tenpay.com,WeChat
+HOST,wxapp.tc.qq.com,WeChat
+HOST-SUFFIX,iot-tencent.com,WeChat
+HOST-SUFFIX,lbs.gtimg.com,WeChat
+HOST-SUFFIX,map.qq.com,WeChat
+HOST-SUFFIX,qlogo.cn,WeChat
+HOST-SUFFIX,qpic.cn,WeChat
+HOST-SUFFIX,servicewechat.com,WeChat
+HOST-SUFFIX,tenpay.com,WeChat
+HOST-SUFFIX,up-hl.3g.qq.com,WeChat
+HOST-SUFFIX,vweixinthumb.tc.qq.com,WeChat
+HOST-SUFFIX,wechat.com,WeChat
+HOST-SUFFIX,wechatlegal.net,WeChat
+HOST-SUFFIX,wechatos.net,WeChat
+HOST-SUFFIX,wechatpay.com,WeChat
+HOST-SUFFIX,weixin.com,WeChat
+HOST-SUFFIX,weixin.qq.com,WeChat
+HOST-SUFFIX,weixinbridge.com,WeChat
+HOST-SUFFIX,weixinsxy.com,WeChat
+HOST-SUFFIX,wx.gtimg.com,WeChat
+HOST-SUFFIX,wx.qq.com,WeChat
+HOST-SUFFIX,wxapp.tc.qq.com,WeChat
+HOST-SUFFIX,wxs.qq.com,WeChat
+HOST-SUFFIX,yun-hl.3g.qq.com,WeChat
+USER-AGENT,MicroMessenger*,WeChat
+USER-AGENT,WeChat*,WeChat
+IP-ASN,132203,WeChat
 
 # 规则名称: Tencent
 # 规则统计: 19
@@ -2578,58 +2606,29 @@ IP-CIDR,150.139.143.0/32,Tencent
 IP-CIDR,27.159.95.0/32,Tencent
 IP-CIDR,58.58.81.129/32,Tencent
 
-# NAME: WeChat
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:18:25
-# HOST: 18
-# HOST-SUFFIX: 22
-# IP-ASN: 1
-# USER-AGENT: 2
-# TOTAL: 43
-HOST,apd-pcdnwxlogin.teg.tencent-cloud.net,WeChat
-HOST,btrace.qq.com,WeChat
-HOST,dl.wechat.com,WeChat
-HOST,dldir1.qq.com,WeChat
-HOST,sgfindershort.wechat.com,WeChat
-HOST,sgilinkshort.wechat.com,WeChat
-HOST,sglong.wechat.com,WeChat
-HOST,sgminorshort.wechat.com,WeChat
-HOST,sgquic.wechat.com,WeChat
-HOST,sgshort.wechat.com,WeChat
-HOST,slife.xy-asia.com,WeChat
-HOST,soup.v.qq.com,WeChat
-HOST,tencentmap.wechat.com,WeChat
-HOST,vweixinf.tc.qq.com,WeChat
-HOST,weixin110.qq.com,WeChat
-HOST,wup.imtt.qq.com,WeChat
-HOST,wx.tenpay.com,WeChat
-HOST,wxapp.tc.qq.com,WeChat
-HOST-SUFFIX,iot-tencent.com,WeChat
-HOST-SUFFIX,lbs.gtimg.com,WeChat
-HOST-SUFFIX,map.qq.com,WeChat
-HOST-SUFFIX,qlogo.cn,WeChat
-HOST-SUFFIX,qpic.cn,WeChat
-HOST-SUFFIX,servicewechat.com,WeChat
-HOST-SUFFIX,tenpay.com,WeChat
-HOST-SUFFIX,up-hl.3g.qq.com,WeChat
-HOST-SUFFIX,vweixinthumb.tc.qq.com,WeChat
-HOST-SUFFIX,wechat.com,WeChat
-HOST-SUFFIX,wechatlegal.net,WeChat
-HOST-SUFFIX,wechatos.net,WeChat
-HOST-SUFFIX,wechatpay.com,WeChat
-HOST-SUFFIX,weixin.com,WeChat
-HOST-SUFFIX,weixin.qq.com,WeChat
-HOST-SUFFIX,weixinbridge.com,WeChat
-HOST-SUFFIX,weixinsxy.com,WeChat
-HOST-SUFFIX,wx.gtimg.com,WeChat
-HOST-SUFFIX,wx.qq.com,WeChat
-HOST-SUFFIX,wxapp.tc.qq.com,WeChat
-HOST-SUFFIX,wxs.qq.com,WeChat
-HOST-SUFFIX,yun-hl.3g.qq.com,WeChat
-USER-AGENT,MicroMessenger*,WeChat
-USER-AGENT,WeChat*,WeChat
-IP-ASN,132203,WeChat
+404: Not Found
+# 规则名称: Tencent
+# 规则统计: 19
+
+DOMAIN-SUFFIX,foxmail.com
+DOMAIN-SUFFIX,gtimg.com
+DOMAIN-SUFFIX,idqqimg.com
+DOMAIN-SUFFIX,igamecj.com
+DOMAIN-SUFFIX,myapp.com
+DOMAIN-SUFFIX,myqcloud.com
+DOMAIN-SUFFIX,qq.com
+DOMAIN-SUFFIX,qqmail.com
+DOMAIN-SUFFIX,qqurl.com
+DOMAIN-SUFFIX,smtcdns.com
+DOMAIN-SUFFIX,smtcdns.net
+DOMAIN-SUFFIX,soso.com
+DOMAIN-SUFFIX,tencent-cloud.net
+DOMAIN-SUFFIX,tencent.com
+DOMAIN-SUFFIX,tencentmind.com
+DOMAIN-SUFFIX,tenpay.com
+DOMAIN-SUFFIX,wechat.com
+DOMAIN-SUFFIX,weixin.com
+DOMAIN-SUFFIX,weiyun.com
 
 # 规则名称: WeChat
 # 规则统计: 21
@@ -2656,3 +2655,4 @@ IP-CIDR,101.32.133.53/32,no-resolve
 IP-CIDR,129.226.107.244/32,no-resolve
 IP-CIDR,129.226.3.47/32,no-resolve
 
+404: Not Found
