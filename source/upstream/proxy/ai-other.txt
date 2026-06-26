@@ -1,7 +1,7 @@
 # NAME: 深巷有喵的「AIGC」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.06.26 05:48:39
+# UPDATED: 2026.06.27 05:23:36
 # TOTAL: 120
 
 # ======= 上游同步规则 ========
@@ -126,6 +126,68 @@ IP-CIDR,24.199.123.28/32,no-resolve
 IP-CIDR,64.23.132.171/32,no-resolve
 IP-CIDR6,2607:6BC0::/32,no-resolve
 
+# NAME: Copilot
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:20:02
+# HOST: 20
+# HOST-KEYWORD: 1
+# HOST-SUFFIX: 26
+# IP-ASN: 2
+# IP-CIDR: 2
+# TOTAL: 51
+HOST,api.msn.com,Copilot
+HOST,api.statsig.com,Copilot
+HOST,assets.msn.com,Copilot
+HOST,browser-intake-datadoghq.com,Copilot
+HOST,chat.openai.com.cdn.cloudflare.net,Copilot
+HOST,copilot.microsoft.com,Copilot
+HOST,gateway.bingviz.microsoft.net,Copilot
+HOST,gateway.bingviz.microsoftapp.net,Copilot
+HOST,in.appcenter.ms,Copilot
+HOST,location.microsoft.com,Copilot
+HOST,odc.officeapps.live.com,Copilot
+HOST,openai-api.arkoselabs.com,Copilot
+HOST,openaicomproductionae4b.blob.core.windows.net,Copilot
+HOST,production-openaicom-storage.azureedge.net,Copilot
+HOST,r.bing.com,Copilot
+HOST,self.events.data.microsoft.com,Copilot
+HOST,services.bingapis.com,Copilot
+HOST,static.cloudflareinsights.com,Copilot
+HOST,sydney.bing.com,Copilot
+HOST,www.bing.com,Copilot
+HOST-SUFFIX,algolia.net,Copilot
+HOST-SUFFIX,api.microsoftapp.net,Copilot
+HOST-SUFFIX,auth0.com,Copilot
+HOST-SUFFIX,bing-shopping.microsoft-falcon.io,Copilot
+HOST-SUFFIX,challenges.cloudflare.com,Copilot
+HOST-SUFFIX,chatgpt.com,Copilot
+HOST-SUFFIX,chatgpt.livekit.cloud,Copilot
+HOST-SUFFIX,client-api.arkoselabs.com,Copilot
+HOST-SUFFIX,edgeservices.bing.com,Copilot
+HOST-SUFFIX,events.statsigapi.net,Copilot
+HOST-SUFFIX,featuregates.org,Copilot
+HOST-SUFFIX,host.livekit.cloud,Copilot
+HOST-SUFFIX,identrust.com,Copilot
+HOST-SUFFIX,intercom.io,Copilot
+HOST-SUFFIX,intercomcdn.com,Copilot
+HOST-SUFFIX,launchdarkly.com,Copilot
+HOST-SUFFIX,oaistatic.com,Copilot
+HOST-SUFFIX,oaiusercontent.com,Copilot
+HOST-SUFFIX,observeit.net,Copilot
+HOST-SUFFIX,openai.com,Copilot
+HOST-SUFFIX,openaiapi-site.azureedge.net,Copilot
+HOST-SUFFIX,openaicom.imgix.net,Copilot
+HOST-SUFFIX,segment.io,Copilot
+HOST-SUFFIX,sentry.io,Copilot
+HOST-SUFFIX,stripe.com,Copilot
+HOST-SUFFIX,turn.livekit.cloud,Copilot
+HOST-KEYWORD,openaicom-api,Copilot
+IP-CIDR,24.199.123.28/32,Copilot
+IP-CIDR,64.23.132.171/32,Copilot
+IP-ASN,14061,Copilot
+IP-ASN,20473,Copilot
+
 #!name=AI分流合集
 #!desc=选择支持的地区
 #!author=lodepuly, fmz200
@@ -223,98 +285,6 @@ DOMAIN-SUFFIX, grok.com
 # Trae AI
 DOMAIN, trae-api-sg.mchost.guru
 DOMAIN-SUFFIX, trae.ai
-# NAME: Claude
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:20:01
-# HOST: 1
-# HOST-SUFFIX: 2
-# TOTAL: 3
-HOST,cdn.usefathom.com,Claude
-HOST-SUFFIX,anthropic.com,Claude
-HOST-SUFFIX,claude.ai,Claude
-
-#############################################
-# 分流作用：对OpenAI相关服务进行分流
-# 重要提示：如果不想新增一个策略组，可以设置策略偏好
-# 项目地址：https://raw.githubusercontent.com/fmz200/wool_scripts/main/Loon/rule/OpenAI.list
-# 交流群组：https://t.me/lanjieguanggao
-# 更新时间：2024-03-10 19:07:00
-# 策略选择：选择支持OpenAI的地区
-#############################################
-
-DOMAIN, cdn.auth0.com
-DOMAIN-SUFFIX, vimeo.com
-DOMAIN-SUFFIX, vimeocdn.com
-DOMAIN-SUFFIX, hcaptcha.com
-DOMAIN-SUFFIX, akamaized.com
-
-DOMAIN,challenges.cloudflare.com
-DOMAIN,api.statsig.com
-DOMAIN,cdn.oaistatic.com
-DOMAIN-SUFFIX,ai.com
-DOMAIN-SUFFIX,openai.com
-DOMAIN-SUFFIX,stripe.com
-DOMAIN-SUFFIX,poe.com
-DOMAIN-SUFFIX,intercom.io
-DOMAIN-SUFFIX,identrust.com
-DOMAIN-SUFFIX,featuregates.org
-DOMAIN-SUFFIX,events.statsigapi.net
-DOMAIN-SUFFIX,oaiusercontent.com
-DOMAIN-SUFFIX,openaicom.imgix.net
-DOMAIN-SUFFIX,openaiapi-site.azureedge.net
-DOMAIN-SUFFIX,chat.openai.com.cdn.cloudflare.net
-DOMAIN-SUFFIX,openaicom.imgix.net
-DOMAIN-SUFFIX,openaicomproductionae4b.blob.core.windows.net
-DOMAIN-SUFFIX,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
-DOMAIN-SUFFIX,sentry.io
-#
-DOMAIN-SUFFIX,anthropic.com
-DOMAIN-SUFFIX,claude.ai
-#
-DOMAIN-SUFFIX,gatewayai.com
-DOMAIN-SUFFIX,tktn.be
-IP-CIDR,50.117.27.0/24,no-resolve
-IP-CIDR,69.46.75.0/24,no-resolve
-IP-CIDR,205.164.56.29/24,no-resolve
-IP-CIDR,63.251.124.0/24,no-resolve
-
-# 规则名称: OpenAI
-# 规则统计: 19
-
-DOMAIN-SUFFIX,api.statsig.com
-DOMAIN-SUFFIX,auth0.com
-DOMAIN-SUFFIX,challenges.cloudflare.com
-DOMAIN-SUFFIX,chatgpt.com
-DOMAIN-SUFFIX,chatgpt.livekit.cloud
-DOMAIN-SUFFIX,client-api.arkoselabs.com
-DOMAIN-SUFFIX,events.statsigapi.net
-DOMAIN-SUFFIX,featuregates.org
-DOMAIN-SUFFIX,identrust.com
-DOMAIN-SUFFIX,intercom.io
-DOMAIN-SUFFIX,intercomcdn.com
-DOMAIN-SUFFIX,oaistatic.com
-DOMAIN-SUFFIX,oaiusercontent.com
-DOMAIN-SUFFIX,openai.com
-DOMAIN-SUFFIX,openaiapi-site.azureedge.net
-DOMAIN-SUFFIX,sentry.io
-DOMAIN-SUFFIX,stripe.com
-DOMAIN-SUFFIX,turn.livekit.cloud
-DOMAIN-KEYWORD,openai
-
-# 规则名称: Copilot
-# 规则统计: 2
-
-DOMAIN-SUFFIX,bing.com
-DOMAIN-SUFFIX,copilot.microsoft.com
-
-# 规则名称: Claude
-# 规则统计: 3
-
-DOMAIN,cdn.usefathom.com
-DOMAIN-SUFFIX,anthropic.com
-DOMAIN-SUFFIX,claude.ai
-
 # NAME: Gemini
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -336,6 +306,17 @@ HOST-SUFFIX,apis.google.com,Gemini
 HOST-KEYWORD,colab,Gemini
 HOST-KEYWORD,developerprofiles,Gemini
 HOST-KEYWORD,generativelanguage,Gemini
+
+# NAME: Claude
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:20:01
+# HOST: 1
+# HOST-SUFFIX: 2
+# TOTAL: 3
+HOST,cdn.usefathom.com,Claude
+HOST-SUFFIX,anthropic.com,Claude
+HOST-SUFFIX,claude.ai,Claude
 
 # $ meta_title Sukka's Ruleset - AIGC Domains
 # $ meta_description This file contains domains of OpenAI, Claude.
@@ -460,65 +441,84 @@ DOMAIN,api.jetbrains.ai
 # see https://github.com/SukkaW/Surge/pull/86 for reason that only root domain get proxied
 DOMAIN,openrouter.ai
 
-# NAME: Copilot
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:20:02
-# HOST: 20
-# HOST-KEYWORD: 1
-# HOST-SUFFIX: 26
-# IP-ASN: 2
-# IP-CIDR: 2
-# TOTAL: 51
-HOST,api.msn.com,Copilot
-HOST,api.statsig.com,Copilot
-HOST,assets.msn.com,Copilot
-HOST,browser-intake-datadoghq.com,Copilot
-HOST,chat.openai.com.cdn.cloudflare.net,Copilot
-HOST,copilot.microsoft.com,Copilot
-HOST,gateway.bingviz.microsoft.net,Copilot
-HOST,gateway.bingviz.microsoftapp.net,Copilot
-HOST,in.appcenter.ms,Copilot
-HOST,location.microsoft.com,Copilot
-HOST,odc.officeapps.live.com,Copilot
-HOST,openai-api.arkoselabs.com,Copilot
-HOST,openaicomproductionae4b.blob.core.windows.net,Copilot
-HOST,production-openaicom-storage.azureedge.net,Copilot
-HOST,r.bing.com,Copilot
-HOST,self.events.data.microsoft.com,Copilot
-HOST,services.bingapis.com,Copilot
-HOST,static.cloudflareinsights.com,Copilot
-HOST,sydney.bing.com,Copilot
-HOST,www.bing.com,Copilot
-HOST-SUFFIX,algolia.net,Copilot
-HOST-SUFFIX,api.microsoftapp.net,Copilot
-HOST-SUFFIX,auth0.com,Copilot
-HOST-SUFFIX,bing-shopping.microsoft-falcon.io,Copilot
-HOST-SUFFIX,challenges.cloudflare.com,Copilot
-HOST-SUFFIX,chatgpt.com,Copilot
-HOST-SUFFIX,chatgpt.livekit.cloud,Copilot
-HOST-SUFFIX,client-api.arkoselabs.com,Copilot
-HOST-SUFFIX,edgeservices.bing.com,Copilot
-HOST-SUFFIX,events.statsigapi.net,Copilot
-HOST-SUFFIX,featuregates.org,Copilot
-HOST-SUFFIX,host.livekit.cloud,Copilot
-HOST-SUFFIX,identrust.com,Copilot
-HOST-SUFFIX,intercom.io,Copilot
-HOST-SUFFIX,intercomcdn.com,Copilot
-HOST-SUFFIX,launchdarkly.com,Copilot
-HOST-SUFFIX,oaistatic.com,Copilot
-HOST-SUFFIX,oaiusercontent.com,Copilot
-HOST-SUFFIX,observeit.net,Copilot
-HOST-SUFFIX,openai.com,Copilot
-HOST-SUFFIX,openaiapi-site.azureedge.net,Copilot
-HOST-SUFFIX,openaicom.imgix.net,Copilot
-HOST-SUFFIX,segment.io,Copilot
-HOST-SUFFIX,sentry.io,Copilot
-HOST-SUFFIX,stripe.com,Copilot
-HOST-SUFFIX,turn.livekit.cloud,Copilot
-HOST-KEYWORD,openaicom-api,Copilot
-IP-CIDR,24.199.123.28/32,Copilot
-IP-CIDR,64.23.132.171/32,Copilot
-IP-ASN,14061,Copilot
-IP-ASN,20473,Copilot
+# 规则名称: OpenAI
+# 规则统计: 19
+
+DOMAIN-SUFFIX,api.statsig.com
+DOMAIN-SUFFIX,auth0.com
+DOMAIN-SUFFIX,challenges.cloudflare.com
+DOMAIN-SUFFIX,chatgpt.com
+DOMAIN-SUFFIX,chatgpt.livekit.cloud
+DOMAIN-SUFFIX,client-api.arkoselabs.com
+DOMAIN-SUFFIX,events.statsigapi.net
+DOMAIN-SUFFIX,featuregates.org
+DOMAIN-SUFFIX,identrust.com
+DOMAIN-SUFFIX,intercom.io
+DOMAIN-SUFFIX,intercomcdn.com
+DOMAIN-SUFFIX,oaistatic.com
+DOMAIN-SUFFIX,oaiusercontent.com
+DOMAIN-SUFFIX,openai.com
+DOMAIN-SUFFIX,openaiapi-site.azureedge.net
+DOMAIN-SUFFIX,sentry.io
+DOMAIN-SUFFIX,stripe.com
+DOMAIN-SUFFIX,turn.livekit.cloud
+DOMAIN-KEYWORD,openai
+
+# 规则名称: Claude
+# 规则统计: 3
+
+DOMAIN,cdn.usefathom.com
+DOMAIN-SUFFIX,anthropic.com
+DOMAIN-SUFFIX,claude.ai
+
+# 规则名称: Copilot
+# 规则统计: 2
+
+DOMAIN-SUFFIX,bing.com
+DOMAIN-SUFFIX,copilot.microsoft.com
+
+#############################################
+# 分流作用：对OpenAI相关服务进行分流
+# 重要提示：如果不想新增一个策略组，可以设置策略偏好
+# 项目地址：https://raw.githubusercontent.com/fmz200/wool_scripts/main/Loon/rule/OpenAI.list
+# 交流群组：https://t.me/lanjieguanggao
+# 更新时间：2024-03-10 19:07:00
+# 策略选择：选择支持OpenAI的地区
+#############################################
+
+DOMAIN, cdn.auth0.com
+DOMAIN-SUFFIX, vimeo.com
+DOMAIN-SUFFIX, vimeocdn.com
+DOMAIN-SUFFIX, hcaptcha.com
+DOMAIN-SUFFIX, akamaized.com
+
+DOMAIN,challenges.cloudflare.com
+DOMAIN,api.statsig.com
+DOMAIN,cdn.oaistatic.com
+DOMAIN-SUFFIX,ai.com
+DOMAIN-SUFFIX,openai.com
+DOMAIN-SUFFIX,stripe.com
+DOMAIN-SUFFIX,poe.com
+DOMAIN-SUFFIX,intercom.io
+DOMAIN-SUFFIX,identrust.com
+DOMAIN-SUFFIX,featuregates.org
+DOMAIN-SUFFIX,events.statsigapi.net
+DOMAIN-SUFFIX,oaiusercontent.com
+DOMAIN-SUFFIX,openaicom.imgix.net
+DOMAIN-SUFFIX,openaiapi-site.azureedge.net
+DOMAIN-SUFFIX,chat.openai.com.cdn.cloudflare.net
+DOMAIN-SUFFIX,openaicom.imgix.net
+DOMAIN-SUFFIX,openaicomproductionae4b.blob.core.windows.net
+DOMAIN-SUFFIX,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
+DOMAIN-SUFFIX,sentry.io
+#
+DOMAIN-SUFFIX,anthropic.com
+DOMAIN-SUFFIX,claude.ai
+#
+DOMAIN-SUFFIX,gatewayai.com
+DOMAIN-SUFFIX,tktn.be
+IP-CIDR,50.117.27.0/24,no-resolve
+IP-CIDR,69.46.75.0/24,no-resolve
+IP-CIDR,205.164.56.29/24,no-resolve
+IP-CIDR,63.251.124.0/24,no-resolve
 
