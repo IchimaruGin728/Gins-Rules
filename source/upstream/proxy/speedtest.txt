@@ -1,3 +1,22 @@
+# 规则名称: Speedtest
+# 规则统计: 15
+
+DOMAIN-SUFFIX,cdnst.net
+DOMAIN-SUFFIX,cellmaps.com
+DOMAIN-SUFFIX,ekahau.cloud
+DOMAIN-SUFFIX,ekahau.com
+DOMAIN-SUFFIX,fast.com
+DOMAIN-SUFFIX,ookla.com
+DOMAIN-SUFFIX,ooklaserver.net
+DOMAIN-SUFFIX,pingtest.net
+DOMAIN-SUFFIX,speed.cloudflare.com
+DOMAIN-SUFFIX,speed.dler.io
+DOMAIN-SUFFIX,speedtest.co
+DOMAIN-SUFFIX,speedtest.net
+DOMAIN-SUFFIX,speedtestcustom.com
+DOMAIN-SUFFIX,webtest.net
+DOMAIN-KEYWORD,speedtest
+
 # $ custom_build_script
 
 # speedtest.net
@@ -76,6 +95,36 @@ speedtest.mtnetworks.mn
 .speedtest.airlinkdc.com
 .speedtest.soraxus.com
 .speedtest.singnet.com.sg
+.ookla.bytel.fr
+.speedtest.mire.sfr.net
+.speedtest.mbs.cloud
+.speedtest.shentel.net
+.speedtest.brightspeed.com
+.speedtest.fiberfirst.com
+.speedtest.civitanet.com
+.speedtest.fastwyre.com
+.speedtest.bluespan.com
+.speedtest.secv.com
+.speedtest.rtc1.com
+.speedtest.bug.pw
+.speedtest.orange.pl
+.speedtest.welcomeitalia.it
+.speedtest.aruba.it
+.speedtest.hybridmail.in
+.speedtest.railtel.in
+.speedtest.wobcom.de
+.speedtest.komdsl.de
+.speedtest.tng.de
+.speed.tng.de
+.speedtest.lshiy.net
+.speedtest.gci.net
+.speedtest.bluespanwireless.com
+.speedtest.sukaininfoway.com
+.speedtest.bhaukaalbaba.com
+.speedtest.razorblue.com
+.ookla.enventis.net
+.ookla.surfinternet.com
+.ookla.ham1.x-ion.de
 # Cloudflare
 .speed.cloudflare.com
 # Wi-Fi Man
@@ -108,23 +157,4 @@ open.cachefly.net
 .nperf.net
 # HiNet
 .speed.hinet.net
-
-# 规则名称: Speedtest
-# 规则统计: 15
-
-DOMAIN-SUFFIX,cdnst.net
-DOMAIN-SUFFIX,cellmaps.com
-DOMAIN-SUFFIX,ekahau.cloud
-DOMAIN-SUFFIX,ekahau.com
-DOMAIN-SUFFIX,fast.com
-DOMAIN-SUFFIX,ookla.com
-DOMAIN-SUFFIX,ooklaserver.net
-DOMAIN-SUFFIX,pingtest.net
-DOMAIN-SUFFIX,speed.cloudflare.com
-DOMAIN-SUFFIX,speed.dler.io
-DOMAIN-SUFFIX,speedtest.co
-DOMAIN-SUFFIX,speedtest.net
-DOMAIN-SUFFIX,speedtestcustom.com
-DOMAIN-SUFFIX,webtest.net
-DOMAIN-KEYWORD,speedtest
 
