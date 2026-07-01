@@ -67,6 +67,14 @@ fn parse_single(val: &str, rules: &mut RuleSet) {
             "keyword" => { rules.domain_keyword.insert(CompactString::new(value)); }
             "process" => { rules.process_name.insert(CompactString::new(value)); }
             "user-agent" => { rules.user_agent.insert(CompactString::new(value)); }
+            "asn" => {
+                let asn_val = if value.to_uppercase().starts_with("AS") {
+                    value.to_uppercase()
+                } else {
+                    format!("AS{}", value)
+                };
+                rules.ip_asn.insert(CompactString::new(asn_val));
+            }
             _ => {}
         }
         return;
@@ -117,7 +125,7 @@ fn parse_prefixed(rule_type: &str, value: &str, rules: &mut RuleSet) {
 
 /// Known single-value prefixes (without the `:`).
 const KNOWN_PREFIXES: &[&str] = &[
-    "full", "domain", "regex", "regexp", "keyword", "process", "user-agent",
+    "full", "domain", "regex", "regexp", "keyword", "process", "user-agent", "asn",
 ];
 
 /// Split a value on the first `:` to extract a prefix.

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,51 +13,100 @@ func generateAllMRS(categories map[string]map[string]RuleSet, output string, mih
 	success := 0
 	total := 0
 	for cat, targets := range categories {
+		mihomoDir := filepath.Join(output, "mihomo", cat)
+		stashDir := filepath.Join(output, "stash", cat)
+
+		for _, dir := range []string{mihomoDir, stashDir} {
+			if err := ensureDir(dir); err != nil {
+				fmt.Fprintf(os.Stderr, "  ❌ mkdir %s: %v\n", dir, err)
+				continue
+			}
+			// Clean up existing .mrs files
+			files, _ := filepath.Glob(filepath.Join(dir, "*.mrs"))
+			for _, f := range files {
+				os.Remove(f)
+			}
+		}
+
 		for name, rs := range targets {
 			if ruleSetIsEmpty(rs) {
 				continue
 			}
-			outDir := filepath.Join(output, "mihomo", cat)
-			if err := ensureDir(outDir); err != nil {
-				fmt.Fprintf(os.Stderr, "  ❌ mkdir %s: %v\n", outDir, err)
+
+			domainLines := domainPayload(rs)
+			ipLines := ipcidrPayload(rs)
+
+			hasDomains := len(domainLines) > 0
+			hasIPs := len(ipLines) > 0
+
+			if !hasDomains && !hasIPs {
 				continue
 			}
 
-			hasComplex := len(rs.DomainKeyword) > 0 || len(rs.DomainRegex) > 0 ||
-				len(rs.DomainWildcard) > 0 || len(rs.IPCidr) > 0 ||
-				len(rs.IPAsn) > 0 || len(rs.ProcessName) > 0 || len(rs.UserAgent) > 0
-
-			if hasComplex {
-				// Domain MRS
-				domainLines := domainPayload(rs)
-				if len(domainLines) > 0 {
-					total++
-					if err := generateMrs(mihomoBin, "domain", domainLines, filepath.Join(outDir, name+".mrs")); err != nil {
-						fmt.Fprintf(os.Stderr, "  ❌ MRS domain %s/%s: %v\n", cat, name, err)
-					} else {
-						success++
+			if hasDomains && hasIPs {
+				// CASE 1: Mixed content - split into domain (name.mrs) and ipcidr (name-ip.mrs)
+				total++
+				mrsPath := filepath.Join(mihomoDir, name+".mrs")
+				if err := generateMrs(mihomoBin, "domain", domainLines, mrsPath); err != nil {
+					fmt.Fprintf(os.Stderr, "  ❌ MRS domain %s/%s: %v\n", cat, name, err)
+				} else {
+					success++
+					// Copy to stash
+					if err := copyFile(mrsPath, filepath.Join(stashDir, name+".mrs")); err != nil {
+						fmt.Fprintf(os.Stderr, "  ❌ Copy MRS to stash %s/%s: %v\n", cat, name, err)
 					}
 				}
 
-				// IP MRS
-				ipLines := ipcidrPayload(rs)
-				if len(ipLines) > 0 {
-					total++
-					if err := generateMrs(mihomoBin, "ipcidr", ipLines, filepath.Join(outDir, name+"-ip.mrs")); err != nil {
-						fmt.Fprintf(os.Stderr, "  ❌ MRS ipcidr %s/%s: %v\n", cat, name, err)
-					} else {
-						success++
+				total++
+				ipMrsPath := filepath.Join(mihomoDir, name+"-ip.mrs")
+				if err := generateMrs(mihomoBin, "ipcidr", ipLines, ipMrsPath); err != nil {
+					fmt.Fprintf(os.Stderr, "  ❌ MRS ipcidr %s/%s: %v\n", cat, name, err)
+				} else {
+					success++
+					// Copy to stash
+					if err := copyFile(ipMrsPath, filepath.Join(stashDir, name+"-ip.mrs")); err != nil {
+						fmt.Fprintf(os.Stderr, "  ❌ Copy MRS-ip to stash %s/%s: %v\n", cat, name, err)
 					}
 				}
-			} else {
-				// Simple domain-only: generate domain MRS
-				domainLines := domainPayload(rs)
-				if len(domainLines) > 0 {
+			} else if hasDomains {
+				// CASE 2: Domain only - single domain ruleset (name.mrs)
+				total++
+				mrsPath := filepath.Join(mihomoDir, name+".mrs")
+				if err := generateMrs(mihomoBin, "domain", domainLines, mrsPath); err != nil {
+					fmt.Fprintf(os.Stderr, "  ❌ MRS domain %s/%s: %v\n", cat, name, err)
+				} else {
+					success++
+					// Copy to stash
+					if err := copyFile(mrsPath, filepath.Join(stashDir, name+".mrs")); err != nil {
+						fmt.Fprintf(os.Stderr, "  ❌ Copy MRS to stash %s/%s: %v\n", cat, name, err)
+					}
+				}
+			} else if hasIPs {
+				// CASE 3: IP only - single ipcidr ruleset (name.mrs)
+				total++
+				mrsPath := filepath.Join(mihomoDir, name+".mrs")
+				if err := generateMrs(mihomoBin, "ipcidr", ipLines, mrsPath); err != nil {
+					fmt.Fprintf(os.Stderr, "  ❌ MRS ipcidr %s/%s: %v\n", cat, name, err)
+				} else {
+					success++
+					// Copy to stash
+					if err := copyFile(mrsPath, filepath.Join(stashDir, name+".mrs")); err != nil {
+						fmt.Fprintf(os.Stderr, "  ❌ Copy MRS to stash %s/%s: %v\n", cat, name, err)
+					}
+				}
+
+				// If not in IP/ASN category, also generate name-ip.mrs for backward compatibility
+				if cat != "ip" && cat != "asn" {
 					total++
-					if err := generateMrs(mihomoBin, "domain", domainLines, filepath.Join(outDir, name+".mrs")); err != nil {
-						fmt.Fprintf(os.Stderr, "  ❌ MRS domain %s/%s: %v\n", cat, name, err)
+					ipMrsPath := filepath.Join(mihomoDir, name+"-ip.mrs")
+					if err := generateMrs(mihomoBin, "ipcidr", ipLines, ipMrsPath); err != nil {
+						fmt.Fprintf(os.Stderr, "  ❌ MRS ipcidr fallback %s/%s: %v\n", cat, name, err)
 					} else {
 						success++
+						// Copy to stash
+						if err := copyFile(ipMrsPath, filepath.Join(stashDir, name+"-ip.mrs")); err != nil {
+							fmt.Fprintf(os.Stderr, "  ❌ Copy MRS-ip fallback to stash %s/%s: %v\n", cat, name, err)
+						}
 					}
 				}
 			}
@@ -88,4 +138,25 @@ func generateMrs(mihomoBin, behavior string, lines []string, outPath string) err
 	}
 
 	return nil
+}
+
+// copyFile copies a file from src to dst
+func copyFile(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return out.Sync()
 }
