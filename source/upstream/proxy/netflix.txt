@@ -2337,7 +2337,6 @@ IP-CIDR6,2a03:5640::/32,no-resolve
 USER-AGENT,Argo*
 PROCESS-NAME,com.netflix.mediaclient
 
-404: Not Found
 # 规则名称: Netflix
 # 规则统计: 40
 
@@ -2382,3 +2381,4 @@ IP-CIDR,66.197.128.0/17,no-resolve
 IP-CIDR,69.53.224.0/19,no-resolve
 IP-CIDR,8.41.4.0/24,no-resolve
 
+404: Not Found
