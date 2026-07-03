@@ -43004,14 +43004,6 @@ full:ai.zhaomi.cn
 full:aka-amd-njpwworld-hls-enlive.akamaized.net
 full:alibaba.cdn.steampipe.steamcontent.com
 full:aljazeera-eng-hd-live.hls.adaptive.level3.net
-full:alt1-mtalk.google.com
-full:alt2-mtalk.google.com
-full:alt3-mtalk.google.com
-full:alt4-mtalk.google.com
-full:alt5-mtalk.google.com
-full:alt6-mtalk.google.com
-full:alt7-mtalk.google.com
-full:alt8-mtalk.google.com
 full:amdlive-ch01.ctnd.com.edgesuite.net
 full:amdlive-ch03-ctnd-com.akamaized.net
 full:amdlive-ch03.ctnd.com.edgesuite.net
@@ -43452,7 +43444,6 @@ full:moocs.unipus.cn
 full:movie.mcas.jp
 full:msg.umeng.com
 full:msg.umengcloud.com
-full:mtalk.google.com
 full:music.apple.com
 full:musicstatus.music.apple.com
 full:mvod.itunes.apple.com

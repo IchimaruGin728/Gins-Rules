@@ -13855,14 +13855,6 @@ full:adobeereg.com
 full:ai.google.dev
 full:alkalicore-pa.clients6.google.com
 full:alkalimakersuite-pa.clients6.google.com
-full:alt1-mtalk.google.com
-full:alt2-mtalk.google.com
-full:alt3-mtalk.google.com
-full:alt4-mtalk.google.com
-full:alt5-mtalk.google.com
-full:alt6-mtalk.google.com
-full:alt7-mtalk.google.com
-full:alt8-mtalk.google.com
 full:amp.akamaized.net
 full:android.googlesource.com
 full:angle.com.tw
@@ -14113,10 +14105,6 @@ full:misa-prod.s3.ap-northeast-1.amazonaws.com
 full:mobilelive-hamivideo.cdn.hinet.net
 full:mscrl.microsoft.com
 full:msh.amazon.co.uk
-full:mtalk-dev.google.com
-full:mtalk-staging.google.com
-full:mtalk.google.com
-full:mtalk4.google.com
 full:muse.jhu.edu
 full:mwf-service.akamaized.net
 full:mytvsuperlimited.hb.omtrdc.net
