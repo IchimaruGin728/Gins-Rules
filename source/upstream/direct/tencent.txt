@@ -98,7 +98,6 @@ DOMAIN-SUFFIX,wechat.com
 DOMAIN-SUFFIX,weixin.com
 DOMAIN-SUFFIX,weiyun.com
 
-404: Not Found
 # NAME: Tencent
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -2631,6 +2630,7 @@ IP-CIDR,150.139.143.0/32,Tencent
 IP-CIDR,27.159.95.0/32,Tencent
 IP-CIDR,58.58.81.129/32,Tencent
 
+404: Not Found
 # 规则名称: WeChat
 # 规则统计: 21
 
