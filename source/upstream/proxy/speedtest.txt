@@ -1,4 +1,160 @@
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
+# 规则名称: Speedtest
+# 规则统计: 15
+
+DOMAIN-SUFFIX,cdnst.net
+DOMAIN-SUFFIX,cellmaps.com
+DOMAIN-SUFFIX,ekahau.cloud
+DOMAIN-SUFFIX,ekahau.com
+DOMAIN-SUFFIX,fast.com
+DOMAIN-SUFFIX,ookla.com
+DOMAIN-SUFFIX,ooklaserver.net
+DOMAIN-SUFFIX,pingtest.net
+DOMAIN-SUFFIX,speed.cloudflare.com
+DOMAIN-SUFFIX,speed.dler.io
+DOMAIN-SUFFIX,speedtest.co
+DOMAIN-SUFFIX,speedtest.net
+DOMAIN-SUFFIX,speedtestcustom.com
+DOMAIN-SUFFIX,webtest.net
+DOMAIN-KEYWORD,speedtest
+
+# $ custom_build_script
+
+# speedtest.net
+.speedtest.net
+.speedtestcustom.com
+.ooklaserver.net
+.speed.misaka.one
+.speedtest.rt.ru
+.speedtest.aptg.com.tw
+.speedtest.gslnetworks.com
+.speedtest.jsinfo.net
+.speedtest.i3d.net
+.speedtest.telus.com
+.speedtest.telstra.net
+.speedtest.clouvider.net
+.speedtest.idv.tw
+.speedtest.frontier.com
+.speedtest.orange.fr
+.speedtest.centurylink.net
+.srvr.bell.ca
+.speedtest.contabo.net
+speedtest.hk.chinamobile.com
+speedtestbb.hk.chinamobile.com
+.hizinitestet.com
+.linknetspeedtest.net.br
+speedtest.rit.edu
+speedtest.ropa.de
+speedtest.sits.su
+speedtest.tigo.cr
+.speedtest.pni.tw
+.speed.pfm.gg
+.speedtest.faelix.net
+.speedtest.labixe.net
+.speedtest.warian.net
+.speedtest.starhub.com
+.speedtest.gibir.net.tr
+.speedtest.ozarksgo.net
+.speedtest.exetel.com.au
+.speedtest.sbcglobal.net
+.speedtest.leaptel.com.au
+.speedtest.windstream.net
+.speedtest.vodafone.com.au
+.speedtest.rascom.ru
+.speedtest.dchost.com
+.speedtest.highnet.com
+.speedtest.seattle.wa.limewave.net
+.speedtest.optitel.com.au
+.speednet.net.tr
+.speedtest.angolacables.co.ao
+.ookla-speedtest.fsr.com
+.speedtest.comnet.com.tr
+.speedtest.gslnetworks.com.au
+.test.gslnetworks.com.au
+.speedtestunonet.com.br
+.speedtest.alagas.net
+speedtest.surfshark.com
+.speedtest.aarnet.net.au
+.ookla.rcp.net
+.ookla-speedtests.e2ro.com
+.speedtest.com.sg
+.ookla.ddnsgeek.com
+.speedtest.cmcnetworks.net
+.speedtest.moack.co.kr
+speedtest.mtnetworks.mn
+.speedtest.waicore.com
+.speedtest.love
+.speedtest.6667890.xyz
+.speedtest.kansuiun.com
+.speedtest.tjokas.com
+.speedtest.timeweb.ru
+.speedtest.vianet.ca
+.speedtest.vipnetconexao.com.br
+.speedtest.royalehosting.net
+.speedtest.pavlovmedia.net
+.speedtest.serverside.com
+.speedtest.airlinkdc.com
+.speedtest.soraxus.com
+.speedtest.singnet.com.sg
+.ookla.bytel.fr
+.speedtest.mire.sfr.net
+.speedtest.mbs.cloud
+.speedtest.shentel.net
+.speedtest.brightspeed.com
+.speedtest.fiberfirst.com
+.speedtest.civitanet.com
+.speedtest.fastwyre.com
+.speedtest.bluespan.com
+.speedtest.secv.com
+.speedtest.rtc1.com
+.speedtest.bug.pw
+.speedtest.orange.pl
+.speedtest.welcomeitalia.it
+.speedtest.aruba.it
+.speedtest.hybridmail.in
+.speedtest.railtel.in
+.speedtest.wobcom.de
+.speedtest.komdsl.de
+.speedtest.tng.de
+.speed.tng.de
+.speedtest.lshiy.net
+.speedtest.gci.net
+.speedtest.bluespanwireless.com
+.speedtest.sukaininfoway.com
+.speedtest.bhaukaalbaba.com
+.speedtest.razorblue.com
+.ookla.enventis.net
+.ookla.surfinternet.com
+.ookla.ham1.x-ion.de
+# Cloudflare
+.speed.cloudflare.com
+# Wi-Fi Man
+.wifiman.com
+.wifiman.me
+.wifiman.ubncloud.com
+.wifiman-stability-test.ubncloud.com
+# Fast.com
+.fast.com
+# MacPaw
+speedtest.macpaw.com
+# speedtestmaster
+.netspeedtestmaster.com
+# Google Search Result of "speedtest", powered by this
+.measurement-lab.org
+.measurementlab.net
+# Google Fiber legacy speedtest site (new fiber speedtest use speedtestcustom.com)
+.speed.googlefiber.net
+# librespeed
+.backend.librespeed.org
+# Apple (From netQuality command)
+mensura.cdn-apple.com
+# OpenSpeedtest (This is also used for openspeedtest server download)
+open.cachefly.net
+# Linode
+.speedtest.linode.com
+# www.bandwidthplace.com
+.mlab-oti.measurement-lab.org
+# nperf
+.nperf.net
+# HiNet
+.speed.hinet.net
+

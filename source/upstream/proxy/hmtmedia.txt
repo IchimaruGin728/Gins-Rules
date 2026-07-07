@@ -1,2 +1,20 @@
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
+# 规则名称: HMTMedia
+# 规则统计: 16
+
+DOMAIN,api.biliapi.com
+DOMAIN,api.biliapi.net
+DOMAIN,api.bilibili.com
+DOMAIN,app.biliapi.com
+DOMAIN,app.biliapi.net
+DOMAIN,app.bilibili.com
+DOMAIN,cache.video.iqiyi.com
+DOMAIN,grpc.biliapi.net
+DOMAIN,m.bilibili.com
+DOMAIN,mobileso.bz.mgtv.com
+DOMAIN,upos-hz-mirrorakam.akamaized.net
+DOMAIN,www.bilibili.com
+DOMAIN-SUFFIX,api.mgtv.com
+DOMAIN-KEYWORD,cn-hk-eq-bcache-
+IP-CIDR,116.211.202.206/32,no-resolve
+IP-CIDR,116.211.202.216/32,no-resolve
+

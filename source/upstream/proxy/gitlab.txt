@@ -1,4 +1,15 @@
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
+# 规则名称: GitLab
+# 规则统计: 6
+
+DOMAIN-SUFFIX,gitlab.com
+DOMAIN-SUFFIX,gitlab.io
+DOMAIN-SUFFIX,gitlab.net
+DOMAIN-SUFFIX,gitter-static.net
+DOMAIN-SUFFIX,gitter.im
+DOMAIN-KEYWORD,gitlab
+
+# $ meta_title Sukka's Ruleset - GitLab
+# $ meta_description GitLab forbids usage from CN, HK, MO. This file contains ruleset for GitLab.
+
+DOMAIN-SUFFIX,gitlab.com
+

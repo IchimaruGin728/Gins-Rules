@@ -1,2 +1,15 @@
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
+# 规则名称: Oracle
+# 规则统计: 11
+
+DOMAIN-SUFFIX,ateam-oracle.com
+DOMAIN-SUFFIX,bronto.com
+DOMAIN-SUFFIX,covid19-rx.org
+DOMAIN-SUFFIX,covid19rx.org
+DOMAIN-SUFFIX,oracle
+DOMAIN-SUFFIX,oracle.com
+DOMAIN-SUFFIX,oraclecloud.com
+DOMAIN-SUFFIX,oraclefoundation.org
+DOMAIN-SUFFIX,oracleimg.com
+DOMAIN-SUFFIX,oracleinfinity.io
+DOMAIN-SUFFIX,sun.com
+
