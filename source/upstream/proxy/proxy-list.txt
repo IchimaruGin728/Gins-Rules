@@ -4408,6 +4408,7 @@ azuredns-prd.info
 azuredns-prd.org
 azureedge-test.net
 azureedge.net
+azureedge.us
 azurefd.net
 azureiotcentral.com
 azureiotsolutions.com
@@ -7440,6 +7441,7 @@ coomer.su
 coova.com
 coova.net
 coova.org
+copilot-stg.com
 copilot.com
 copro.pw
 copy-manga.com
@@ -16455,6 +16457,7 @@ mgstage.com
 mh4u.org
 mhcb.ru
 mhcbr.ru
+mhgui.com
 mhhanman.xyz
 mhqwe.xyz
 mhradio.org
@@ -22760,6 +22763,7 @@ starfieldtech.com
 starfox.com
 stargazer-games.com
 stark-verlag.ch
+starlink.com
 starott.com
 starp2p.com
 starplus.com
@@ -28275,7 +28279,6 @@ full:t.ssp.hinet.net
 full:t21.nikkei.co.jp
 full:t21ipau.nikkei.co.jp
 full:teamviewer.com.cdn.cloudflare.net
-full:tesla-cdn.thron.com
 full:thumbnail-hamivideo.cdn.hinet.net
 full:time-a-b.nist.gov
 full:time-a-g.nist.gov
@@ -28642,7 +28645,7 @@ regexp:^[0-9]+vod-adaptive\.akamaized\.net$
 # NAME: 深巷有喵的「Proxy」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.07.15 05:05:21
+# UPDATED: 2026.07.16 05:06:28
 # TOTAL: 6931
 
 # ======= 手动维护规则 ========
@@ -36051,7 +36054,6 @@ DOMAIN-SUFFIX,sg
 DOMAIN-SUFFIX,sh
 DOMAIN-SUFFIX,si
 DOMAIN-SUFFIX,sk
-DOMAIN-SUFFIX,su
 # DOMAIN-SUFFIX,so
 DOMAIN-SUFFIX,st
 DOMAIN-SUFFIX,su
