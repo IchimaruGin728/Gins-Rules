@@ -2584,7 +2584,6 @@ IP-CIDR,150.139.143.0/32,Tencent
 IP-CIDR,27.159.95.0/32,Tencent
 IP-CIDR,58.58.81.129/32,Tencent
 
-404: Not Found
 # 规则名称: Tencent
 # 规则统计: 19
 
@@ -2608,6 +2607,7 @@ DOMAIN-SUFFIX,wechat.com
 DOMAIN-SUFFIX,weixin.com
 DOMAIN-SUFFIX,weiyun.com
 
+404: Not Found
 # 规则名称: Tencent
 # 规则统计: 19
 
