@@ -418,6 +418,7 @@ USER-AGENT,*com.google.ios.youtubemusic*,YouTubeMusic
 USER-AGENT,YouTubeMusic*,YouTubeMusic
 USER-AGENT,com.google.ios.youtubemusic*,YouTubeMusic
 
+404: Not Found
 # 规则名称: YouTube
 # 规则统计: 14
 
@@ -436,4 +437,3 @@ DOMAIN-SUFFIX,yt.be
 DOMAIN-SUFFIX,ytimg.com
 DOMAIN-KEYWORD,youtube
 
-404: Not Found
