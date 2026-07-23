@@ -25284,6 +25284,7 @@ tohoku-bank.co.jp
 tok.media
 token.im
 tokenlon.im
+tokenplus.app
 tokyo-hot.com
 tokyo-porn-tube.com
 tokyo-sports.co.jp
@@ -30067,7 +30068,7 @@ regexp:^[0-9]+vod-adaptive\.akamaized\.net$
 # NAME: 深巷有喵的「Proxy」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.07.22 05:17:23
+# UPDATED: 2026.07.23 05:15:26
 # TOTAL: 6934
 
 # ======= 手动维护规则 ========
