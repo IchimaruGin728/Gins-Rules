@@ -1,14 +1,3 @@
-# 规则名称: HBO
-# 规则统计: 7
-
-DOMAIN-SUFFIX,discomax.com
-DOMAIN-SUFFIX,hbo.com
-DOMAIN-SUFFIX,hbogo.com
-DOMAIN-SUFFIX,hbomax.com
-DOMAIN-SUFFIX,hbomaxcdn.com
-DOMAIN-SUFFIX,hbonow.com
-DOMAIN-SUFFIX,max.com
-
 # 规则名称: HBOAsia
 # 规则统计: 19
 
@@ -31,4 +20,15 @@ DOMAIN-SUFFIX,hboasia.com
 DOMAIN-SUFFIX,hbogoasia.com
 DOMAIN-SUFFIX,hbogoasia.hk
 DOMAIN-KEYWORD,hbogoasia
+
+# 规则名称: HBO
+# 规则统计: 7
+
+DOMAIN-SUFFIX,discomax.com
+DOMAIN-SUFFIX,hbo.com
+DOMAIN-SUFFIX,hbogo.com
+DOMAIN-SUFFIX,hbomax.com
+DOMAIN-SUFFIX,hbomaxcdn.com
+DOMAIN-SUFFIX,hbonow.com
+DOMAIN-SUFFIX,max.com
 
