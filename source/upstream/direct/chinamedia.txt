@@ -1,7 +1,7 @@
 # NAME: 深巷有喵的「ChinaMedia」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.07.25 05:11:32
+# UPDATED: 2026.07.26 04:59:41
 # TOTAL: 446
 
 # ======= 上游同步规则 ========
