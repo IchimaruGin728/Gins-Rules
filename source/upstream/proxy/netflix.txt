@@ -1,3 +1,5 @@
+404: Not Found
+404: Not Found
 # NAME: Netflix
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -1169,6 +1171,7 @@ IP6-CIDR,2620:10c:7000::/44,Netflix
 IP6-CIDR,2a00:86c0::/32,Netflix
 IP6-CIDR,2a03:5640::/32,Netflix
 
+404: Not Found
 # NAME: 深巷有喵的「Netflix」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
@@ -2379,6 +2382,3 @@ IP-CIDR,66.197.128.0/17,no-resolve
 IP-CIDR,69.53.224.0/19,no-resolve
 IP-CIDR,8.41.4.0/24,no-resolve
 
-404: Not Found
-404: Not Found
-404: Not Found
