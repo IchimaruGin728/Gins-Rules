@@ -1,7 +1,7 @@
 # NAME: 深巷有喵的「Microsoft」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.08.04 05:11:17
+# UPDATED: 2026.08.05 05:18:19
 # TOTAL: 673
 
 # ======= 上游同步规则 ========
@@ -740,6 +740,7 @@ DOMAIN-SUFFIX,onenote.net
 DOMAIN-SUFFIX,onestore.ms
 DOMAIN-SUFFIX,outlook.com
 DOMAIN-SUFFIX,outlookmobile.com
+DOMAIN-SUFFIX,powershellgallery.com
 DOMAIN-SUFFIX,phonefactor.net
 DOMAIN-SUFFIX,public-trust.com
 DOMAIN-SUFFIX,sfbassets.com
