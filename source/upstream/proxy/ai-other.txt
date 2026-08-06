@@ -1,338 +1,11 @@
-# NAME: Gemini
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:20:02
-# HOST: 3
-# HOST-KEYWORD: 3
-# HOST-SUFFIX: 7
-# TOTAL: 13
-HOST,ai.google.dev,Gemini
-HOST,alkalimakersuite-pa.clients6.google.com,Gemini
-HOST,makersuite.google.com,Gemini
-HOST-SUFFIX,bard.google.com,Gemini
-HOST-SUFFIX,deepmind.com,Gemini
-HOST-SUFFIX,deepmind.google,Gemini
-HOST-SUFFIX,gemini.google.com,Gemini
-HOST-SUFFIX,generativeai.google,Gemini
-HOST-SUFFIX,proactivebackend-pa.googleapis.com,Gemini
-HOST-SUFFIX,apis.google.com,Gemini
-HOST-KEYWORD,colab,Gemini
-HOST-KEYWORD,developerprofiles,Gemini
-HOST-KEYWORD,generativelanguage,Gemini
-
-#!name=AI分流合集
-#!desc=选择支持的地区
-#!author=lodepuly, fmz200
-#!homepage=https://github.com/fmz200/wool_scripts
-#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/author/NaiSi_01.png
-#!raw-url=https://github.com/fmz200/wool_scripts/raw/main/Loon/rule/AI.list
-#!tg-channel=https://t.me/inaisi
-#!date=2026-03-31 16:50:08
-#############################################
-
-# OpenAI ChatGPT
-AND, ((DOMAIN-KEYWORD, chatgpt-async-webps-prod-), (DOMAIN-SUFFIX, webpubsub.azure.com))
-AND, ((DOMAIN-KEYWORD, openaicom-api-), (DOMAIN-SUFFIX, azurefd.net))
-DOMAIN, chatgpt.livekit.cloud
-DOMAIN, host.livekit.cloud
-DOMAIN-SUFFIX, turn.livekit.cloud
-DOMAIN, openai.com.cdn.cloudflare.net
-DOMAIN, openaiapi-site.azureedge.net
-DOMAIN, openaicomproductionae4b.blob.core.windows.net
-DOMAIN, production-openaicom-storage.azureedge.net
-DOMAIN-SUFFIX, chat.com
-DOMAIN-SUFFIX, chatgpt.com
-DOMAIN-SUFFIX, oaistatic.com
-DOMAIN-SUFFIX, oaiusercontent.com
-DOMAIN-SUFFIX, openai.com
-DOMAIN-SUFFIX, sora.com
-
-# Apple Intelligence
-DOMAIN-SUFFIX,apple-relay.apple.com
-DOMAIN-SUFFIX,apple-relay.fastly-edge.com
-DOMAIN-SUFFIX,apple-relay.cloudflare.com
-DOMAIN-SUFFIX,apple-relay.akamaized.net
-DOMAIN-SUFFIX,gateway.icloud.com
-DOMAIN-SUFFIX,guzzoni.apple.com
-DOMAIN-SUFFIX,cp4.cloudflare.com
-DOMAIN-SUFFIX,gspe1-ssl.ls.apple.com
-DOMAIN-SUFFIX,apps.mzstatic.com
-
-# GitHub Copilot
-DOMAIN, api.githubcopilot.com
-DOMAIN, copilot-proxy.githubusercontent.com
-DOMAIN, copilot.microsoft.com
-DOMAIN, sydney.bing.com
-DOMAIN-SUFFIX, githubcopilot.com
-
-# Google Gemini
-DOMAIN, ai.google.dev
-DOMAIN, aida.googleapis.com
-DOMAIN, aistudio.google.com
-DOMAIN, alkalicore-pa.clients6.google.com
-DOMAIN, alkalimakersuite-pa.clients6.google.com
-DOMAIN, bard.google.com
-DOMAIN, deepmind.com
-DOMAIN, deepmind.google
-DOMAIN, geller-pa.googleapis.com
-DOMAIN, gemini.google.com
-DOMAIN, generativeai.google
-DOMAIN, generativelanguage.googleapis.com
-DOMAIN, makersuite.google.com
-DOMAIN, proactivebackend-pa.googleapis.com
-
-# Anthropic Claude
-DOMAIN-SUFFIX, anthropic.com
-DOMAIN-SUFFIX, claude.ai
-DOMAIN-SUFFIX, claude.com
-DOMAIN-SUFFIX, clau.de
-DOMAIN-SUFFIX, claudeusercontent.com
-IP-CIDR, 160.79.104.0/23, no-resolve
-IP-CIDR6, 2607:6bc0::/48, no-resolve
-
-# JetBrains AI
-DOMAIN-SUFFIX, grazie.ai
-DOMAIN-SUFFIX, grazie.aws.intellij.net
-DOMAIN-SUFFIX, jetbrains.ai
-
-# Meta AI
-DOMAIN, imagine.meta.com
-DOMAIN-SUFFIX, meta.ai
-
-# Perplexity AI
-DOMAIN-SUFFIX, pplx.ai
-DOMAIN-SUFFIX, perplexity.ai
-DOMAIN-SUFFIX, perplexity.com
-
-# Mistral AI
-DOMAIN, chat.mistral.ai
-DOMAIN, console.mistral.ai
-DOMAIN-SUFFIX, mistral.ai
-
-# Grok AI
-DOMAIN, api.x.ai
-DOMAIN-SUFFIX, x.ai
-DOMAIN-SUFFIX, grok.com
-
-# Trae AI
-DOMAIN, trae-api-sg.mchost.guru
-DOMAIN-SUFFIX, trae.ai
-# $ meta_title Sukka's Ruleset - AIGC Domains
-# $ meta_description This file contains domains of OpenAI, Claude.
-
-# >> OpenAI / ChatGPT
-# OpenAI A/B Flag, no geo blocking
-# DOMAIN,api.statsig.com
-DOMAIN-SUFFIX,openai.com
-DOMAIN-SUFFIX,oaistatic.com
-DOMAIN-SUFFIX,sora.com
-DOMAIN-SUFFIX,chatgpt.com
-DOMAIN-SUFFIX,chat.com
-DOMAIN-SUFFIX,ai.com
-DOMAIN-KEYWORD,openai
-# DOMAIN-SUFFIX,openaiapi-site.azureedge.net
-# DOMAIN,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
-# DOMAIN,openaicomproductionae4b.blob.core.windows.net
-# DOMAIN,production-openaicom-storage.azureedge.net
-
-# >> Apple Intelligence
-# has been moved to a dedicated file: /non_ip/apple_inteligence.conf
-# DOMAIN gspe1-ssl.ls.apple.com (which is part of com.apple.geod) is crucial for unlocking
-# Apple Intelligence. However, this domain (along side com.apple.geod) also affects other
-# Apple services like Map, Compass, Weather, etc. Therefore, we can't really include everything
-# in this general "ai.conf" here.
-
-# >> Perplexity
-DOMAIN-SUFFIX,perplexity.ai
-
-# >> Claude
-DOMAIN-SUFFIX,anthropic.com
-DOMAIN-SUFFIX,claude.ai
-DOMAIN-SUFFIX,claude.com
-
-# >> Google
-# Gemini
-DOMAIN-SUFFIX,bard.google.com
-DOMAIN-SUFFIX,gemini.google
-DOMAIN-SUFFIX,gemini.google.com
-DOMAIN,aisandbox-pa.googleapis.com
-DOMAIN,robinfrontend-pa.googleapis.com
-# Here is how gemini.google.com doing HTTP 429 right now:
-#
-# without a special cookie, gemini.google.com will return HTTP 302 to the following URL with
-# a special state token URL parameter:
-# https://www.google.com/sorry/index?continue=https://gemini.google.com/...
-#
-# On https://www.google.com/sorry/index?continue=xxx, the CDN edge will validate this state token,
-# compare the client IPs, and reject the request with HTTP 429 if the IPs are mismatched
-#
-# If the IP matches, the CDN edge will return a HTTP 302 redirect back to https://gemini.google.com
-# with another special state token URL parameter telling gemini.google.com stop returning HTTP 302
-# back to www.google.com/sorry/index?continue=xxx and start serving the real content.
-#
-# We can simply matches www.google.com/sorry/index?continue=xxx and proxy this as well
-#
-# Note that you will need to enable MitM www.google.com for this rule to work.
-URL-REGEX,https://www\.google\.com/.*continue=https://gemini\.google\.com.+
-# DeepMind
-DOMAIN-SUFFIX,deepmind.com
-DOMAIN-SUFFIX,deepmind.google
-# Generative Language API
-DOMAIN-SUFFIX,generativelanguage.googleapis.com
-DOMAIN-SUFFIX,geller-pa.googleapis.com
-DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com
-DOMAIN-SUFFIX,cloudcode-pa.googleapis.com
-# Google AI Studio
-DOMAIN,ai.google.dev
-DOMAIN-SUFFIX,g.ai
-DOMAIN-SUFFIX,aistudio.google.com
-DOMAIN-SUFFIX,makersuite.google.com
-DOMAIN,alkalicore-pa.clients6.google.com
-DOMAIN-KEYWORD,alkalimakersuite-pa.clients6.google.com
-DOMAIN-SUFFIX,generativeai.google
-# NotebookLM
-DOMAIN-SUFFIX,notebooklm.google
-DOMAIN-SUFFIX,notebooklm.google.com
-# Jules
-DOMAIN,jules.google.com
-# Android Studio
-DOMAIN,aida.googleapis.com
-# Antigravity
-DOMAIN,antigravity.google
-DOMAIN,antigravity-unleash.goog
-DOMAIN,daily-cloudcode-pa.googleapis.com
-
-# >> POE
-DOMAIN-SUFFIX,poe.com
-
-# >> Meta AI
-DOMAIN-SUFFIX,meta.ai
-
-# >> Cloudflare AI Gateway
-DOMAIN,gateway.ai.cloudflare.com
-
-# >> Dify.AI
-DOMAIN-SUFFIX,dify.ai
-
-# >> Jasper
-DOMAIN-SUFFIX,clipdrop.co
-DOMAIN-SUFFIX,jasper.ai
-
-# >> OpenArt
-DOMAIN-SUFFIX,openart.ai
-
-# >> GitHub Copilot
-# api.*.githubcopilot.com is not required, since the ip & asn information are coming from api.github.com
-# see https://github.com/SukkaW/Surge/pull/46#discussion_r1849641627
-DOMAIN,api.github.com
-
-# >> Grok
-DOMAIN-SUFFIX,grok.com
-DOMAIN-SUFFIX,x.ai
-
-# >> groq
-DOMAIN-SUFFIX,groq.com
-
-# >> JetBrains AI
-DOMAIN,api.jetbrains.ai
-
-# >> OpenRouter AI - Unified Relay
-# see https://github.com/SukkaW/Surge/pull/86 for reason that only root domain get proxied
-DOMAIN,openrouter.ai
-
-# 规则名称: OpenAI
-# 规则统计: 19
-
-DOMAIN-SUFFIX,api.statsig.com
-DOMAIN-SUFFIX,auth0.com
-DOMAIN-SUFFIX,challenges.cloudflare.com
-DOMAIN-SUFFIX,chatgpt.com
-DOMAIN-SUFFIX,chatgpt.livekit.cloud
-DOMAIN-SUFFIX,client-api.arkoselabs.com
-DOMAIN-SUFFIX,events.statsigapi.net
-DOMAIN-SUFFIX,featuregates.org
-DOMAIN-SUFFIX,identrust.com
-DOMAIN-SUFFIX,intercom.io
-DOMAIN-SUFFIX,intercomcdn.com
-DOMAIN-SUFFIX,oaistatic.com
-DOMAIN-SUFFIX,oaiusercontent.com
-DOMAIN-SUFFIX,openai.com
-DOMAIN-SUFFIX,openaiapi-site.azureedge.net
-DOMAIN-SUFFIX,sentry.io
-DOMAIN-SUFFIX,stripe.com
-DOMAIN-SUFFIX,turn.livekit.cloud
-DOMAIN-KEYWORD,openai
-
-# NAME: Copilot
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:20:02
-# HOST: 20
-# HOST-KEYWORD: 1
-# HOST-SUFFIX: 26
-# IP-ASN: 2
-# IP-CIDR: 2
-# TOTAL: 51
-HOST,api.msn.com,Copilot
-HOST,api.statsig.com,Copilot
-HOST,assets.msn.com,Copilot
-HOST,browser-intake-datadoghq.com,Copilot
-HOST,chat.openai.com.cdn.cloudflare.net,Copilot
-HOST,copilot.microsoft.com,Copilot
-HOST,gateway.bingviz.microsoft.net,Copilot
-HOST,gateway.bingviz.microsoftapp.net,Copilot
-HOST,in.appcenter.ms,Copilot
-HOST,location.microsoft.com,Copilot
-HOST,odc.officeapps.live.com,Copilot
-HOST,openai-api.arkoselabs.com,Copilot
-HOST,openaicomproductionae4b.blob.core.windows.net,Copilot
-HOST,production-openaicom-storage.azureedge.net,Copilot
-HOST,r.bing.com,Copilot
-HOST,self.events.data.microsoft.com,Copilot
-HOST,services.bingapis.com,Copilot
-HOST,static.cloudflareinsights.com,Copilot
-HOST,sydney.bing.com,Copilot
-HOST,www.bing.com,Copilot
-HOST-SUFFIX,algolia.net,Copilot
-HOST-SUFFIX,api.microsoftapp.net,Copilot
-HOST-SUFFIX,auth0.com,Copilot
-HOST-SUFFIX,bing-shopping.microsoft-falcon.io,Copilot
-HOST-SUFFIX,challenges.cloudflare.com,Copilot
-HOST-SUFFIX,chatgpt.com,Copilot
-HOST-SUFFIX,chatgpt.livekit.cloud,Copilot
-HOST-SUFFIX,client-api.arkoselabs.com,Copilot
-HOST-SUFFIX,edgeservices.bing.com,Copilot
-HOST-SUFFIX,events.statsigapi.net,Copilot
-HOST-SUFFIX,featuregates.org,Copilot
-HOST-SUFFIX,host.livekit.cloud,Copilot
-HOST-SUFFIX,identrust.com,Copilot
-HOST-SUFFIX,intercom.io,Copilot
-HOST-SUFFIX,intercomcdn.com,Copilot
-HOST-SUFFIX,launchdarkly.com,Copilot
-HOST-SUFFIX,oaistatic.com,Copilot
-HOST-SUFFIX,oaiusercontent.com,Copilot
-HOST-SUFFIX,observeit.net,Copilot
-HOST-SUFFIX,openai.com,Copilot
-HOST-SUFFIX,openaiapi-site.azureedge.net,Copilot
-HOST-SUFFIX,openaicom.imgix.net,Copilot
-HOST-SUFFIX,segment.io,Copilot
-HOST-SUFFIX,sentry.io,Copilot
-HOST-SUFFIX,stripe.com,Copilot
-HOST-SUFFIX,turn.livekit.cloud,Copilot
-HOST-KEYWORD,openaicom-api,Copilot
-IP-CIDR,24.199.123.28/32,Copilot
-IP-CIDR,64.23.132.171/32,Copilot
-IP-ASN,14061,Copilot
-IP-ASN,20473,Copilot
-
 # NAME: 深巷有喵的「AIGC」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.08.05 05:18:19
+# UPDATED: 2026.08.06 05:18:11
 # TOTAL: 127
 
 # ======= 上游同步规则 ========
-DOMAIN,7h15_ru1353t_1s_m4d3_by_5ukk4w.skk.moe
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
 DOMAIN,ai.google.dev
 DOMAIN,aida.googleapis.com
 DOMAIN,aisandbox-pa.googleapis.com
@@ -460,11 +133,89 @@ IP-CIDR,24.199.123.28/32,no-resolve
 IP-CIDR,64.23.132.171/32,no-resolve
 IP-CIDR6,2607:6BC0::/32,no-resolve
 
-# 规则名称: Copilot
-# 规则统计: 2
+# NAME: Copilot
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:20:02
+# HOST: 20
+# HOST-KEYWORD: 1
+# HOST-SUFFIX: 26
+# IP-ASN: 2
+# IP-CIDR: 2
+# TOTAL: 51
+HOST,api.msn.com,Copilot
+HOST,api.statsig.com,Copilot
+HOST,assets.msn.com,Copilot
+HOST,browser-intake-datadoghq.com,Copilot
+HOST,chat.openai.com.cdn.cloudflare.net,Copilot
+HOST,copilot.microsoft.com,Copilot
+HOST,gateway.bingviz.microsoft.net,Copilot
+HOST,gateway.bingviz.microsoftapp.net,Copilot
+HOST,in.appcenter.ms,Copilot
+HOST,location.microsoft.com,Copilot
+HOST,odc.officeapps.live.com,Copilot
+HOST,openai-api.arkoselabs.com,Copilot
+HOST,openaicomproductionae4b.blob.core.windows.net,Copilot
+HOST,production-openaicom-storage.azureedge.net,Copilot
+HOST,r.bing.com,Copilot
+HOST,self.events.data.microsoft.com,Copilot
+HOST,services.bingapis.com,Copilot
+HOST,static.cloudflareinsights.com,Copilot
+HOST,sydney.bing.com,Copilot
+HOST,www.bing.com,Copilot
+HOST-SUFFIX,algolia.net,Copilot
+HOST-SUFFIX,api.microsoftapp.net,Copilot
+HOST-SUFFIX,auth0.com,Copilot
+HOST-SUFFIX,bing-shopping.microsoft-falcon.io,Copilot
+HOST-SUFFIX,challenges.cloudflare.com,Copilot
+HOST-SUFFIX,chatgpt.com,Copilot
+HOST-SUFFIX,chatgpt.livekit.cloud,Copilot
+HOST-SUFFIX,client-api.arkoselabs.com,Copilot
+HOST-SUFFIX,edgeservices.bing.com,Copilot
+HOST-SUFFIX,events.statsigapi.net,Copilot
+HOST-SUFFIX,featuregates.org,Copilot
+HOST-SUFFIX,host.livekit.cloud,Copilot
+HOST-SUFFIX,identrust.com,Copilot
+HOST-SUFFIX,intercom.io,Copilot
+HOST-SUFFIX,intercomcdn.com,Copilot
+HOST-SUFFIX,launchdarkly.com,Copilot
+HOST-SUFFIX,oaistatic.com,Copilot
+HOST-SUFFIX,oaiusercontent.com,Copilot
+HOST-SUFFIX,observeit.net,Copilot
+HOST-SUFFIX,openai.com,Copilot
+HOST-SUFFIX,openaiapi-site.azureedge.net,Copilot
+HOST-SUFFIX,openaicom.imgix.net,Copilot
+HOST-SUFFIX,segment.io,Copilot
+HOST-SUFFIX,sentry.io,Copilot
+HOST-SUFFIX,stripe.com,Copilot
+HOST-SUFFIX,turn.livekit.cloud,Copilot
+HOST-KEYWORD,openaicom-api,Copilot
+IP-CIDR,24.199.123.28/32,Copilot
+IP-CIDR,64.23.132.171/32,Copilot
+IP-ASN,14061,Copilot
+IP-ASN,20473,Copilot
 
-DOMAIN-SUFFIX,bing.com
-DOMAIN-SUFFIX,copilot.microsoft.com
+# NAME: Gemini
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:20:02
+# HOST: 3
+# HOST-KEYWORD: 3
+# HOST-SUFFIX: 7
+# TOTAL: 13
+HOST,ai.google.dev,Gemini
+HOST,alkalimakersuite-pa.clients6.google.com,Gemini
+HOST,makersuite.google.com,Gemini
+HOST-SUFFIX,bard.google.com,Gemini
+HOST-SUFFIX,deepmind.com,Gemini
+HOST-SUFFIX,deepmind.google,Gemini
+HOST-SUFFIX,gemini.google.com,Gemini
+HOST-SUFFIX,generativeai.google,Gemini
+HOST-SUFFIX,proactivebackend-pa.googleapis.com,Gemini
+HOST-SUFFIX,apis.google.com,Gemini
+HOST-KEYWORD,colab,Gemini
+HOST-KEYWORD,developerprofiles,Gemini
+HOST-KEYWORD,generativelanguage,Gemini
 
 #############################################
 # 分流作用：对OpenAI相关服务进行分流
@@ -511,6 +262,132 @@ IP-CIDR,69.46.75.0/24,no-resolve
 IP-CIDR,205.164.56.29/24,no-resolve
 IP-CIDR,63.251.124.0/24,no-resolve
 
+# 规则名称: Copilot
+# 规则统计: 2
+
+DOMAIN-SUFFIX,bing.com
+DOMAIN-SUFFIX,copilot.microsoft.com
+
+# 规则名称: OpenAI
+# 规则统计: 19
+
+DOMAIN-SUFFIX,api.statsig.com
+DOMAIN-SUFFIX,auth0.com
+DOMAIN-SUFFIX,challenges.cloudflare.com
+DOMAIN-SUFFIX,chatgpt.com
+DOMAIN-SUFFIX,chatgpt.livekit.cloud
+DOMAIN-SUFFIX,client-api.arkoselabs.com
+DOMAIN-SUFFIX,events.statsigapi.net
+DOMAIN-SUFFIX,featuregates.org
+DOMAIN-SUFFIX,identrust.com
+DOMAIN-SUFFIX,intercom.io
+DOMAIN-SUFFIX,intercomcdn.com
+DOMAIN-SUFFIX,oaistatic.com
+DOMAIN-SUFFIX,oaiusercontent.com
+DOMAIN-SUFFIX,openai.com
+DOMAIN-SUFFIX,openaiapi-site.azureedge.net
+DOMAIN-SUFFIX,sentry.io
+DOMAIN-SUFFIX,stripe.com
+DOMAIN-SUFFIX,turn.livekit.cloud
+DOMAIN-KEYWORD,openai
+
+#!name=AI分流合集
+#!desc=选择支持的地区
+#!author=lodepuly, fmz200
+#!homepage=https://github.com/fmz200/wool_scripts
+#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/author/NaiSi_01.png
+#!raw-url=https://github.com/fmz200/wool_scripts/raw/main/Loon/rule/AI.list
+#!tg-channel=https://t.me/inaisi
+#!date=2026-03-31 16:50:08
+#############################################
+
+# OpenAI ChatGPT
+AND, ((DOMAIN-KEYWORD, chatgpt-async-webps-prod-), (DOMAIN-SUFFIX, webpubsub.azure.com))
+AND, ((DOMAIN-KEYWORD, openaicom-api-), (DOMAIN-SUFFIX, azurefd.net))
+DOMAIN, chatgpt.livekit.cloud
+DOMAIN, host.livekit.cloud
+DOMAIN-SUFFIX, turn.livekit.cloud
+DOMAIN, openai.com.cdn.cloudflare.net
+DOMAIN, openaiapi-site.azureedge.net
+DOMAIN, openaicomproductionae4b.blob.core.windows.net
+DOMAIN, production-openaicom-storage.azureedge.net
+DOMAIN-SUFFIX, chat.com
+DOMAIN-SUFFIX, chatgpt.com
+DOMAIN-SUFFIX, oaistatic.com
+DOMAIN-SUFFIX, oaiusercontent.com
+DOMAIN-SUFFIX, openai.com
+DOMAIN-SUFFIX, sora.com
+
+# Apple Intelligence
+DOMAIN-SUFFIX,apple-relay.apple.com
+DOMAIN-SUFFIX,apple-relay.fastly-edge.com
+DOMAIN-SUFFIX,apple-relay.cloudflare.com
+DOMAIN-SUFFIX,apple-relay.akamaized.net
+DOMAIN-SUFFIX,gateway.icloud.com
+DOMAIN-SUFFIX,guzzoni.apple.com
+DOMAIN-SUFFIX,cp4.cloudflare.com
+DOMAIN-SUFFIX,gspe1-ssl.ls.apple.com
+DOMAIN-SUFFIX,apps.mzstatic.com
+
+# GitHub Copilot
+DOMAIN, api.githubcopilot.com
+DOMAIN, copilot-proxy.githubusercontent.com
+DOMAIN, copilot.microsoft.com
+DOMAIN, sydney.bing.com
+DOMAIN-SUFFIX, githubcopilot.com
+
+# Google Gemini
+DOMAIN, ai.google.dev
+DOMAIN, aida.googleapis.com
+DOMAIN, aistudio.google.com
+DOMAIN, alkalicore-pa.clients6.google.com
+DOMAIN, alkalimakersuite-pa.clients6.google.com
+DOMAIN, bard.google.com
+DOMAIN, deepmind.com
+DOMAIN, deepmind.google
+DOMAIN, geller-pa.googleapis.com
+DOMAIN, gemini.google.com
+DOMAIN, generativeai.google
+DOMAIN, generativelanguage.googleapis.com
+DOMAIN, makersuite.google.com
+DOMAIN, proactivebackend-pa.googleapis.com
+
+# Anthropic Claude
+DOMAIN-SUFFIX, anthropic.com
+DOMAIN-SUFFIX, claude.ai
+DOMAIN-SUFFIX, claude.com
+DOMAIN-SUFFIX, clau.de
+DOMAIN-SUFFIX, claudeusercontent.com
+IP-CIDR, 160.79.104.0/23, no-resolve
+IP-CIDR6, 2607:6bc0::/48, no-resolve
+
+# JetBrains AI
+DOMAIN-SUFFIX, grazie.ai
+DOMAIN-SUFFIX, grazie.aws.intellij.net
+DOMAIN-SUFFIX, jetbrains.ai
+
+# Meta AI
+DOMAIN, imagine.meta.com
+DOMAIN-SUFFIX, meta.ai
+
+# Perplexity AI
+DOMAIN-SUFFIX, pplx.ai
+DOMAIN-SUFFIX, perplexity.ai
+DOMAIN-SUFFIX, perplexity.com
+
+# Mistral AI
+DOMAIN, chat.mistral.ai
+DOMAIN, console.mistral.ai
+DOMAIN-SUFFIX, mistral.ai
+
+# Grok AI
+DOMAIN, api.x.ai
+DOMAIN-SUFFIX, x.ai
+DOMAIN-SUFFIX, grok.com
+
+# Trae AI
+DOMAIN, trae-api-sg.mchost.guru
+DOMAIN-SUFFIX, trae.ai
 # NAME: Claude
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -521,6 +398,129 @@ IP-CIDR,63.251.124.0/24,no-resolve
 HOST,cdn.usefathom.com,Claude
 HOST-SUFFIX,anthropic.com,Claude
 HOST-SUFFIX,claude.ai,Claude
+
+# $ meta_title Sukka's Ruleset - AIGC Domains
+# $ meta_description This file contains domains of OpenAI, Claude.
+
+# >> OpenAI / ChatGPT
+# OpenAI A/B Flag, no geo blocking
+# DOMAIN,api.statsig.com
+DOMAIN-SUFFIX,openai.com
+DOMAIN-SUFFIX,oaistatic.com
+DOMAIN-SUFFIX,sora.com
+DOMAIN-SUFFIX,chatgpt.com
+DOMAIN-SUFFIX,chat.com
+DOMAIN-SUFFIX,ai.com
+DOMAIN-KEYWORD,openai
+# DOMAIN-SUFFIX,openaiapi-site.azureedge.net
+# DOMAIN,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
+# DOMAIN,openaicomproductionae4b.blob.core.windows.net
+# DOMAIN,production-openaicom-storage.azureedge.net
+
+# >> Apple Intelligence
+# has been moved to a dedicated file: /non_ip/apple_inteligence.conf
+# DOMAIN gspe1-ssl.ls.apple.com (which is part of com.apple.geod) is crucial for unlocking
+# Apple Intelligence. However, this domain (along side com.apple.geod) also affects other
+# Apple services like Map, Compass, Weather, etc. Therefore, we can't really include everything
+# in this general "ai.conf" here.
+
+# >> Perplexity
+DOMAIN-SUFFIX,perplexity.ai
+
+# >> Claude
+DOMAIN-SUFFIX,anthropic.com
+DOMAIN-SUFFIX,claude.ai
+DOMAIN-SUFFIX,claude.com
+
+# >> Google
+# Gemini
+DOMAIN-SUFFIX,bard.google.com
+DOMAIN-SUFFIX,gemini.google
+DOMAIN-SUFFIX,gemini.google.com
+DOMAIN,aisandbox-pa.googleapis.com
+DOMAIN,robinfrontend-pa.googleapis.com
+# Here is how gemini.google.com doing HTTP 429 right now:
+#
+# without a special cookie, gemini.google.com will return HTTP 302 to the following URL with
+# a special state token URL parameter:
+# https://www.google.com/sorry/index?continue=https://gemini.google.com/...
+#
+# On https://www.google.com/sorry/index?continue=xxx, the CDN edge will validate this state token,
+# compare the client IPs, and reject the request with HTTP 429 if the IPs are mismatched
+#
+# If the IP matches, the CDN edge will return a HTTP 302 redirect back to https://gemini.google.com
+# with another special state token URL parameter telling gemini.google.com stop returning HTTP 302
+# back to www.google.com/sorry/index?continue=xxx and start serving the real content.
+#
+# We can simply matches www.google.com/sorry/index?continue=xxx and proxy this as well
+#
+# Note that you will need to enable MitM www.google.com for this rule to work.
+URL-REGEX,https://www\.google\.com/.*continue=https://gemini\.google\.com.+
+# DeepMind
+DOMAIN-SUFFIX,deepmind.com
+DOMAIN-SUFFIX,deepmind.google
+# Generative Language API
+DOMAIN-SUFFIX,generativelanguage.googleapis.com
+DOMAIN-SUFFIX,geller-pa.googleapis.com
+DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com
+DOMAIN-SUFFIX,cloudcode-pa.googleapis.com
+# Google AI Studio
+DOMAIN,ai.google.dev
+DOMAIN-SUFFIX,g.ai
+DOMAIN-SUFFIX,aistudio.google.com
+DOMAIN-SUFFIX,makersuite.google.com
+DOMAIN,alkalicore-pa.clients6.google.com
+DOMAIN-KEYWORD,alkalimakersuite-pa.clients6.google.com
+DOMAIN-SUFFIX,generativeai.google
+# NotebookLM
+DOMAIN-SUFFIX,notebooklm.google
+DOMAIN-SUFFIX,notebooklm.google.com
+# Jules
+DOMAIN,jules.google.com
+# Android Studio
+DOMAIN,aida.googleapis.com
+# Antigravity
+DOMAIN,antigravity.google
+DOMAIN,antigravity-unleash.goog
+DOMAIN,daily-cloudcode-pa.googleapis.com
+
+# >> POE
+DOMAIN-SUFFIX,poe.com
+
+# >> Meta AI
+DOMAIN-SUFFIX,meta.ai
+
+# >> Cloudflare AI Gateway
+DOMAIN,gateway.ai.cloudflare.com
+
+# >> Dify.AI
+DOMAIN-SUFFIX,dify.ai
+
+# >> Jasper
+DOMAIN-SUFFIX,clipdrop.co
+DOMAIN-SUFFIX,jasper.ai
+
+# >> OpenArt
+DOMAIN-SUFFIX,openart.ai
+
+# >> GitHub Copilot
+# api.*.githubcopilot.com is not required, since the ip & asn information are coming from api.github.com
+# see https://github.com/SukkaW/Surge/pull/46#discussion_r1849641627
+DOMAIN,api.github.com
+
+# >> Grok
+DOMAIN-SUFFIX,grok.com
+DOMAIN-SUFFIX,x.ai
+
+# >> groq
+DOMAIN-SUFFIX,groq.com
+
+# >> JetBrains AI
+DOMAIN,api.jetbrains.ai
+
+# >> OpenRouter AI - Unified Relay
+# see https://github.com/SukkaW/Surge/pull/86 for reason that only root domain get proxied
+DOMAIN,openrouter.ai
 
 # 规则名称: Claude
 # 规则统计: 11
