@@ -1,3 +1,5 @@
+404: Not Found
+404: Not Found
 # NAME: 深巷有喵的「Game」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
@@ -312,8 +314,6 @@ DOMAIN-SUFFIX,yoshisnewisland.com
 IP-CIDR,35.192.0.0/12,no-resolve
 
 
-404: Not Found
-404: Not Found
 # $ meta_title Sukka's Ruleset - Game Download
 # $ meta_description This file contains domains for Gam download CDN domains for Steam, Epic, Blizzard, Gog, Ubisoft, EA, Xbox, PlayStation, Riot, Bethesda and more.
 # $ meta_description No China CDN domains are included. Those domains are included in non_ip/domestic
