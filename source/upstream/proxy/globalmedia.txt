@@ -1,7 +1,7 @@
 # NAME: 深巷有喵的「GlobalMedia」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.08.13 04:52:55
+# UPDATED: 2026.08.14 04:50:47
 # TOTAL: 2335
 
 # ======= 上游同步规则 ========
