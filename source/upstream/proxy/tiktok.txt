@@ -1,48 +1,7 @@
-# 规则名称: TikTok
-# 规则统计: 11
-
-DOMAIN-SUFFIX,byteoversea.com
-DOMAIN-SUFFIX,ibytedtos.com
-DOMAIN-SUFFIX,ipstatp.com
-DOMAIN-SUFFIX,muscdn.com
-DOMAIN-SUFFIX,musical.ly
-DOMAIN-SUFFIX,tik-tokapi.com
-DOMAIN-SUFFIX,tiktok.com
-DOMAIN-SUFFIX,tiktokcdn.com
-DOMAIN-SUFFIX,tiktokv.com
-DOMAIN-KEYWORD,tiktok
-DOMAIN-KEYWORD,tiktokcdn
-
-#!name=TikTok
-#!desc=分流选择支持的地区
-#!author=奶思
-#!homepage=https://github.com/fmz200/wool_scripts
-#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/author/NaiSi_01.png
-#!raw-url=https://github.com/fmz200/wool_scripts/raw/main/Loon/rule/TikTok.list
-#!tg-channel=https://t.me/inaisi
-#!date=2025-06-06 09:16:55
-#############################################
-
-DOMAIN,p16-tiktokcdn-com.akamaized.net
-DOMAIN-SUFFIX,byteoversea.com
-DOMAIN-SUFFIX,ibytedtos.com
-DOMAIN-SUFFIX,ibyteimg.com
-DOMAIN-SUFFIX,ipstatp.com
-DOMAIN-SUFFIX,muscdn.com
-DOMAIN-SUFFIX,musical.ly
-DOMAIN-SUFFIX,sgpstatp.com
-DOMAIN-SUFFIX,snssdk.com
-DOMAIN-SUFFIX,tik-tokapi.com
-DOMAIN-SUFFIX,tiktok.com
-DOMAIN-SUFFIX,tiktokv.com
-DOMAIN-SUFFIX,ttwstatic.com
-DOMAIN-KEYWORD,tiktokcdn
-USER-AGENT,TikTok*
-
 # NAME: 深巷有喵的「TikTok」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.08.18 04:33:03
+# UPDATED: 2026.08.19 04:30:30
 # TOTAL: 33
 
 # ======= 手动维护规则 ========
@@ -80,6 +39,32 @@ DOMAIN-KEYWORD,musical.ly
 DOMAIN-KEYWORD,tiktok
 USER-AGENT,TikTok*
 PROCESS-NAME,com.zhiliaoapp.musically
+
+#!name=TikTok
+#!desc=分流选择支持的地区
+#!author=奶思
+#!homepage=https://github.com/fmz200/wool_scripts
+#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/author/NaiSi_01.png
+#!raw-url=https://github.com/fmz200/wool_scripts/raw/main/Loon/rule/TikTok.list
+#!tg-channel=https://t.me/inaisi
+#!date=2025-06-06 09:16:55
+#############################################
+
+DOMAIN,p16-tiktokcdn-com.akamaized.net
+DOMAIN-SUFFIX,byteoversea.com
+DOMAIN-SUFFIX,ibytedtos.com
+DOMAIN-SUFFIX,ibyteimg.com
+DOMAIN-SUFFIX,ipstatp.com
+DOMAIN-SUFFIX,muscdn.com
+DOMAIN-SUFFIX,musical.ly
+DOMAIN-SUFFIX,sgpstatp.com
+DOMAIN-SUFFIX,snssdk.com
+DOMAIN-SUFFIX,tik-tokapi.com
+DOMAIN-SUFFIX,tiktok.com
+DOMAIN-SUFFIX,tiktokv.com
+DOMAIN-SUFFIX,ttwstatic.com
+DOMAIN-KEYWORD,tiktokcdn
+USER-AGENT,TikTok*
 
 # NAME: TikTok
 # AUTHOR: blackmatrix7
@@ -122,4 +107,19 @@ HOST-SUFFIX,ttwebview.com,TikTok
 HOST-KEYWORD,musical.ly,TikTok
 HOST-KEYWORD,tiktok,TikTok
 USER-AGENT,TikTok*,TikTok
+
+# 规则名称: TikTok
+# 规则统计: 11
+
+DOMAIN-SUFFIX,byteoversea.com
+DOMAIN-SUFFIX,ibytedtos.com
+DOMAIN-SUFFIX,ipstatp.com
+DOMAIN-SUFFIX,muscdn.com
+DOMAIN-SUFFIX,musical.ly
+DOMAIN-SUFFIX,tik-tokapi.com
+DOMAIN-SUFFIX,tiktok.com
+DOMAIN-SUFFIX,tiktokcdn.com
+DOMAIN-SUFFIX,tiktokv.com
+DOMAIN-KEYWORD,tiktok
+DOMAIN-KEYWORD,tiktokcdn
 
