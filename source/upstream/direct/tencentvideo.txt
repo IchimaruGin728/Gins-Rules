@@ -1,7 +1,1 @@
-# 规则名称: TencentVideo
-# 规则统计: 3
-
-DOMAIN-SUFFIX,v.qq.com
-DOMAIN-SUFFIX,v.smtcdns.com
-DOMAIN-SUFFIX,video.qq.com
-
+404: Not Found

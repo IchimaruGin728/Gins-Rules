@@ -1,6 +1,1 @@
-# 规则名称: Ximalaya
-# 规则统计: 2
-
-DOMAIN-SUFFIX,ximalaya.com
-DOMAIN-SUFFIX,xmcdn.com
-
+404: Not Found

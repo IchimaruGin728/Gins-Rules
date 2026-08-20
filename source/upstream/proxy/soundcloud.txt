@@ -1,3 +1,4 @@
+404: Not Found
 # NAME: SoundCloud
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -9,11 +10,4 @@ HOST-SUFFIX,p-cdn.us,SoundCloud
 HOST-SUFFIX,sndcdn.com,SoundCloud
 HOST-SUFFIX,soundcloud.com,SoundCloud
 USER-AGENT,SoundCloud*,SoundCloud
-
-# 规则名称: SoundCloud
-# 规则统计: 3
-
-DOMAIN-SUFFIX,p-cdn.us
-DOMAIN-SUFFIX,sndcdn.com
-DOMAIN-SUFFIX,soundcloud.com
 

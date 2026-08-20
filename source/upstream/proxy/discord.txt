@@ -34,13 +34,4 @@ HOST-SUFFIX,discordstatus.com,Discord
 HOST-SUFFIX,hammerandchisel.ssl.zendesk.com,Discord
 HOST-SUFFIX,watchanimeattheoffice.com,Discord
 
-# 规则名称: Discord
-# 规则统计: 6
-
-DOMAIN-SUFFIX,discord.co
-DOMAIN-SUFFIX,discord.com
-DOMAIN-SUFFIX,discord.gg
-DOMAIN-SUFFIX,discord.media
-DOMAIN-SUFFIX,discordapp.com
-DOMAIN-SUFFIX,discordapp.net
-
+404: Not Found

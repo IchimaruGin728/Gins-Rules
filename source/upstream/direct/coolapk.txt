@@ -1,7 +1,1 @@
-# 规则名称: Coolapk
-# 规则统计: 3
-
-DOMAIN-SUFFIX,coolapk.com
-DOMAIN-SUFFIX,coolapkmarket.com
-DOMAIN-SUFFIX,coolapkmarket.net
-
+404: Not Found
