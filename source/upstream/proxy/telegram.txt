@@ -1,3 +1,4 @@
+404: Not Found
 # NAME: 深巷有喵的「TelegramASN」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
@@ -26,7 +27,6 @@ IP-ASN,62041,no-resolve // Telegram Messenger Inc
 IP-ASN,59930,no-resolve // Telegram Messenger Inc
 IP-ASN,211157,no-resolve // Telegram Messenger Inc
 
-404: Not Found
 # $ meta_title Sukka's Ruleset - Telegram Domains
 # $ meta_description This file contains domains used by Telegram Messenger.
 
@@ -44,21 +44,6 @@ DOMAIN-SUFFIX,graph.org
 DOMAIN-SUFFIX,legra.ph
 DOMAIN-SUFFIX,telesco.pe
 DOMAIN-SUFFIX,cdn-telegram.org
-
-# $ meta_title Sukka's Ruleset - Telegram ASN
-# $ meta_description This file contains ASN owned/used by Telegram Messenger.
-# $ meta_description Note that unlike "ip/telegram" file which is based on officially released list by Telegram themselves. Use this file at your own risk.
-
-# Telegram DC2/DC4 - Amsterdam
-IP-ASN,62041
-# Telegram DC5 - Singapore
-IP-ASN,62014
-# Telegram DC1/DC3 - Miami
-IP-ASN,59930
-# Telegram India CDN
-IP-ASN,44907
-# Telegram Finland, RETN Transit Only
-IP-ASN,211157
 
 # NAME: Telegram
 # AUTHOR: blackmatrix7
@@ -111,4 +96,19 @@ IP-ASN,44907,Telegram
 IP-ASN,59930,Telegram
 IP-ASN,62014,Telegram
 IP-ASN,62041,Telegram
+
+# $ meta_title Sukka's Ruleset - Telegram ASN
+# $ meta_description This file contains ASN owned/used by Telegram Messenger.
+# $ meta_description Note that unlike "ip/telegram" file which is based on officially released list by Telegram themselves. Use this file at your own risk.
+
+# Telegram DC2/DC4 - Amsterdam
+IP-ASN,62041
+# Telegram DC5 - Singapore
+IP-ASN,62014
+# Telegram DC1/DC3 - Miami
+IP-ASN,59930
+# Telegram India CDN
+IP-ASN,44907
+# Telegram Finland, RETN Transit Only
+IP-ASN,211157
 
