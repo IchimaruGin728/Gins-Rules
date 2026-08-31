@@ -1,4 +1,3 @@
-404: Not Found
 # NAME: Twitch
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -30,3 +29,4 @@ IP-CIDR,52.223.224.0/19,Twitch
 IP-CIDR,99.181.64.0/18,Twitch
 IP6-CIDR,2402:2a80::/32,Twitch
 
+404: Not Found

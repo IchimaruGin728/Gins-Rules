@@ -1614,7 +1614,7 @@ wego.here.com
 # NAME: 深巷有喵的「Proxy」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.08.30 06:33:01
+# UPDATED: 2026.08.31 06:36:34
 # TOTAL: 6951
 
 # ======= 手动维护规则 ========
@@ -19792,6 +19792,7 @@ geti2p.net
 getlantern.org
 getmalus.com
 getmdl.io
+getmonero.org
 getnews.jp
 getoutline.org
 getpaint.net

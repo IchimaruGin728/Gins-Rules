@@ -1,3 +1,4 @@
+404: Not Found
 # NAME: Disney
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -181,11 +182,10 @@ HOST-SUFFIX,watchdisneyfe.com,Disney
 HOST-SUFFIX,watchespn.com,Disney
 USER-AGENT,Disney+*,Disney
 
-404: Not Found
 # NAME: 深巷有喵的「Disney」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.08.30 06:33:01
+# UPDATED: 2026.08.31 06:36:34
 # TOTAL: 175
 
 # ======= 上游同步规则 ========

@@ -1,7 +1,5 @@
 404: Not Found
 404: Not Found
-404: Not Found
-404: Not Found
 # NAME: Netflix
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -1173,10 +1171,11 @@ IP6-CIDR,2620:10c:7000::/44,Netflix
 IP6-CIDR,2a00:86c0::/32,Netflix
 IP6-CIDR,2a03:5640::/32,Netflix
 
+404: Not Found
 # NAME: 深巷有喵的「Netflix」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.08.30 06:33:01
+# UPDATED: 2026.08.31 06:36:34
 # TOTAL: 1158
 
 # ======= 上游同步规则 ========
@@ -2339,3 +2338,4 @@ IP-CIDR6,2a03:5640::/32,no-resolve
 USER-AGENT,Argo*
 PROCESS-NAME,com.netflix.mediaclient
 
+404: Not Found
