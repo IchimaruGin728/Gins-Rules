@@ -1,3 +1,5 @@
+404: Not Found
+404: Not Found
 # NAME: YouTube
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -210,7 +212,7 @@ IP6-CIDR,2620:120:e000::/40,YouTube
 # NAME: 深巷有喵的「YouTube」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.09.01 07:41:28
+# UPDATED: 2026.09.02 06:30:23
 # TOTAL: 190
 
 # ======= 上游同步规则 ========
@@ -405,8 +407,6 @@ USER-AGENT,YouTubeMusic*
 USER-AGENT,com.google.ios.youtube*
 USER-AGENT,com.google.ios.youtubemusic*
 
-404: Not Found
-404: Not Found
 # NAME: YouTubeMusic
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script

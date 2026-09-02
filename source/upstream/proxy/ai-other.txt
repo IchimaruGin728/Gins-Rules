@@ -1,7 +1,42 @@
+404: Not Found
+404: Not Found
+# NAME: Claude
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:20:01
+# HOST: 1
+# HOST-SUFFIX: 2
+# TOTAL: 3
+HOST,cdn.usefathom.com,Claude
+HOST-SUFFIX,anthropic.com,Claude
+HOST-SUFFIX,claude.ai,Claude
+
+# NAME: Gemini
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:20:02
+# HOST: 3
+# HOST-KEYWORD: 3
+# HOST-SUFFIX: 7
+# TOTAL: 13
+HOST,ai.google.dev,Gemini
+HOST,alkalimakersuite-pa.clients6.google.com,Gemini
+HOST,makersuite.google.com,Gemini
+HOST-SUFFIX,bard.google.com,Gemini
+HOST-SUFFIX,deepmind.com,Gemini
+HOST-SUFFIX,deepmind.google,Gemini
+HOST-SUFFIX,gemini.google.com,Gemini
+HOST-SUFFIX,generativeai.google,Gemini
+HOST-SUFFIX,proactivebackend-pa.googleapis.com,Gemini
+HOST-SUFFIX,apis.google.com,Gemini
+HOST-KEYWORD,colab,Gemini
+HOST-KEYWORD,developerprofiles,Gemini
+HOST-KEYWORD,generativelanguage,Gemini
+
 # NAME: 深巷有喵的「AIGC」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.09.01 07:41:28
+# UPDATED: 2026.09.02 06:30:23
 # TOTAL: 129
 
 # ======= 手动维护规则 ========
@@ -234,42 +269,6 @@ DOMAIN-SUFFIX, grok.com
 # Trae AI
 DOMAIN, trae-api-sg.mchost.guru
 DOMAIN-SUFFIX, trae.ai
-# NAME: Gemini
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:20:02
-# HOST: 3
-# HOST-KEYWORD: 3
-# HOST-SUFFIX: 7
-# TOTAL: 13
-HOST,ai.google.dev,Gemini
-HOST,alkalimakersuite-pa.clients6.google.com,Gemini
-HOST,makersuite.google.com,Gemini
-HOST-SUFFIX,bard.google.com,Gemini
-HOST-SUFFIX,deepmind.com,Gemini
-HOST-SUFFIX,deepmind.google,Gemini
-HOST-SUFFIX,gemini.google.com,Gemini
-HOST-SUFFIX,generativeai.google,Gemini
-HOST-SUFFIX,proactivebackend-pa.googleapis.com,Gemini
-HOST-SUFFIX,apis.google.com,Gemini
-HOST-KEYWORD,colab,Gemini
-HOST-KEYWORD,developerprofiles,Gemini
-HOST-KEYWORD,generativelanguage,Gemini
-
-# NAME: Claude
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:20:01
-# HOST: 1
-# HOST-SUFFIX: 2
-# TOTAL: 3
-HOST,cdn.usefathom.com,Claude
-HOST-SUFFIX,anthropic.com,Claude
-HOST-SUFFIX,claude.ai,Claude
-
-404: Not Found
-404: Not Found
-404: Not Found
 # NAME: Copilot
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -331,6 +330,52 @@ IP-CIDR,24.199.123.28/32,Copilot
 IP-CIDR,64.23.132.171/32,Copilot
 IP-ASN,14061,Copilot
 IP-ASN,20473,Copilot
+
+404: Not Found
+#############################################
+# 分流作用：对OpenAI相关服务进行分流
+# 重要提示：如果不想新增一个策略组，可以设置策略偏好
+# 项目地址：https://raw.githubusercontent.com/fmz200/wool_scripts/main/Loon/rule/OpenAI.list
+# 交流群组：https://t.me/lanjieguanggao
+# 更新时间：2024-03-10 19:07:00
+# 策略选择：选择支持OpenAI的地区
+#############################################
+
+DOMAIN, cdn.auth0.com
+DOMAIN-SUFFIX, vimeo.com
+DOMAIN-SUFFIX, vimeocdn.com
+DOMAIN-SUFFIX, hcaptcha.com
+DOMAIN-SUFFIX, akamaized.com
+
+DOMAIN,challenges.cloudflare.com
+DOMAIN,api.statsig.com
+DOMAIN,cdn.oaistatic.com
+DOMAIN-SUFFIX,ai.com
+DOMAIN-SUFFIX,openai.com
+DOMAIN-SUFFIX,stripe.com
+DOMAIN-SUFFIX,poe.com
+DOMAIN-SUFFIX,intercom.io
+DOMAIN-SUFFIX,identrust.com
+DOMAIN-SUFFIX,featuregates.org
+DOMAIN-SUFFIX,events.statsigapi.net
+DOMAIN-SUFFIX,oaiusercontent.com
+DOMAIN-SUFFIX,openaicom.imgix.net
+DOMAIN-SUFFIX,openaiapi-site.azureedge.net
+DOMAIN-SUFFIX,chat.openai.com.cdn.cloudflare.net
+DOMAIN-SUFFIX,openaicom.imgix.net
+DOMAIN-SUFFIX,openaicomproductionae4b.blob.core.windows.net
+DOMAIN-SUFFIX,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
+DOMAIN-SUFFIX,sentry.io
+#
+DOMAIN-SUFFIX,anthropic.com
+DOMAIN-SUFFIX,claude.ai
+#
+DOMAIN-SUFFIX,gatewayai.com
+DOMAIN-SUFFIX,tktn.be
+IP-CIDR,50.117.27.0/24,no-resolve
+IP-CIDR,69.46.75.0/24,no-resolve
+IP-CIDR,205.164.56.29/24,no-resolve
+IP-CIDR,63.251.124.0/24,no-resolve
 
 # $ meta_title Sukka's Ruleset - AIGC Domains
 # $ meta_description This file contains domains of OpenAI, Claude.
@@ -456,49 +501,4 @@ DOMAIN,api.jetbrains.ai
 # >> OpenRouter AI - Unified Relay
 # see https://github.com/SukkaW/Surge/pull/86 for reason that only root domain get proxied
 DOMAIN,openrouter.ai
-
-#############################################
-# 分流作用：对OpenAI相关服务进行分流
-# 重要提示：如果不想新增一个策略组，可以设置策略偏好
-# 项目地址：https://raw.githubusercontent.com/fmz200/wool_scripts/main/Loon/rule/OpenAI.list
-# 交流群组：https://t.me/lanjieguanggao
-# 更新时间：2024-03-10 19:07:00
-# 策略选择：选择支持OpenAI的地区
-#############################################
-
-DOMAIN, cdn.auth0.com
-DOMAIN-SUFFIX, vimeo.com
-DOMAIN-SUFFIX, vimeocdn.com
-DOMAIN-SUFFIX, hcaptcha.com
-DOMAIN-SUFFIX, akamaized.com
-
-DOMAIN,challenges.cloudflare.com
-DOMAIN,api.statsig.com
-DOMAIN,cdn.oaistatic.com
-DOMAIN-SUFFIX,ai.com
-DOMAIN-SUFFIX,openai.com
-DOMAIN-SUFFIX,stripe.com
-DOMAIN-SUFFIX,poe.com
-DOMAIN-SUFFIX,intercom.io
-DOMAIN-SUFFIX,identrust.com
-DOMAIN-SUFFIX,featuregates.org
-DOMAIN-SUFFIX,events.statsigapi.net
-DOMAIN-SUFFIX,oaiusercontent.com
-DOMAIN-SUFFIX,openaicom.imgix.net
-DOMAIN-SUFFIX,openaiapi-site.azureedge.net
-DOMAIN-SUFFIX,chat.openai.com.cdn.cloudflare.net
-DOMAIN-SUFFIX,openaicom.imgix.net
-DOMAIN-SUFFIX,openaicomproductionae4b.blob.core.windows.net
-DOMAIN-SUFFIX,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
-DOMAIN-SUFFIX,sentry.io
-#
-DOMAIN-SUFFIX,anthropic.com
-DOMAIN-SUFFIX,claude.ai
-#
-DOMAIN-SUFFIX,gatewayai.com
-DOMAIN-SUFFIX,tktn.be
-IP-CIDR,50.117.27.0/24,no-resolve
-IP-CIDR,69.46.75.0/24,no-resolve
-IP-CIDR,205.164.56.29/24,no-resolve
-IP-CIDR,63.251.124.0/24,no-resolve
 
