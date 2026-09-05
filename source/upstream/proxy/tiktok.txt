@@ -1,3 +1,4 @@
+404: Not Found
 # NAME: TikTok
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -43,7 +44,7 @@ USER-AGENT,TikTok*,TikTok
 # NAME: 深巷有喵的「TikTok」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.09.04 06:27:51
+# UPDATED: 2026.09.05 06:16:26
 # TOTAL: 33
 
 # ======= 手动维护规则 ========
@@ -82,7 +83,6 @@ DOMAIN-KEYWORD,tiktok
 USER-AGENT,TikTok*
 PROCESS-NAME,com.zhiliaoapp.musically
 
-404: Not Found
 #!name=TikTok
 #!desc=分流选择支持的地区
 #!author=奶思
