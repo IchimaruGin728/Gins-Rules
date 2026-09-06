@@ -82,7 +82,6 @@ HOST-KEYWORD,musical.ly,TikTok
 HOST-KEYWORD,tiktok,TikTok
 USER-AGENT,TikTok*,TikTok
 
-404: Not Found
 #!name=TikTok
 #!desc=分流选择支持的地区
 #!author=奶思
@@ -109,3 +108,4 @@ DOMAIN-SUFFIX,ttwstatic.com
 DOMAIN-KEYWORD,tiktokcdn
 USER-AGENT,TikTok*
 
+404: Not Found
