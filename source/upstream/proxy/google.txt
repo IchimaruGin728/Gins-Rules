@@ -1,3 +1,4 @@
+404: Not Found
 # NAME: 深巷有喵的「Google」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
@@ -709,4 +710,3 @@ PROCESS-NAME,com.google.android.gsf
 PROCESS-NAME,com.google.android.play.games
 PROCESS-NAME,BackupandSync
 
-404: Not Found
