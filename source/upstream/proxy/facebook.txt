@@ -1,3 +1,4 @@
+404: Not Found
 #!name=Facebook
 #!desc=分流选择支持的地区
 #!author=奶思
@@ -555,4 +556,3 @@ DOMAIN-SUFFIX,zuckerberg.net
 DOMAIN-KEYWORD,facebook
 DOMAIN-KEYWORD,fbcdn
 
-404: Not Found

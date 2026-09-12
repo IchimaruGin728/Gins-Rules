@@ -406,6 +406,7 @@ IP-CIDR,172.110.32.0/21,YouTube
 IP-CIDR,216.73.80.0/20,YouTube
 IP6-CIDR,2620:120:e000::/40,YouTube
 
+404: Not Found
 # NAME: YouTubeMusic
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -419,4 +420,3 @@ USER-AGENT,*com.google.ios.youtubemusic*,YouTubeMusic
 USER-AGENT,YouTubeMusic*,YouTubeMusic
 USER-AGENT,com.google.ios.youtubemusic*,YouTubeMusic
 
-404: Not Found

@@ -313,7 +313,6 @@ IP-CIDR,35.192.0.0/12,no-resolve
 
 
 404: Not Found
-404: Not Found
 # $ meta_title Sukka's Ruleset - Game Download
 # $ meta_description This file contains domains for Gam download CDN domains for Steam, Epic, Blizzard, Gog, Ubisoft, EA, Xbox, PlayStation, Riot, Bethesda and more.
 # $ meta_description No China CDN domains are included. Those domains are included in non_ip/domestic
@@ -406,3 +405,4 @@ gamedownloads-rockstargames-com.akamaized.net
 .wup.eshop.nintendo.net
 .cdn.nintendo.net
 
+404: Not Found
