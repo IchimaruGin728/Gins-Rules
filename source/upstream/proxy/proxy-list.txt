@@ -1,8 +1,7 @@
-404: Not Found
 # NAME: 深巷有喵的「Proxy」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.09.11 06:24:02
+# UPDATED: 2026.09.12 06:23:32
 # TOTAL: 6964
 
 # ======= 手动维护规则 ========
@@ -6986,6 +6985,7 @@ USER-AGENT,com.apple.trustd*
 USER-AGENT,hearthstone*
 
 
+404: Not Found
 +.0emm.com
 +.1e100.net
 +.1password.com
@@ -29071,6 +29071,7 @@ qstatus.com
 qt-project.org
 qt.io
 qtrac.eu
+quakemachinex.com
 qualcomm-email.com
 qualcomm-inc.com
 qualcomm.co.id
