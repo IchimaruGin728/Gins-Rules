@@ -406,6 +406,7 @@ USER-AGENT,YouTubeMusic*
 USER-AGENT,com.google.ios.youtube*
 USER-AGENT,com.google.ios.youtubemusic*
 
+404: Not Found
 # NAME: YouTubeMusic
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -419,4 +420,3 @@ USER-AGENT,*com.google.ios.youtubemusic*,YouTubeMusic
 USER-AGENT,YouTubeMusic*,YouTubeMusic
 USER-AGENT,com.google.ios.youtubemusic*,YouTubeMusic
 
-404: Not Found
