@@ -1,3 +1,4 @@
+404: Not Found
 # $ custom_build_script
 
 # speedtest.net
@@ -139,4 +140,3 @@ open.cachefly.net
 # HiNet
 .speed.hinet.net
 
-404: Not Found
