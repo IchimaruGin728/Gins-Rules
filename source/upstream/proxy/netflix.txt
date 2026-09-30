@@ -1,5 +1,4 @@
 404: Not Found
-404: Not Found
 # NAME: Netflix
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -2339,3 +2338,4 @@ IP-CIDR6,2a03:5640::/32,no-resolve
 USER-AGENT,Argo*
 PROCESS-NAME,com.netflix.mediaclient
 
+404: Not Found
