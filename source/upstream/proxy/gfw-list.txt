@@ -1395,6 +1395,7 @@ futuremessage.org
 futustatic.com
 fututrade.com
 fututrustee.com
+fuyin116.com
 fw.cm
 fxcm-chinese.com
 fxnetworks.com
@@ -2549,6 +2550,7 @@ mthruf.com
 mubi.com
 mullvad.net
 multiply.com
+muse.ai
 music.amazon.com
 musixmatch.com
 muzi.com
@@ -4388,8 +4390,8 @@ zynamics.com
 zyxel.com
 zzcloud.me
 
-+.slickvpn.com
-+.6park.com
++.sleazyfork.org
++.kuaichedao.co
 +.zzcloud.me
 +.1000giri.net
 +.10beasts.net
@@ -4443,7 +4445,7 @@ zzcloud.me
 +.69shuba.cx
 +.6do.news
 +.6do.world
-+.kepard.com
++.6park.com
 +.6parkbbs.com
 +.6parker.com
 +.6parknews.com
@@ -4681,7 +4683,7 @@ zzcloud.me
 +.zeronet.io
 +.atchinese.com
 +.athenaeizou.com
-+.atlanta168.com
++.kepard.com
 +.atnext.com
 +.zerohedge.com
 +.audacy.com
@@ -5785,6 +5787,7 @@ zzcloud.me
 +.futustatic.com
 +.fututrade.com
 +.fututrustee.com
++.fuyin116.com
 +.fw.cm
 +.fxcm-chinese.com
 +.fxnetworks.com
@@ -6151,7 +6154,7 @@ zzcloud.me
 +.googleusercontent.com
 +.googlevideo.com
 +.googleweblight.com
-+.kenengba.com
++.googlezip.net
 +.gopetition.com
 +.goreforum.com
 +.goregrish.com
@@ -6274,7 +6277,7 @@ zzcloud.me
 +.waymo.com
 +.hkdc.us
 +.hkej.com
-+.hket.com
++.kendatire.com
 +.hkfaa.com
 +.hkgalden.com
 +.hkgolden.com
@@ -6581,10 +6584,10 @@ zzcloud.me
 +.kawase.com
 +.vpnvip.com
 +.kebrum.com
-+.kendatire.com
-+.googlezip.net
++.hket.com
 +.0rz.tw
-+.lvv2.com
++.atlanta168.com
++.kex.com
 +.keycdn.com
 +.kfor.com
 +.khatrimaza.org
@@ -6617,7 +6620,7 @@ zzcloud.me
 +.kraken.com
 +.kspcoin.com
 +.ktzhk.com
-+.kuaichedao.co
++.kenengba.com
 +.kucoin.com
 +.kukuku.uk
 +.kurtmunger.com
@@ -6747,7 +6750,7 @@ zzcloud.me
 +.lupm.org
 +.lushstories.com
 +.lvhai.org
-+.kex.com
++.lvv2.com
 +.lyfhk.net
 +.lzjscript.com
 +.lzmtnews.org
@@ -6939,6 +6942,7 @@ zzcloud.me
 +.mubi.com
 +.mullvad.net
 +.multiply.com
++.muse.ai
 +.voaindonesia.com
 +.musixmatch.com
 +.muzi.com
@@ -7677,9 +7681,9 @@ zzcloud.me
 +.skyxvpn.com
 +.slacker.com
 +.slashine.onl
-+.sleazyfork.org
-+.slheng.com
 +.000webhost.com
++.slheng.com
++.slickvpn.com
 +.slides.com
 +.slides.new
 +.slideshare.net
