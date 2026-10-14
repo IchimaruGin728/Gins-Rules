@@ -1,4 +1,3 @@
-404: Not Found
 #!name=Twitter
 #!desc=分流选择支持的地区
 #!author=奶思
@@ -35,3 +34,4 @@ DOMAIN-SUFFIX,twvid.com
 DOMAIN-SUFFIX,vine.co
 DOMAIN-SUFFIX,x.com
 DOMAIN-KEYWORD,twitter
+404: Not Found
