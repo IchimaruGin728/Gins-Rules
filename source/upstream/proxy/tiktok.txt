@@ -1,8 +1,8 @@
 # NAME: 深巷有喵的「TikTok」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.10.15 07:05:24
-# TOTAL: 33
+# UPDATED: 2026.10.16 06:58:29
+# TOTAL: 36
 
 # ======= 手动维护规则 ========
 DOMAIN-SUFFIX,tiktokcdn.com
@@ -16,6 +16,9 @@ DOMAIN-SUFFIX,bytegecko-i18n.com
 DOMAIN-SUFFIX,byteintlapi.com
 DOMAIN-SUFFIX,byteoversea.com
 DOMAIN-SUFFIX,capcut.com
+DOMAIN-SUFFIX,capcutapi.com
+DOMAIN-SUFFIX,capcutapi.us
+DOMAIN-SUFFIX,capcutstatic.com
 DOMAIN-SUFFIX,ibytedtos.com
 DOMAIN-SUFFIX,ibyteimg.com
 DOMAIN-SUFFIX,ipstatp.com
@@ -40,16 +43,15 @@ DOMAIN-KEYWORD,tiktok
 USER-AGENT,TikTok*
 PROCESS-NAME,com.zhiliaoapp.musically
 
-404: Not Found
 # NAME: TikTok
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-08-10 02:08:00
+# UPDATED: 2026-10-16 04:51:01
 # HOST: 4
 # HOST-KEYWORD: 2
-# HOST-SUFFIX: 25
+# HOST-SUFFIX: 28
 # USER-AGENT: 1
-# TOTAL: 32
+# TOTAL: 35
 HOST,lf16-effectcdn.byteeffecttos-g.com,TikTok
 HOST,lf16-pkgcdn.pitaya-clientai.com,TikTok
 HOST,p16-tiktokcdn-com.akamaized.net,TikTok
@@ -59,6 +61,9 @@ HOST-SUFFIX,bytegecko-i18n.com,TikTok
 HOST-SUFFIX,byteintlapi.com,TikTok
 HOST-SUFFIX,byteoversea.com,TikTok
 HOST-SUFFIX,capcut.com,TikTok
+HOST-SUFFIX,capcutapi.com,TikTok
+HOST-SUFFIX,capcutapi.us,TikTok
+HOST-SUFFIX,capcutstatic.com,TikTok
 HOST-SUFFIX,ibytedtos.com,TikTok
 HOST-SUFFIX,ibyteimg.com,TikTok
 HOST-SUFFIX,ipstatp.com,TikTok
@@ -109,3 +114,4 @@ DOMAIN-SUFFIX,ttwstatic.com
 DOMAIN-KEYWORD,tiktokcdn
 USER-AGENT,TikTok*
 
+404: Not Found
