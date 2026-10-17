@@ -58,6 +58,7 @@
 6parker.com
 6parknews.com
 7capture.com
+7x24hrs.com
 8-d.com
 85cc.us
 881903.com
@@ -2460,7 +2461,9 @@ meridian-trust.org
 meripet.com
 merit-times.com.tw
 messenger.com
+meta.ai
 meta.com
+metaaivm.com
 metafilter.com
 metamask.io
 metart.com
@@ -4428,8 +4431,8 @@ zynamics.com
 zyxel.com
 zzcloud.me
 
-+.kex.com
-+.liuxiaotong.com
++.keycdn.com
++.google.mu
 +.1000giri.net
 +.10beasts.net
 +.10musume.com
@@ -4486,6 +4489,7 @@ zzcloud.me
 +.6parker.com
 +.6parknews.com
 +.7capture.com
++.7x24hrs.com
 +.8-d.com
 +.85cc.us
 +.881903.com
@@ -5051,7 +5055,7 @@ zzcloud.me
 +.cablegatesearch.net
 +.cachefly.com
 +.cachefly.net
-+.000webhost.com
++.cacnw.com
 +.cactusvpn.com
 +.calebelston.com
 +.calendarz.com
@@ -5113,7 +5117,7 @@ zzcloud.me
 +.cdpeu.org
 +.yadi.sk
 +.cdpweb.org
-+.cdpwu.org
++.kepard.com
 +.cdw.com
 +.cecc.gov
 +.cellulo.info
@@ -5489,7 +5493,7 @@ zzcloud.me
 +.dragonex.io
 +.dragonsprings.org
 +.drgan.net
-+.dropbooks.tv
++.000webhost.com
 +.dropbox.com
 +.dropboxapi.com
 +.dropboxusercontent.com
@@ -6132,7 +6136,7 @@ zzcloud.me
 +.google.ml
 +.google.mn
 +.google.ms
-+.google.mu
++.kex.com
 +.google.mv
 +.google.mw
 +.google.mx
@@ -6641,10 +6645,10 @@ zzcloud.me
 +.kebrum.com
 +.kendatire.com
 +.kenengba.com
-+.kepard.com
-+.cacnw.com
++.cdpwu.org
 +.0rz.tw
-+.myjs.tw
++.dropbooks.tv
++.kfor.com
 +.khatrimaza.org
 +.vpnshazam.com
 +.kichiku-doujinko.com
@@ -6763,7 +6767,7 @@ zzcloud.me
 +.listentoyoutube.com
 +.litenews.hk
 +.liuxiaobo.net
-+.keycdn.com
++.liuxiaotong.com
 +.livecoin.net
 +.liveleak.com
 +.livemint.com
@@ -6890,7 +6894,9 @@ zzcloud.me
 +.meripet.com
 +.voatibetan.com
 +.messenger.com
++.meta.ai
 +.meta.com
++.metaaivm.com
 +.metafilter.com
 +.metamask.io
 +.metart.com
@@ -7019,7 +7025,7 @@ zzcloud.me
 +.mycnnews.com
 +.myeclipseide.com
 +.myiphide.com
-+.kfor.com
++.myjs.tw
 +.mykomica.org
 +.mymoe.moe
 +.myparagliding.com
