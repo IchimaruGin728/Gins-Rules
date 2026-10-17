@@ -1,4 +1,3 @@
-404: Not Found
 # NAME: 深巷有喵的「ChinaASN」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
@@ -5083,3 +5082,4 @@ IP-ASN,211571 // Xin Zhao
 IP-ASN,211843 // 南京天开信息技术有限公司
 IP-ASN,212237 // Changgong Zhang
 
+404: Not Found
