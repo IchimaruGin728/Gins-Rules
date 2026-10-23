@@ -679,6 +679,7 @@ USER-AGENT,OneDriveiOSApp*
 PROCESS-NAME,OneDrive
 PROCESS-NAME,OneDriveUpdater
 
+404: Not Found
 # $ meta_title Sukka's Ruleset - Microsoft Domains
 # $ meta_description This file contains domains of Microsoft.
 
@@ -771,4 +772,3 @@ DOMAIN-SUFFIX,xboxservices.com
 DOMAIN-SUFFIX,yammer.com
 DOMAIN-SUFFIX,yammerusercontent.com
 
-404: Not Found
