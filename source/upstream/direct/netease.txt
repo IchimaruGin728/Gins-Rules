@@ -1,3 +1,4 @@
+404: Not Found
 # $ meta_title Sukka's Ruleset - Netease Music
 # $ meta_description This file contains rules for Netease Music.
 
@@ -29,4 +30,3 @@ IP-CIDR,193.112.159.225/32,no-resolve
 IP-CIDR,223.252.199.66/32,no-resolve
 IP-CIDR,223.252.199.67/32,no-resolve
 
-404: Not Found
