@@ -1,8 +1,7 @@
-404: Not Found
 # NAME: 深巷有喵的「Spotify」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.11.08 07:32:29
+# UPDATED: 2026.11.09 07:32:51
 # TOTAL: 40
 
 # ======= 上游同步规则 ========
@@ -47,3 +46,4 @@ USER-AGENT,Spotify*
 IP-CIDR,35.186.224.47/32,no-resolve
 PROCESS-NAME,com.spotify.music
 
+404: Not Found
