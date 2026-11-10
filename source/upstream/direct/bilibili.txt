@@ -1,9 +1,7 @@
-404: Not Found
-404: Not Found
 # NAME: 深巷有喵的「BiliBili」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.11.09 07:32:51
+# UPDATED: 2026.11.10 10:37:32
 # TOTAL: 127
 
 # ======= 上游同步规则 ========
@@ -135,3 +133,5 @@ IP-CIDR,134.175.207.130/32,no-resolve
 PROCESS-NAME,com.bilibili.app.in
 PROCESS-NAME,tv.danmaku.bili
 
+404: Not Found
+404: Not Found
