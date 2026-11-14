@@ -6,6 +6,7 @@ USER-AGENT,NeteaseMusic*
 DOMAIN-SUFFIX,music.126.net
 DOMAIN-SUFFIX,music.163.com
 
+404: Not Found
 # $ meta_title Sukka's Ruleset - Netease Music IPs
 # $ meta_description This file contains IPs used by Netease Music.
 
@@ -29,4 +30,3 @@ IP-CIDR,193.112.159.225/32,no-resolve
 IP-CIDR,223.252.199.66/32,no-resolve
 IP-CIDR,223.252.199.67/32,no-resolve
 
-404: Not Found
